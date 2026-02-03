@@ -1,0 +1,47 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  width: 100%;
+  justify-content: center; /* center regardless of parent */
+}
+.page-btn {
+  background: transparent;
+  border: 1px solid rgba(2, 6, 23, 0.06);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.page-list {
+  list-style: none;
+  display: flex;
+  gap: 0.4rem;
+  padding: 0;
+  margin: 0;
+  align-items: center;
+}
+.page-number {
+  background: transparent;
+  border: none;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.page-number.active {
+  background: #06b6d4;
+  color: white;
+}
+.dots {
+  padding: 0.45rem 0.6rem;
+  color: #64748b;
+}
+
+/* ensure the component itself doesn't collapse when nested */
+.pagination * {
+  box-sizing: border-box;
+}
