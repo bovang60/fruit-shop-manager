@@ -1,0 +1,52 @@
+.shop-mgmt-container {
+    padding: 24px;
+    background: #fff;
+    min-height: 100%;
+}
+
+.shop-detail-container {
+    padding: 24px;
+    background: #fff;
+    min-height: 100vh;
+}
+
+.shop-icon-circle {
+    width: 80px;
+    height: 80px;
+    background-color: #5c8a6f;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 24px;
+}
+
+.doc-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+}
+
+.footer-banner-shop {
+    margin-top: 32px;
+    background: #fff7e6;
+    border: 1px solid #ffd591;
+    border-radius: 8px;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-icon-circle-shop {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #fa8c16;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
