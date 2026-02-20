@@ -1,0 +1,40 @@
+package com.fruitshop.backend.controller;
+
+import com.fruitshop.backend.dto.UserDto;
+import com.fruitshop.backend.model.User;
+import com.fruitshop.backend.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+@CrossOrigin("*")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping
+    public ResponseEntity<Page<UserDto>> getUsers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) User.UserStatus status,
+            @RequestParam(required = false) User.Role role,
+            Pageable pageable) {
+        return ResponseEntity.ok(userService.getUsers(search, status, role, pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable Integer id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<UserDto> updateUserStatus(
+            @PathVariable Integer id,
+            @RequestParam User.UserStatus status) {
+        return ResponseEntity.ok(userService.updateUserStatus(id, status));
+    }
+}
