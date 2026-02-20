@@ -1,47 +1,52 @@
 import { useState } from 'react'
 import LoginView from './LoginView'
-import './Login.css'
 
-export default function Login() {
+type LoginProps = {
+  onSuccess?: () => void
+  onGoToRegister?: () => void
+}
+
+export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showRegister, setShowRegister] = useState(false)
-  const [showReset, setShowReset] = useState(false)
-  const [regName, setRegName] = useState('')
-  const [regEmail, setRegEmail] = useState('')
-  const [regPwd, setRegPwd] = useState('')
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      alert(`Đăng nhập (mock): ${email}`)
-    }, 800)
+  const validate = (): boolean => {
+    const newErrors: { email?: string; password?: string } = {}
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Email is invalid'
+    }
+    
+    if (!password) {
+      newErrors.password = 'Password is required'
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
-  const doRegister = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validate()) return
+    
     setLoading(true)
+    // TODO: connect API
     setTimeout(() => {
       setLoading(false)
-      alert(`Đăng ký thành công (mock): ${regName} <${regEmail}>'`)
-      setShowRegister(false)
-      setRegEmail('')
-      setRegName('')
-      setRegPwd('')
-    }, 900)
+      alert(`Login successful (mock): ${email}`)
+      onSuccess?.()
+    }, 600)
   }
 
-  const sendReset = (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      alert(`Gửi email đặt lại mật khẩu (mock) tới: ${email || regEmail}`)
-      setShowReset(false)
-    }, 700)
+  const handleGoToRegister = () => {
+    onGoToRegister?.()
   }
 
   return (
@@ -49,21 +54,11 @@ export default function Login() {
       email={email}
       password={password}
       loading={loading}
-      showRegister={showRegister}
-      showReset={showReset}
-      regName={regName}
-      regEmail={regEmail}
-      regPwd={regPwd}
+      errors={errors}
       onEmailChange={setEmail}
       onPasswordChange={setPassword}
-      onSubmit={submit}
-      onToggleRegister={setShowRegister}
-      onToggleReset={() => setShowReset((s) => !s)}
-      onRegisterSubmit={doRegister}
-      onRegNameChange={setRegName}
-      onRegEmailChange={setRegEmail}
-      onRegPwdChange={setRegPwd}
-      onSendReset={sendReset}
+      onSubmit={handleSubmit}
+      onGoToRegister={handleGoToRegister}
     />
   )
 }
