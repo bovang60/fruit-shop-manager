@@ -25,12 +25,10 @@ public class User {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Convert(converter = RoleConverter.class)
     private Role role;
 
-    @Enumerated(EnumType.STRING)
     @Convert(converter = UserStatusConverter.class)
     private UserStatus status = UserStatus.ACTIVE;
 
@@ -40,6 +38,7 @@ public class User {
         public String convertToDatabaseColumn(Role role) {
             return role != null ? role.name() : null;
         }
+
         @Override
         public Role convertToEntityAttribute(String dbData) {
             return dbData != null ? Role.fromString(dbData) : null;
@@ -52,6 +51,7 @@ public class User {
         public String convertToDatabaseColumn(UserStatus status) {
             return status != null ? status.name() : null;
         }
+
         @Override
         public UserStatus convertToEntityAttribute(String dbData) {
             return dbData != null ? UserStatus.fromString(dbData) : null;
