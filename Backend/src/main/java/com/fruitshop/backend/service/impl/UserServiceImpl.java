@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
     public Page<UserDto> getUsers(String search, User.UserStatus status, User.Role role, Pageable pageable) {
         Page<User> users;
         if (search != null && !search.isEmpty()) {
-            users = userRepository.findByFullnameContainingIgnoreCase(search, pageable);
+            users = userRepository.findByFullNameContainingIgnoreCase(search, pageable);
         } else if (status != null && role != null) {
             users = userRepository.findByStatusAndRole(status, role, pageable);
         } else if (status != null) {
@@ -49,14 +49,13 @@ public class UserServiceImpl implements UserService {
 
     private UserDto convertToDto(User user) {
         UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setFullname(user.getFullname());
+        dto.setUserId(user.getUserId());
+        dto.setFullName(user.getFullName());
         dto.setEmail(user.getEmail());
-        dto.setPhone(user.getPhone());
-        dto.setAddress(user.getAddress());
+        dto.setPhoneNumber(user.getPhoneNumber());
         dto.setRole(user.getRole());
         dto.setStatus(user.getStatus());
+        dto.setCreatedAt(user.getCreatedAt());
         return dto;
     }
 }
