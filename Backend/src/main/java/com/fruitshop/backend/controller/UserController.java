@@ -1,9 +1,12 @@
 package com.fruitshop.backend.controller;
 
+import com.fruitshop.backend.dto.ApiResponse;
+import com.fruitshop.backend.dto.RegisterDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.model.User;
 import com.fruitshop.backend.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +15,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin("*")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<UserDto>> register(@Valid @RequestBody RegisterDto registerDto) {
+        ApiResponse<UserDto> response = userService.register(registerDto);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping
     public ResponseEntity<Page<UserDto>> getUsers(

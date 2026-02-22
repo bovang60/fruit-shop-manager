@@ -10,6 +10,7 @@ com\fruitshop\backend\model\Shop.class
 com\fruitshop\backend\model\Product.class
 com\fruitshop\backend\config\WebConfig$2.class
 com\fruitshop\backend\service\ShopService.class
+com\fruitshop\backend\dto\ApiResponse.class
 com\fruitshop\backend\model\User$RoleConverter.class
 com\fruitshop\backend\model\ShopDocument.class
 com\fruitshop\backend\model\Transaction$PaymentStatus.class
@@ -32,6 +33,7 @@ com\fruitshop\backend\repository\FruitRepository.class
 com\fruitshop\backend\config\WebConfig.class
 com\fruitshop\backend\model\Cart.class
 com\fruitshop\backend\service\impl\ShopServiceImpl.class
+com\fruitshop\backend\dto\RegisterDto.class
 com\fruitshop\backend\model\OrderVoucherId.class
 com\fruitshop\backend\repository\CategoryRepository.class
 com\fruitshop\backend\model\Review.class
