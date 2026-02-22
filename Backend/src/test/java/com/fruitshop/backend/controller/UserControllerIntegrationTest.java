@@ -1,28 +1,29 @@
 package com.fruitshop.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.RegisterDto;
+import com.fruitshop.backend.dto.UserDto;
+import com.fruitshop.backend.dto.VerifyOtpDto;
 import com.fruitshop.backend.model.User;
-import com.fruitshop.backend.repository.UserRepository;
+import com.fruitshop.backend.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import static org.hamcrest.Matchers.*;
+import java.time.LocalDateTime;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@DisplayName("User Controller - Register API Integration Tests")
+@WebMvcTest(UserController.class)
 class UserControllerIntegrationTest {
 
     @Autowired
@@ -31,154 +32,326 @@ class UserControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private UserRepository userRepository;
+    @MockBean
+    private UserService userService;
 
-    private RegisterDto validRegisterDto;
+    private RegisterDto registerDto;
+    private VerifyOtpDto verifyOtpDto;
+    private UserDto userDto;
 
     @BeforeEach
     void setUp() {
-        // Clear database trước mỗi test
-        userRepository.deleteAll();
+        // Setup RegisterDto
+        registerDto = new RegisterDto();
+        registerDto.setFullName("Test User");
+        registerDto.setEmail("test@example.com");
+        registerDto.setPassword("password123");
+        registerDto.setPhoneNumber("0987654321");
 
-        // Chuẩn bị dữ liệu test
-        validRegisterDto = new RegisterDto();
-        validRegisterDto.setFullName("Nguyen Thi B");
-        validRegisterDto.setEmail("nguyenthib@example.com");
-        validRegisterDto.setPassword("password123");
-        validRegisterDto.setPhoneNumber("0912345678");
+        // Setup VerifyOtpDto
+        verifyOtpDto = new VerifyOtpDto();
+        verifyOtpDto.setEmail("test@example.com");
+        verifyOtpDto.setOtpCode("123456");
+
+        // Setup UserDto
+        userDto = new UserDto();
+        userDto.setUserId(1);
+        userDto.setFullName("Test User");
+        userDto.setEmail("test@example.com");
+        userDto.setPhoneNumber("0987654321");
+        userDto.setRole(User.Role.CUSTOMER);
+        userDto.setStatus(User.UserStatus.ACTIVE);
+        userDto.setCreatedAt(LocalDateTime.now());
     }
 
+    // ==================== REQUEST REGISTER TESTS ====================
+
     @Test
-    @DisplayName("POST /api/users/register - Success: Should return 200 with resultCd=0")
-    void testRegister_Success_ShouldReturn200WithResultCd0() throws Exception {
-        // Act & Assert
-        mockMvc.perform(post("/api/users/register")
+    void requestRegister_Success() throws Exception {
+        // Given
+        ApiResponse<String> response = ApiResponse.success(
+                "OTP code has been sent to your email. Please verify within 5 minutes.",
+                null);
+        when(userService.requestRegister(any(RegisterDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/request-register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andDo(print())
+                .content(objectMapper.writeValueAsString(registerDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCd").value(0))
-                .andExpect(jsonPath("$.message").value("User registered successfully"))
-                .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.fullName").value("Nguyen Thi B"))
-                .andExpect(jsonPath("$.data.email").value("nguyenthib@example.com"))
-                .andExpect(jsonPath("$.data.phoneNumber").value("0912345678"))
-                .andExpect(jsonPath("$.data.role").value("CUSTOMER"))
-                .andExpect(jsonPath("$.data.status").value("ACTIVE"))
-                .andExpect(jsonPath("$.data.userId").exists())
-                .andExpect(jsonPath("$.data.createdAt").exists());
+                .andExpect(jsonPath("$.message")
+                        .value("OTP code has been sent to your email. Please verify within 5 minutes."))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).requestRegister(any(RegisterDto.class));
     }
 
     @Test
-    @DisplayName("POST /api/users/register - Error: Should return 200 with resultCd=1 when email exists")
-    void testRegister_Error_ShouldReturn200WithResultCd1WhenEmailExists() throws Exception {
-        // Arrange - Tạo user trước
-        User existingUser = new User();
-        existingUser.setFullName("Existing User");
-        existingUser.setEmail("nguyenthib@example.com");
-        existingUser.setPassword("password");
-        existingUser.setRole(User.Role.CUSTOMER);
-        existingUser.setStatus(User.UserStatus.ACTIVE);
-        userRepository.save(existingUser);
+    void requestRegister_EmailAlreadyExists() throws Exception {
+        // Given
+        ApiResponse<String> response = ApiResponse.error("Email already exists");
+        when(userService.requestRegister(any(RegisterDto.class))).thenReturn(response);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/users/register")
+        // When & Then
+        mockMvc.perform(post("/api/users/request-register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andDo(print())
+                .content(objectMapper.writeValueAsString(registerDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCd").value(1))
-                .andExpect(jsonPath("$.message").value("Email already exists"))
-                .andExpect(jsonPath("$.data").isEmpty());
+                .andExpect(jsonPath("$.message").value("Email already exists"));
+
+        verify(userService, times(1)).requestRegister(any(RegisterDto.class));
     }
 
     @Test
-    @DisplayName("POST /api/users/register - Validation: Should return 400 when fullName is empty")
-    void testRegister_Validation_ShouldReturn400WhenFullNameEmpty() throws Exception {
-        // Arrange
-        validRegisterDto.setFullName("");
+    void requestRegister_InvalidEmail() throws Exception {
+        // Given
+        registerDto.setEmail("invalid-email");
 
-        // Act & Assert
-        mockMvc.perform(post("/api/users/register")
+        // When & Then
+        mockMvc.perform(post("/api/users/request-register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andDo(print())
+                .content(objectMapper.writeValueAsString(registerDto)))
                 .andExpect(status().isBadRequest());
+
+        verify(userService, never()).requestRegister(any(RegisterDto.class));
     }
 
     @Test
-    @DisplayName("POST /api/users/register - Validation: Should return 400 when email is invalid")
-    void testRegister_Validation_ShouldReturn400WhenEmailInvalid() throws Exception {
-        // Arrange
-        validRegisterDto.setEmail("invalid-email");
+    void requestRegister_MissingFullName() throws Exception {
+        // Given
+        registerDto.setFullName(null);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/users/register")
+        // When & Then
+        mockMvc.perform(post("/api/users/request-register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andDo(print())
+                .content(objectMapper.writeValueAsString(registerDto)))
                 .andExpect(status().isBadRequest());
+
+        verify(userService, never()).requestRegister(any(RegisterDto.class));
     }
 
     @Test
-    @DisplayName("POST /api/users/register - Validation: Should return 400 when password is too short")
-    void testRegister_Validation_ShouldReturn400WhenPasswordTooShort() throws Exception {
-        // Arrange
-        validRegisterDto.setPassword("123");
+    void requestRegister_MissingEmail() throws Exception {
+        // Given
+        registerDto.setEmail(null);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/users/register")
+        // When & Then
+        mockMvc.perform(post("/api/users/request-register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andDo(print())
+                .content(objectMapper.writeValueAsString(registerDto)))
                 .andExpect(status().isBadRequest());
+
+        verify(userService, never()).requestRegister(any(RegisterDto.class));
     }
 
     @Test
-    @DisplayName("POST /api/users/register - Success: Should save user to database")
-    void testRegister_Success_ShouldSaveToDatabase() throws Exception {
-        // Act
-        mockMvc.perform(post("/api/users/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andExpect(status().isOk());
+    void requestRegister_ShortPassword() throws Exception {
+        // Given
+        registerDto.setPassword("123"); // Less than 6 characters
 
-        // Assert - Verify user exists in database
-        var savedUser = userRepository.findByEmail("nguyenthib@example.com");
-        assert savedUser.isPresent();
-        assert savedUser.get().getFullName().equals("Nguyen Thi B");
-        assert savedUser.get().getRole().equals(User.Role.CUSTOMER);
-        assert savedUser.get().getStatus().equals(User.UserStatus.ACTIVE);
+        // When & Then
+        mockMvc.perform(post("/api/users/request-register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).requestRegister(any(RegisterDto.class));
     }
 
     @Test
-    @DisplayName("POST /api/users/register - Success: Should handle phone number with optional format")
-    void testRegister_Success_WithPhoneNumber() throws Exception {
-        // Test with different phone formats
-        validRegisterDto.setPhoneNumber("0987654321");
+    void requestRegister_InvalidPhoneNumber() throws Exception {
+        // Given
+        registerDto.setPhoneNumber("123"); // Invalid Vietnamese phone number
 
-        mockMvc.perform(post("/api/users/register")
+        // When & Then
+        mockMvc.perform(post("/api/users/request-register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andDo(print())
+                .content(objectMapper.writeValueAsString(registerDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).requestRegister(any(RegisterDto.class));
+    }
+
+    // ==================== VERIFY OTP TESTS ====================
+
+    @Test
+    void verifyOtp_Success() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.success(
+                "Registration completed successfully!",
+                userDto);
+        when(userService.verifyOtpAndRegister(any(VerifyOtpDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(verifyOtpDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCd").value(0))
-                .andExpect(jsonPath("$.data.phoneNumber").value("0987654321"));
+                .andExpect(jsonPath("$.message").value("Registration completed successfully!"))
+                .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.fullName").value("Test User"))
+                .andExpect(jsonPath("$.data.email").value("test@example.com"))
+                .andExpect(jsonPath("$.data.role").value("CUSTOMER"))
+                .andExpect(jsonPath("$.data.status").value("ACTIVE"));
+
+        verify(userService, times(1)).verifyOtpAndRegister(any(VerifyOtpDto.class));
     }
 
     @Test
-    @DisplayName("POST /api/users/register - Success: Should work without phone number")
-    void testRegister_Success_WithoutPhoneNumber() throws Exception {
-        // Arrange
-        validRegisterDto.setPhoneNumber(null);
+    void verifyOtp_InvalidOtpCode() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("Invalid OTP code");
+        when(userService.verifyOtpAndRegister(any(VerifyOtpDto.class))).thenReturn(response);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/users/register")
+        // When & Then
+        mockMvc.perform(post("/api/users/verify-otp")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validRegisterDto)))
-                .andDo(print())
+                .content(objectMapper.writeValueAsString(verifyOtpDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultCd").value(0));
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("Invalid OTP code"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).verifyOtpAndRegister(any(VerifyOtpDto.class));
+    }
+
+    @Test
+    void verifyOtp_OtpExpired() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("OTP code has expired. Please request a new one.");
+        when(userService.verifyOtpAndRegister(any(VerifyOtpDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(verifyOtpDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("OTP code has expired. Please request a new one."));
+
+        verify(userService, times(1)).verifyOtpAndRegister(any(VerifyOtpDto.class));
+    }
+
+    @Test
+    void verifyOtp_NoPendingRegistration() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("No pending registration found for this email");
+        when(userService.verifyOtpAndRegister(any(VerifyOtpDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(verifyOtpDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("No pending registration found for this email"));
+
+        verify(userService, times(1)).verifyOtpAndRegister(any(VerifyOtpDto.class));
+    }
+
+    @Test
+    void verifyOtp_MissingEmail() throws Exception {
+        // Given
+        verifyOtpDto.setEmail(null);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(verifyOtpDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).verifyOtpAndRegister(any(VerifyOtpDto.class));
+    }
+
+    @Test
+    void verifyOtp_InvalidEmail() throws Exception {
+        // Given
+        verifyOtpDto.setEmail("invalid-email");
+
+        // When & Then
+        mockMvc.perform(post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(verifyOtpDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).verifyOtpAndRegister(any(VerifyOtpDto.class));
+    }
+
+    @Test
+    void verifyOtp_MissingOtpCode() throws Exception {
+        // Given
+        verifyOtpDto.setOtpCode(null);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(verifyOtpDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).verifyOtpAndRegister(any(VerifyOtpDto.class));
+    }
+
+    @Test
+    void verifyOtp_InvalidOtpCodeLength() throws Exception {
+        // Given
+        verifyOtpDto.setOtpCode("123"); // Less than 6 digits
+
+        // When & Then
+        mockMvc.perform(post("/api/users/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(verifyOtpDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).verifyOtpAndRegister(any(VerifyOtpDto.class));
+    }
+
+    // ==================== OTHER ENDPOINTS TESTS ====================
+
+    @Test
+    void getUsers_Success() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/users")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(userService, times(1)).getUsers(any(), any(), any(), any());
+    }
+
+    @Test
+    void getUserById_Success() throws Exception {
+        // Given
+        when(userService.getUserById(1)).thenReturn(userDto);
+
+        // When & Then
+        mockMvc.perform(get("/api/users/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.fullName").value("Test User"))
+                .andExpect(jsonPath("$.email").value("test@example.com"));
+
+        verify(userService, times(1)).getUserById(1);
+    }
+
+    @Test
+    void verifyEmail_Success() throws Exception {
+        // Given
+        ApiResponse<String> response = ApiResponse.success(
+                "Email verified successfully. Your account is now active.",
+                null);
+        when(userService.verifyEmail(anyString())).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(get("/api/users/verify-email")
+                .param("token", "test-token-123")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(0))
+                .andExpect(jsonPath("$.message").value("Email verified successfully. Your account is now active."));
+
+        verify(userService, times(1)).verifyEmail("test-token-123");
     }
 }

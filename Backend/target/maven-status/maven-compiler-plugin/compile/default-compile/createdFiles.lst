@@ -7,6 +7,7 @@ com\fruitshop\backend\repository\OrderRepository.class
 com\fruitshop\backend\model\OrderItem.class
 com\fruitshop\backend\model\User$UserStatusConverter.class
 com\fruitshop\backend\model\Shop.class
+com\fruitshop\backend\model\PendingRegistration.class
 com\fruitshop\backend\model\Product.class
 com\fruitshop\backend\config\WebConfig$2.class
 com\fruitshop\backend\service\ShopService.class
@@ -22,10 +23,13 @@ com\fruitshop\backend\repository\CartItemRepository.class
 com\fruitshop\backend\model\User$UserStatus.class
 com\fruitshop\backend\service\UserService.class
 com\fruitshop\backend\model\EmailLog.class
+com\fruitshop\backend\service\impl\EmailServiceImpl.class
 com\fruitshop\backend\model\User.class
 com\fruitshop\backend\repository\ShopDocumentRepository.class
 com\fruitshop\backend\model\Refund$RefundStatus.class
+com\fruitshop\backend\dto\VerifyOtpDto.class
 com\fruitshop\backend\config\WebConfig$1.class
+com\fruitshop\backend\service\EmailService.class
 com\fruitshop\backend\dto\ShopRejectDto.class
 com\fruitshop\backend\FruitShopApplication.class
 com\fruitshop\backend\model\ShopDocument$DocumentType.class
@@ -37,6 +41,7 @@ com\fruitshop\backend\dto\RegisterDto.class
 com\fruitshop\backend\model\OrderVoucherId.class
 com\fruitshop\backend\repository\CategoryRepository.class
 com\fruitshop\backend\model\Review.class
+com\fruitshop\backend\repository\PendingRegistrationRepository.class
 com\fruitshop\backend\service\impl\UserServiceImpl.class
 com\fruitshop\backend\model\Shop$ShopStatus.class
 com\fruitshop\backend\model\Transaction$PaymentMethod.class
@@ -45,6 +50,7 @@ com\fruitshop\backend\service\impl\CategoryServiceImpl.class
 com\fruitshop\backend\controller\UserController.class
 com\fruitshop\backend\dto\ShopDto.class
 com\fruitshop\backend\model\EmailLog$EmailStatus.class
+com\fruitshop\backend\repository\EmailLogRepository.class
 com\fruitshop\backend\model\Fruit.class
 com\fruitshop\backend\repository\ShopRepository.class
 com\fruitshop\backend\repository\TransactionRepository.class
