@@ -2,7 +2,9 @@ package com.fruitshop.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fruitshop.backend.dto.ApiResponse;
+import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
+import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
 import com.fruitshop.backend.model.User;
@@ -18,9 +20,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
@@ -37,6 +42,8 @@ class UserControllerIntegrationTest {
 
     private RegisterDto registerDto;
     private VerifyOtpDto verifyOtpDto;
+    private LoginDto loginDto;
+    private UpdateProfileDto updateProfileDto;
     private UserDto userDto;
 
     @BeforeEach
@@ -52,6 +59,16 @@ class UserControllerIntegrationTest {
         verifyOtpDto = new VerifyOtpDto();
         verifyOtpDto.setEmail("test@example.com");
         verifyOtpDto.setOtpCode("123456");
+
+        // Setup LoginDto
+        loginDto = new LoginDto();
+        loginDto.setEmail("test@example.com");
+        loginDto.setPassword("password123");
+
+        // Setup UpdateProfileDto
+        updateProfileDto = new UpdateProfileDto();
+        updateProfileDto.setFullName("Updated Name");
+        updateProfileDto.setPhoneNumber("0912345678");
 
         // Setup UserDto
         userDto = new UserDto();
@@ -353,5 +370,361 @@ class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Email verified successfully. Your account is now active."));
 
         verify(userService, times(1)).verifyEmail("test-token-123");
+    }
+
+    // ==================== LOGIN TESTS ====================
+
+    @Test
+    void login_Success() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.success("Login successful", userDto);
+        when(userService.login(any(LoginDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(0))
+                .andExpect(jsonPath("$.message").value("Login successful"))
+                .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.email").value("test@example.com"))
+                .andExpect(jsonPath("$.data.fullName").value("Test User"));
+
+        verify(userService, times(1)).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_InvalidEmailFormat() throws Exception {
+        // Given
+        loginDto.setEmail("invalid-email");
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_MissingEmail() throws Exception {
+        // Given
+        loginDto.setEmail(null);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_MissingPassword() throws Exception {
+        // Given
+        loginDto.setPassword(null);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_EmptyEmail() throws Exception {
+        // Given
+        loginDto.setEmail("");
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_EmptyPassword() throws Exception {
+        // Given
+        loginDto.setPassword("");
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_UserNotFound() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("Invalid email or password");
+        when(userService.login(any(LoginDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("Invalid email or password"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_WrongPassword() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("Invalid email or password");
+        when(userService.login(any(LoginDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("Invalid email or password"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_AccountInactive() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("Your account has been deactivated. Please contact support.");
+        when(userService.login(any(LoginDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("Your account has been deactivated. Please contact support."))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_AccountBanned() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("Your account has been banned. Please contact support.");
+        when(userService.login(any(LoginDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("Your account has been banned. Please contact support."))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).login(any(LoginDto.class));
+    }
+
+    @Test
+    void login_EmailNotVerified() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("Please verify your email before logging in.");
+        when(userService.login(any(LoginDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("Please verify your email before logging in."))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).login(any(LoginDto.class));
+    }
+
+    // ==================== UPDATE PROFILE TESTS ====================
+
+    @Test
+    void updateProfile_Success() throws Exception {
+        // Given
+        UserDto updatedUser = new UserDto();
+        updatedUser.setUserId(1);
+        updatedUser.setFullName("Updated Name");
+        updatedUser.setEmail("test@example.com");
+        updatedUser.setPhoneNumber("0912345678");
+        updatedUser.setRole(User.Role.CUSTOMER);
+        updatedUser.setStatus(User.UserStatus.ACTIVE);
+        updatedUser.setCreatedAt(LocalDateTime.now());
+
+        ApiResponse<UserDto> response = ApiResponse.success("Profile updated successfully", updatedUser);
+        when(userService.updateProfile(eq(1), any(UpdateProfileDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(put("/api/users/1/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(0))
+                .andExpect(jsonPath("$.message").value("Profile updated successfully"))
+                .andExpect(jsonPath("$.data.fullName").value("Updated Name"))
+                .andExpect(jsonPath("$.data.phoneNumber").value("0912345678"));
+
+        verify(userService, times(1)).updateProfile(eq(1), any(UpdateProfileDto.class));
+    }
+
+    @Test
+    void updateProfile_UserNotFound() throws Exception {
+        // Given
+        ApiResponse<UserDto> response = ApiResponse.error("User not found");
+        when(userService.updateProfile(eq(999), any(UpdateProfileDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(put("/api/users/999/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("User not found"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).updateProfile(eq(999), any(UpdateProfileDto.class));
+    }
+
+    @Test
+    void updateProfile_InvalidFullName() throws Exception {
+        // Given
+        updateProfileDto.setFullName(""); // Empty full name
+
+        // When & Then
+        mockMvc.perform(put("/api/users/1/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).updateProfile(anyInt(), any(UpdateProfileDto.class));
+    }
+
+    @Test
+    void updateProfile_FullNameTooShort() throws Exception {
+        // Given
+        updateProfileDto.setFullName("A"); // Too short (min 2 characters)
+
+        // When & Then
+        mockMvc.perform(put("/api/users/1/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).updateProfile(anyInt(), any(UpdateProfileDto.class));
+    }
+
+    @Test
+    void updateProfile_InvalidPhoneNumber() throws Exception {
+        // Given
+        updateProfileDto.setPhoneNumber("123"); // Invalid phone format
+
+        // When & Then
+        mockMvc.perform(put("/api/users/1/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).updateProfile(anyInt(), any(UpdateProfileDto.class));
+    }
+
+    @Test
+    void updateProfile_WithPasswordChange_MissingCurrentPassword() throws Exception {
+        // Given
+        updateProfileDto.setNewPassword("newPassword456");
+        ApiResponse<UserDto> response = ApiResponse.error("Current password is required to change password");
+        when(userService.updateProfile(eq(1), any(UpdateProfileDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(put("/api/users/1/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("Current password is required to change password"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).updateProfile(eq(1), any(UpdateProfileDto.class));
+    }
+
+    @Test
+    void updateProfile_WithPasswordChange_WrongCurrentPassword() throws Exception {
+        // Given
+        updateProfileDto.setCurrentPassword("wrongPassword");
+        updateProfileDto.setNewPassword("newPassword456");
+        ApiResponse<UserDto> response = ApiResponse.error("Current password is incorrect");
+        when(userService.updateProfile(eq(1), any(UpdateProfileDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(put("/api/users/1/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(1))
+                .andExpect(jsonPath("$.message").value("Current password is incorrect"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(userService, times(1)).updateProfile(eq(1), any(UpdateProfileDto.class));
+    }
+
+    @Test
+    void updateProfile_WithPasswordChange_Success() throws Exception {
+        // Given
+        updateProfileDto.setCurrentPassword("password123");
+        updateProfileDto.setNewPassword("newPassword456");
+
+        UserDto updatedUser = new UserDto();
+        updatedUser.setUserId(1);
+        updatedUser.setFullName("Updated Name");
+        updatedUser.setEmail("test@example.com");
+        updatedUser.setPhoneNumber("0912345678");
+        updatedUser.setRole(User.Role.CUSTOMER);
+        updatedUser.setStatus(User.UserStatus.ACTIVE);
+        updatedUser.setCreatedAt(LocalDateTime.now());
+
+        ApiResponse<UserDto> response = ApiResponse.success("Profile updated successfully", updatedUser);
+        when(userService.updateProfile(eq(1), any(UpdateProfileDto.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(put("/api/users/1/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCd").value(0))
+                .andExpect(jsonPath("$.message").value("Profile updated successfully"))
+                .andExpect(jsonPath("$.data.userId").value(1));
+
+        verify(userService, times(1)).updateProfile(eq(1), any(UpdateProfileDto.class));
+    }
+
+    @Test
+    void updateProfile_NewPasswordTooShort() throws Exception {
+        // Given
+        updateProfileDto.setNewPassword("12345"); // Too short (min 6 characters)
+        updateProfileDto.setCurrentPassword("password123");
+
+        // When & Then
+        mockMvc.perform(put("/api/users/1/profile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProfileDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).updateProfile(anyInt(), any(UpdateProfileDto.class));
     }
 }

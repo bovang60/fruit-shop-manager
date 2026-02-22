@@ -1,7 +1,9 @@
 package com.fruitshop.backend.service.impl;
 
 import com.fruitshop.backend.dto.ApiResponse;
+import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
+import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
 import com.fruitshop.backend.model.PendingRegistration;
@@ -187,6 +189,83 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return ApiResponse.success("Email verified successfully. Your account is now active.", null);
+    }
+
+    @Override
+    public ApiResponse<UserDto> login(LoginDto loginDto) {
+        // Tìm user theo email
+        User user = userRepository.findByEmail(loginDto.getEmail())
+                .orElse(null);
+
+        if (user == null) {
+            return ApiResponse.error("Invalid email or password");
+        }
+
+        // Kiểm tra password (TODO: Cần hash password với BCrypt trong production)
+        if (!user.getPassword().equals(loginDto.getPassword())) {
+            return ApiResponse.error("Invalid email or password");
+        }
+
+        // Kiểm tra status của user
+        if (user.getStatus() == User.UserStatus.INACTIVE) {
+            return ApiResponse.error("Your account has been deactivated. Please contact support.");
+        }
+
+        if (user.getStatus() == User.UserStatus.BANNED) {
+            return ApiResponse.error("Your account has been banned. Please contact support.");
+        }
+
+        // Kiểm tra email đã verify chưa (nếu dùng email verification)
+        if (!user.getEmailVerified()) {
+            return ApiResponse.error("Please verify your email before logging in.");
+        }
+
+        // Login thành công - Return user info
+        UserDto userDto = convertToDto(user);
+        return ApiResponse.success("Login successful", userDto);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<UserDto> updateProfile(Integer userId, UpdateProfileDto updateProfileDto) {
+        // Tìm user
+        User user = userRepository.findById(userId)
+                .orElse(null);
+
+        if (user == null) {
+            return ApiResponse.error("User not found");
+        }
+
+        // Nếu muốn đổi password, kiểm tra password hiện tại
+        if (updateProfileDto.getNewPassword() != null && !updateProfileDto.getNewPassword().isEmpty()) {
+            // Kiểm tra current password có được cung cấp không
+            if (updateProfileDto.getCurrentPassword() == null || updateProfileDto.getCurrentPassword().isEmpty()) {
+                return ApiResponse.error("Current password is required to change password");
+            }
+
+            // Verify current password (TODO: Cần dùng BCrypt trong production)
+            if (!user.getPassword().equals(updateProfileDto.getCurrentPassword())) {
+                return ApiResponse.error("Current password is incorrect");
+            }
+
+            // Update password mới (TODO: Cần hash với BCrypt trong production)
+            user.setPassword(updateProfileDto.getNewPassword());
+        }
+
+        // Update full name
+        user.setFullName(updateProfileDto.getFullName());
+
+        // Update phone number (if provided)
+        if (updateProfileDto.getPhoneNumber() != null && !updateProfileDto.getPhoneNumber().isEmpty()) {
+            user.setPhoneNumber(updateProfileDto.getPhoneNumber());
+        }
+
+        // Save changes
+        userRepository.save(user);
+
+        // Return updated user info
+        UserDto userDto = convertToDto(user);
+        return ApiResponse.success("Profile updated successfully", userDto);
     }
 
     private UserDto convertToDto(User user) {

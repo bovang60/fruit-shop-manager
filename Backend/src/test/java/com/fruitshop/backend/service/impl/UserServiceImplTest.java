@@ -1,7 +1,9 @@
 package com.fruitshop.backend.service.impl;
 
 import com.fruitshop.backend.dto.ApiResponse;
+import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
+import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
 import com.fruitshop.backend.model.PendingRegistration;
@@ -40,6 +42,8 @@ class UserServiceImplTest {
 
     private RegisterDto registerDto;
     private VerifyOtpDto verifyOtpDto;
+    private LoginDto loginDto;
+    private UpdateProfileDto updateProfileDto;
     private PendingRegistration pendingRegistration;
     private User user;
 
@@ -56,6 +60,16 @@ class UserServiceImplTest {
         verifyOtpDto = new VerifyOtpDto();
         verifyOtpDto.setEmail("test@example.com");
         verifyOtpDto.setOtpCode("123456");
+
+        // Setup LoginDto
+        loginDto = new LoginDto();
+        loginDto.setEmail("test@example.com");
+        loginDto.setPassword("password123");
+
+        // Setup UpdateProfileDto
+        updateProfileDto = new UpdateProfileDto();
+        updateProfileDto.setFullName("Updated Name");
+        updateProfileDto.setPhoneNumber("0912345678");
 
         // Setup PendingRegistration
         pendingRegistration = new PendingRegistration();
@@ -325,5 +339,240 @@ class UserServiceImplTest {
         assertEquals(user.getRole(), result.getRole());
         assertEquals(user.getStatus(), result.getStatus());
         assertEquals(user.getCreatedAt(), result.getCreatedAt());
+    }
+
+    // ==================== LOGIN TESTS ====================
+
+    @Test
+    void login_Success() {
+        // Given
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.of(user));
+
+        // When
+        ApiResponse<UserDto> response = userService.login(loginDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(0, response.getResultCd());
+        assertEquals("Login successful", response.getMessage());
+        assertNotNull(response.getData());
+        assertEquals(user.getEmail(), response.getData().getEmail());
+        assertEquals(user.getFullName(), response.getData().getFullName());
+
+        verify(userRepository, times(1)).findByEmail(loginDto.getEmail());
+    }
+
+    @Test
+    void login_UserNotFound() {
+        // Given
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.empty());
+
+        // When
+        ApiResponse<UserDto> response = userService.login(loginDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getResultCd());
+        assertEquals("Invalid email or password", response.getMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findByEmail(loginDto.getEmail());
+    }
+
+    @Test
+    void login_WrongPassword() {
+        // Given
+        loginDto.setPassword("wrongpassword");
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.of(user));
+
+        // When
+        ApiResponse<UserDto> response = userService.login(loginDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getResultCd());
+        assertEquals("Invalid email or password", response.getMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findByEmail(loginDto.getEmail());
+    }
+
+    @Test
+    void login_AccountInactive() {
+        // Given
+        user.setStatus(User.UserStatus.INACTIVE);
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.of(user));
+
+        // When
+        ApiResponse<UserDto> response = userService.login(loginDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getResultCd());
+        assertEquals("Your account has been deactivated. Please contact support.", response.getMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findByEmail(loginDto.getEmail());
+    }
+
+    @Test
+    void login_AccountBanned() {
+        // Given
+        user.setStatus(User.UserStatus.BANNED);
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.of(user));
+
+        // When
+        ApiResponse<UserDto> response = userService.login(loginDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getResultCd());
+        assertEquals("Your account has been banned. Please contact support.", response.getMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findByEmail(loginDto.getEmail());
+    }
+
+    @Test
+    void login_EmailNotVerified() {
+        // Given
+        user.setEmailVerified(false);
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.of(user));
+
+        // When
+        ApiResponse<UserDto> response = userService.login(loginDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getResultCd());
+        assertEquals("Please verify your email before logging in.", response.getMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findByEmail(loginDto.getEmail());
+    }
+
+    // ==================== UPDATE PROFILE TESTS ====================
+
+    @Test
+    void updateProfile_Success() {
+        // Given
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        // When
+        ApiResponse<UserDto> response = userService.updateProfile(1, updateProfileDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(0, response.getResultCd());
+        assertEquals("Profile updated successfully", response.getMessage());
+        assertNotNull(response.getData());
+        assertEquals("Updated Name", user.getFullName());
+        assertEquals("0912345678", user.getPhoneNumber());
+
+        verify(userRepository, times(1)).findById(1);
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void updateProfile_UserNotFound() {
+        // Given
+        when(userRepository.findById(999)).thenReturn(Optional.empty());
+
+        // When
+        ApiResponse<UserDto> response = userService.updateProfile(999, updateProfileDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getResultCd());
+        assertEquals("User not found", response.getMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findById(999);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateProfile_WithPasswordChange_Success() {
+        // Given
+        updateProfileDto.setCurrentPassword("password123");
+        updateProfileDto.setNewPassword("newPassword456");
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        // When
+        ApiResponse<UserDto> response = userService.updateProfile(1, updateProfileDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(0, response.getResultCd());
+        assertEquals("Profile updated successfully", response.getMessage());
+        assertNotNull(response.getData());
+        assertEquals("newPassword456", user.getPassword());
+
+        verify(userRepository, times(1)).findById(1);
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void updateProfile_WithPasswordChange_MissingCurrentPassword() {
+        // Given
+        updateProfileDto.setNewPassword("newPassword456");
+        updateProfileDto.setCurrentPassword(null);
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+
+        // When
+        ApiResponse<UserDto> response = userService.updateProfile(1, updateProfileDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getResultCd());
+        assertEquals("Current password is required to change password", response.getMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findById(1);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateProfile_WithPasswordChange_WrongCurrentPassword() {
+        // Given
+        updateProfileDto.setCurrentPassword("wrongPassword");
+        updateProfileDto.setNewPassword("newPassword456");
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+
+        // When
+        ApiResponse<UserDto> response = userService.updateProfile(1, updateProfileDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getResultCd());
+        assertEquals("Current password is incorrect", response.getMessage());
+        assertNull(response.getData());
+
+        verify(userRepository, times(1)).findById(1);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateProfile_OnlyFullNameUpdate() {
+        // Given
+        updateProfileDto.setPhoneNumber(null);
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        // When
+        ApiResponse<UserDto> response = userService.updateProfile(1, updateProfileDto);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(0, response.getResultCd());
+        assertEquals("Profile updated successfully", response.getMessage());
+        assertNotNull(response.getData());
+        assertEquals("Updated Name", user.getFullName());
+        assertEquals("0987654321", user.getPhoneNumber()); // Should not change
+
+        verify(userRepository, times(1)).findById(1);
+        verify(userRepository, times(1)).save(any(User.class));
     }
 }

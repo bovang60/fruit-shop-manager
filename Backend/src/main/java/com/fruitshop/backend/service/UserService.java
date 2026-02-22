@@ -1,7 +1,9 @@
 package com.fruitshop.backend.service;
 
 import com.fruitshop.backend.dto.ApiResponse;
+import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
+import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
 import com.fruitshop.backend.model.User;
@@ -20,4 +22,8 @@ public interface UserService {
     ApiResponse<UserDto> verifyOtpAndRegister(VerifyOtpDto verifyOtpDto);
 
     ApiResponse<String> verifyEmail(String token);
+
+    ApiResponse<UserDto> login(LoginDto loginDto);
+
+    ApiResponse<UserDto> updateProfile(Integer userId, UpdateProfileDto updateProfileDto);
 }
