@@ -61,6 +61,15 @@ public class User {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "email_verified")
+    private Boolean emailVerified = false;
+
+    @Column(name = "email_verification_token")
+    private String emailVerificationToken;
+
+    @Column(name = "token_expiry_date")
+    private LocalDateTime tokenExpiryDate;
+
     public enum Role {
         CUSTOMER, SELLER, ADMIN;
 
