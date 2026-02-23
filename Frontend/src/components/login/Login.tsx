@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import LoginView from './LoginView'
+import { login, saveUserToStorage, getDisplayMessage } from '../../services/authService'
 
 type LoginProps = {
   onSuccess?: () => void
@@ -7,10 +9,11 @@ type LoginProps = {
 }
 
 export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
 
   const validate = (): boolean => {
     const newErrors: { email?: string; password?: string } = {}
@@ -31,22 +34,45 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!validate()) return
     
     setLoading(true)
-    // TODO: connect API
-    setTimeout(() => {
+    setErrors({}) // Clear previous errors
+    
+    try {
+      const result = await login({ email, password })
+      
+      if (result.resultCd === 0 && result.data) {
+        // Login successful
+        saveUserToStorage(result.data)
+        // alert(`Đăng nhập thành công! Chào mừng ${result.data.fullName}`)
+        if (onSuccess) {
+          onSuccess()
+        } else {
+          navigate('/home')
+        }
+      } else {
+        // Business logic error
+        const displayMessage = getDisplayMessage(result.message || 'Đăng nhập thất bại')
+        setErrors({ general: displayMessage })
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại!' })
+    } finally {
       setLoading(false)
-      alert(`Login successful (mock): ${email}`)
-      onSuccess?.()
-    }, 600)
+    }
   }
 
   const handleGoToRegister = () => {
-    onGoToRegister?.()
+    if (onGoToRegister) {
+      onGoToRegister()
+    } else {
+      navigate('/register')
+    }
   }
 
   return (
