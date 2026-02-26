@@ -1,5 +1,13 @@
 .login-root {
-  font-family: "Plus Jakarta Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family:
+    "Plus Jakarta Sans",
+    Inter,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
   color: #121811;
   background: #f6f8f5;
   min-height: 100vh;
@@ -37,7 +45,7 @@
 .hero-image {
   position: absolute;
   inset: 0;
-  background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCwuXLb9DluFFyaaAPcVzKciDnWX1ZeRncnyYxO5WwjRYeNRWEIF2iJbO99u2JmdL4nqJBBGnSATY7pJxFcKuOAlXYMD2ey-z7el2IvKFonAIUABCaEDrxnRsgc5dWlNd16MMLop15f0gD6uv0a8bTjomej99MnQVzitQaRzvnBnusaL4lezEKen5SzA0NoojCJdVD08fdmm3ifZHCkpI0qWKVAg_h9b768n0YY8Gjf2jrObQr3dJnYf_gBz_GmwAvXP1iVLe50nEc');
+  background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwuXLb9DluFFyaaAPcVzKciDnWX1ZeRncnyYxO5WwjRYeNRWEIF2iJbO99u2JmdL4nqJBBGnSATY7pJxFcKuOAlXYMD2ey-z7el2IvKFonAIUABCaEDrxnRsgc5dWlNd16MMLop15f0gD6uv0a8bTjomej99MnQVzitQaRzvnBnusaL4lezEKen5SzA0NoojCJdVD08fdmm3ifZHCkpI0qWKVAg_h9b768n0YY8Gjf2jrObQr3dJnYf_gBz_GmwAvXP1iVLe50nEc");
   background-size: cover;
   background-position: center;
 }

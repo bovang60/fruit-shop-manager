@@ -36,9 +36,6 @@ export async function callApi<TRequest = any, TResponse = any>(
   const method = requestDto ? "POST" : "GET";
   const fullUrl = `${API_BASE_URL}${url}`;
 
-  // 🔍 DEBUG: Log request
-  console.log(`🚀 [${method}] ${url}`, requestDto ? { body: requestDto } : "");
-
   try {
     const response = await fetch(fullUrl, {
       method,
@@ -48,18 +45,10 @@ export async function callApi<TRequest = any, TResponse = any>(
       body: requestDto ? JSON.stringify(requestDto) : undefined,
     });
 
-    // 🔍 DEBUG: Log response status
-    console.log(`📡 [${response.status}] ${url}`);
-
     const data = await response.json();
-
-    // 🔍 DEBUG: Log response data
-    console.log(`✅ Response from ${url}:`, data);
 
     return data as TResponse;
   } catch (error) {
-    // 🔍 DEBUG: Log error
-    console.error(`❌ API call failed [${method}] ${url}:`, error);
     throw error;
   }
 }
@@ -91,9 +80,6 @@ export async function callApiWithMethod<TRequest = any, TResponse = any>(
 ): Promise<TResponse> {
   const fullUrl = `${API_BASE_URL}${url}`;
 
-  // 🔍 DEBUG: Log request
-  console.log(`🚀 [${method}] ${url}`, requestDto ? { body: requestDto } : "");
-
   try {
     const response = await fetch(fullUrl, {
       method,
@@ -104,18 +90,10 @@ export async function callApiWithMethod<TRequest = any, TResponse = any>(
         requestDto && method !== "GET" ? JSON.stringify(requestDto) : undefined,
     });
 
-    // 🔍 DEBUG: Log response status
-    console.log(`📡 [${response.status}] ${url}`);
-
     const data = await response.json();
-
-    // 🔍 DEBUG: Log response data
-    console.log(`✅ Response from ${url}:`, data);
 
     return data as TResponse;
   } catch (error) {
-    // 🔍 DEBUG: Log error
-    console.error(`❌ API call failed [${method}] ${url}:`, error);
     throw error;
   }
 }
