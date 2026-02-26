@@ -1,5 +1,13 @@
 .register-root {
-  font-family: "Plus Jakarta Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family:
+    "Plus Jakarta Sans",
+    Inter,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
   color: #121811;
   background: #f6f8f5;
   min-height: 100vh;
@@ -203,6 +211,68 @@
   transform: none;
 }
 
+/* Primary Button (CTA) */
+button.primary {
+  width: 100%;
+  height: 3rem;
+  padding: 0 2rem;
+  border-radius: 9999px;
+  border: none;
+  background: #33f20d;
+  color: #121811;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button.primary:hover:not(:disabled) {
+  background: #2dd60c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(51, 242, 13, 0.3);
+}
+
+button.primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #a0a0a0;
+}
+
+/* Secondary Button */
+button.secondary {
+  width: 100%;
+  height: 3rem;
+  padding: 0 2rem;
+  border-radius: 9999px;
+  border: 2px solid #33f20d;
+  background: white;
+  color: #33f20d;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button.secondary:hover:not(:disabled) {
+  background: #f0ffe6;
+  transform: translateY(-1px);
+}
+
+button.secondary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button.secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #a0a0a0;
+  color: #a0a0a0;
+}
+
 /* Login Link */
 .login-link {
   display: flex;
@@ -320,7 +390,7 @@
   .hero-image {
     position: absolute;
     inset: 0;
-    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA-s1uiVZK2wz1oqTtygxNLYKcjj8KumE06ZzebePiBfJ5M9bt48ZMYu-mnO8AchzZbBfwtwx1fvkU2LTfTolW5Xd_9fbPdPWX7vPaAZUYJog0Opup64xtrmQ4v1ZhPPf6ki_cYlQG1lfSBFwjPZ2RldiRMsTcUsj5-BS7qI8OYuvOIBtxGE51VootA60t72PTu2IlN2WO5e7AtiqDpBrxWX8YkqLRbdwfYgttF7Iec1jXfrRTtrOmZIpB8KsNC_TeB3M2kC_KJ2cg');
+    background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA-s1uiVZK2wz1oqTtygxNLYKcjj8KumE06ZzebePiBfJ5M9bt48ZMYu-mnO8AchzZbBfwtwx1fvkU2LTfTolW5Xd_9fbPdPWX7vPaAZUYJog0Opup64xtrmQ4v1ZhPPf6ki_cYlQG1lfSBFwjPZ2RldiRMsTcUsj5-BS7qI8OYuvOIBtxGE51VootA60t72PTu2IlN2WO5e7AtiqDpBrxWX8YkqLRbdwfYgttF7Iec1jXfrRTtrOmZIpB8KsNC_TeB3M2kC_KJ2cg");
     background-size: cover;
     background-position: center;
   }

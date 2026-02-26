@@ -6,7 +6,7 @@ export type Props = {
   email: string
   password: string
   loading: boolean
-  errors: { email?: string; password?: string }
+  errors: { email?: string; password?: string; general?: string }
   onEmailChange: (v: string) => void
   onPasswordChange: (v: string) => void
   onSubmit: (e: React.FormEvent) => void
@@ -54,6 +54,13 @@ export default function LoginView({
             </div>
 
             <form className="login-form" onSubmit={onSubmit}>
+              {/* General Error Message */}
+              {errors.general && (
+                <div className="error-message" style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#fee', border: '1px solid #fcc', borderRadius: '4px', color: '#c00' }}>
+                  {errors.general}
+                </div>
+              )}
+
               {/* Email Field */}
               <div className="field">
                 <label htmlFor="email">Email or Username</label>

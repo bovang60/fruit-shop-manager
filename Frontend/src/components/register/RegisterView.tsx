@@ -54,6 +54,23 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
             </div>
 
             <form className="register-form" onSubmit={onSubmit} noValidate>
+              {/* General Error Message */}
+              {errors.general && (
+                <div
+                  className="error-message"
+                  style={{
+                    marginBottom: '1rem',
+                    padding: '0.75rem',
+                    backgroundColor: '#fee',
+                    border: '1px solid #fcc',
+                    borderRadius: '4px',
+                    color: '#c00',
+                  }}
+                >
+                  {errors.general}
+                </div>
+              )}
+
               {/* Full Name */}
               <div className="field">
                 <label htmlFor="fullName">Full Name</label>
