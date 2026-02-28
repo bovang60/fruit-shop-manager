@@ -13,6 +13,7 @@ import lombok.Data;
  * 1. User nhập mật khẩu hiện tại để xác thực
  * 2. User nhập mật khẩu mới (phải khác mật khẩu cũ)
  * 3. User xác nhận lại mật khẩu mới
+ * 4. System verify và update password
  * 
  * Validation:
  * - currentPassword: Bắt buộc
