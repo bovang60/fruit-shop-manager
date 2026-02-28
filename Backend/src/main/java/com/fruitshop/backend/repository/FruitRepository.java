@@ -1,14 +1,59 @@
-package com.fruitshop.backend.repository;
+package com.fruitshop.backend.service.impl;
 
 import com.fruitshop.backend.model.Fruit;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import com.fruitshop.backend.model.Shop;
+import com.fruitshop.backend.repository.FruitRepository;
+import com.fruitshop.backend.repository.ShopRepository; // Giả định đã có
+import com.fruitshop.backend.service.FruitService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Repository
-public interface FruitRepository extends JpaRepository<Fruit, Integer> {
-    Page<Fruit> findByFruitNameContainingIgnoreCase(String name, Pageable pageable);
-    Page<Fruit> findByShopShopId(Integer shopId, Pageable pageable);
-    Page<Fruit> findByCategoryCategoryId(Integer categoryId, Pageable pageable);
+@Service
+@RequiredArgsConstructor
+public class FruitServiceImpl implements FruitService {
+
+    private final FruitRepository fruitRepository;
+    private final ShopRepository shopRepository;
+
+    @Override
+    @Transactional
+    public Fruit createFruit(Fruit fruit, Integer shopId) {
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cửa hàng!"));
+        fruit.setShop(shop);
+        return fruitRepository.save(fruit);
+    }
+
+    @Override
+    @Transactional
+    public Fruit updateFruit(Integer fruitId, Fruit fruitDetails) {
+        Fruit existingFruit = fruitRepository.findById(fruitId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
+
+        // Chỉ cập nhật các trường cần thiết
+        existingFruit.setFruitName(fruitDetails.getFruitName());
+        existingFruit.setPrice(fruitDetails.getPrice());
+        existingFruit.setStockQuantity(fruitDetails.getStockQuantity());
+        existingFruit.setCategory(fruitDetails.getCategory());
+        existingFruit.setDescription(fruitDetails.getDescription());
+        existingFruit.setImageUrl(fruitDetails.getImageUrl());
+        existingFruit.setStatus(fruitDetails.getStatus());
+
+        return fruitRepository.save(existingFruit);
+    }
+
+    @Override
+    @Transactional
+    public void deleteFruit(Integer fruitId) {
+        if (!fruitRepository.existsById(fruitId)) {
+            throw new RuntimeException("Sản phẩm không tồn tại!");
+        }
+        fruitRepository.deleteById(fruitId);
+    }
+
+    @Override
+    public List<Fruit> getFruitsByShop(Integer shopId) {
+        return fruitRepository.findByShop_ShopId(shopId);
+    }
 }
