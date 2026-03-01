@@ -111,11 +111,11 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
               <p className="content-subtitle">Showing {displayed.length} results for "All Fruits"</p>
             </div>
             <div className="content-actions">
-              <input 
-                className="search-input" 
-                placeholder="Search fruits..." 
-                value={query} 
-                onChange={(e) => onQueryChange(e.target.value)} 
+              <input
+                className="search-input"
+                placeholder="Search fruits..."
+                value={query}
+                onChange={(e) => onQueryChange(e.target.value)}
               />
               <select className="sort-select">
                 <option>Sort by: Popularity</option>
@@ -147,8 +147,8 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
                     </div>
                     <p className="product-price-modern">{p.price}</p>
                   </div>
-                  <button 
-                    className="add-to-cart-btn" 
+                  <button
+                    className="add-to-cart-btn"
                     onClick={() => alert('Đã thêm vào giỏ (mock)')}
                   >
                     🛒 Add to Cart
@@ -175,11 +175,11 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {[1,2,3,4].map(i => (
+                {[1, 2, 3, 4].map(i => (
                   <div key={i} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')`}}></div>
+                    <div className="mini-card-img" style={{ backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')` }}></div>
                     <p className="mini-card-name">Fruit {i}</p>
-                    <p className="mini-card-price">${(i*3.5+2).toFixed(2)}</p>
+                    <p className="mini-card-price">${(i * 3.5 + 2).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
@@ -198,11 +198,11 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {[5,6,7].map(i => (
+                {[5, 6, 7].map(i => (
                   <div key={i} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')`}}></div>
+                    <div className="mini-card-img" style={{ backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')` }}></div>
                     <p className="mini-card-name">Fruit {i}</p>
-                    <p className="mini-card-price">${(i*3.5+2).toFixed(2)}</p>
+                    <p className="mini-card-price">${(i * 3.5 + 2).toFixed(2)}</p>
                   </div>
                 ))}
               </div>

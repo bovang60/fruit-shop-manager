@@ -8,6 +8,370 @@ Hệ thống API Client cung cấp một cách tiếp cận thống nhất và d
 
 ---
 
+## 🤖 Integration Guide for AI Agents
+
+### Cách tích hợp một API endpoint mới vào hệ thống
+
+**⚠️ QUAN TRỌNG:** KHÔNG sửa trực tiếp vào file `src/utils/apiClient.ts`. File này là core utility và đã hoàn thiện.
+
+### 📁 Folder Structure
+
+```
+Frontend/
+├── src/
+│   ├── utils/
+│   │   └── apiClient.ts              ❌ KHÔNG SỬA - Core API client (đã hoàn thiện)
+│   │
+│   ├── services/                      ✅ THÊM CODE VÀO ĐÂY
+│   │   ├── authService.ts            ← Authentication APIs
+│   │   ├── productService.ts         ← Product APIs (example)
+│   │   ├── orderService.ts           ← Order APIs (example)
+│   │   └── [yourFeature]Service.ts   ← Tạo file service mới ở đây
+│   │
+│   └── components/
+│       └── [feature-name]/           ✅ THÊM COMPONENT CODE VÀO ĐÂY
+│           ├── [Feature].tsx         ← Container component (logic + API calls)
+│           ├── [Feature]View.tsx     ← Presentation component (UI only)
+│           ├── [Feature].css         ← Styles
+│           └── API_[FEATURE].md      ← API documentation (optional)
+```
+
+---
+
+### 🔄 Integration Workflow
+
+#### **BƯỚC 1: Tạo Service File**
+
+**Location:** `src/services/[feature]Service.ts`
+
+**Template:**
+
+```typescript
+// src/services/productService.ts
+import { get, post, put, del } from '../utils/apiClient'
+import type { ApiResponse } from '../utils/apiClient'
+
+// ============= Types =============
+export interface Product {
+  id: number
+  name: string
+  price: number
+  // ... other fields
+}
+
+export interface CreateProductDto {
+  name: string
+  price: number
+  // ... other fields
+}
+
+// ============= API Functions =============
+
+/**
+ * Get all products with pagination
+ */
+export async function getProducts(page: number, limit: number): Promise<ApiResponse<Product[]>> {
+  return get<ApiResponse<Product[]>>('/api/products', { page, limit })
+}
+
+/**
+ * Get product by ID
+ */
+export async function getProductById(id: number): Promise<ApiResponse<Product>> {
+  return get<ApiResponse<Product>>(`/api/products/${id}`)
+}
+
+/**
+ * Create new product
+ */
+export async function createProduct(data: CreateProductDto): Promise<ApiResponse<Product>> {
+  return post<ApiResponse<Product>>('/api/products', data)
+}
+
+/**
+ * Update existing product
+ */
+export async function updateProduct(id: number, data: Partial<CreateProductDto>): Promise<ApiResponse<Product>> {
+  return put<ApiResponse<Product>>(`/api/products/${id}`, data)
+}
+
+/**
+ * Delete product
+ */
+export async function deleteProduct(id: number): Promise<ApiResponse<null>> {
+  return del<ApiResponse<null>>(`/api/products/${id}`)
+}
+
+// ============= Helper Functions (Optional) =============
+
+/**
+ * Get user-friendly error message
+ */
+export function getProductErrorMessage(message: string): string {
+  const ERROR_MESSAGES: Record<string, string> = {
+    "Product not found": "Không tìm thấy sản phẩm",
+    "Product already exists": "Sản phẩm đã tồn tại",
+    // ... add more mappings
+  }
+  return ERROR_MESSAGES[message] || message
+}
+```
+
+---
+
+#### **BƯỚC 2: Tạo Container Component**
+
+**Location:** `src/components/[feature]/[Feature].tsx`
+
+**Template:**
+
+```typescript
+// src/components/product-list/ProductList.tsx
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import ProductListView from './ProductListView'
+import { getProducts, getProductErrorMessage } from '../../services/productService'
+import type { Product } from '../../services/productService'
+
+export default function ProductList() {
+  const navigate = useNavigate()
+  
+  // State management
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string>('')
+  const [page, setPage] = useState(1)
+
+  // Load products
+  useEffect(() => {
+    loadProducts()
+  }, [page])
+
+  const loadProducts = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const result = await getProducts(page, 10)
+
+      if (result.resultCd === 0 && result.data) {
+        setProducts(result.data)
+      } else {
+        setError(getProductErrorMessage(result.message || 'Unknown error'))
+      }
+    } catch (err) {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleProductClick = (productId: number) => {
+    navigate(`/products/${productId}`)
+  }
+
+  return (
+    <ProductListView
+      products={products}
+      loading={loading}
+      error={error}
+      onProductClick={handleProductClick}
+      onPageChange={setPage}
+    />
+  )
+}
+```
+
+---
+
+#### **BƯỚC 3: Tạo View Component**
+
+**Location:** `src/components/[feature]/[Feature]View.tsx`
+
+```typescript
+// src/components/product-list/ProductListView.tsx
+import './ProductList.css'
+import type { Product } from '../../services/productService'
+
+export type Props = {
+  products: Product[]
+  loading: boolean
+  error: string
+  onProductClick: (id: number) => void
+  onPageChange: (page: number) => void
+}
+
+export default function ProductListView(props: Props) {
+  if (props.loading) {
+    return <div className="loading">Loading...</div>
+  }
+
+  if (props.error) {
+    return <div className="error">{props.error}</div>
+  }
+
+  return (
+    <div className="product-list">
+      {props.products.map(product => (
+        <div 
+          key={product.id} 
+          className="product-card"
+          onClick={() => props.onProductClick(product.id)}
+        >
+          <h3>{product.name}</h3>
+          <p className="price">${product.price}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+---
+
+### 📋 Quick Checklist for AI Agents
+
+Khi tích hợp API mới, check các bước sau:
+
+- [ ] **BƯỚC 1:** Tạo file `src/services/[feature]Service.ts`
+  - [ ] Import `get, post, put, del` từ `../utils/apiClient`
+  - [ ] Import `type { ApiResponse }` từ `../utils/apiClient`
+  - [ ] Định nghĩa TypeScript interfaces cho data types
+  - [ ] Viết API functions với proper type annotations
+  - [ ] Thêm JSDoc comments cho mỗi function
+  - [ ] (Optional) Thêm helper functions cho error messages
+
+- [ ] **BƯỚC 2:** Tạo Container Component `src/components/[feature]/[Feature].tsx`
+  - [ ] Import service functions từ `../../services/[feature]Service`
+  - [ ] Setup state management (useState, useEffect)
+  - [ ] Implement API calls trong async functions
+  - [ ] Handle loading, success, và error states
+  - [ ] Validate data trước khi gọi API
+  - [ ] Pass data và callbacks xuống View component
+
+- [ ] **BƯỚC 3:** Tạo View Component `src/components/[feature]/[Feature]View.tsx`
+  - [ ] Define Props type với tất cả required fields
+  - [ ] Render UI based on props (pure presentation)
+  - [ ] KHÔNG gọi API trực tiếp trong View component
+  - [ ] KHÔNG có logic xử lý data trong View component
+
+- [ ] **BƯỚC 4:** (Optional) Tạo documentation `src/components/[feature]/API_[FEATURE].md`
+  - [ ] Document API endpoints
+  - [ ] Request/Response examples
+  - [ ] Error codes và messages
+  - [ ] Flow diagrams
+
+---
+
+### 🎯 API Method Reference
+
+Available methods from `apiClient.ts` (SỬ DỤNG, KHÔNG SỬA):
+
+```typescript
+// Import these from apiClient
+import { get, post, put, del, patch } from '../utils/apiClient'
+import type { ApiResponse } from '../utils/apiClient'
+
+// GET request
+get<T>(url: string, params?: object, headers?: object): Promise<T>
+
+// POST request
+post<T>(url: string, body?: object, headers?: object): Promise<T>
+
+// PUT request
+put<T>(url: string, body?: object, headers?: object): Promise<T>
+
+// DELETE request
+del<T>(url: string, headers?: object): Promise<T>
+
+// PATCH request
+patch<T>(url: string, body?: object, headers?: object): Promise<T>
+```
+
+**Response format từ backend:**
+
+```typescript
+interface ApiResponse<T> {
+  resultCd: number      // 0 = success, 1 = error
+  message?: string      // Success/error message
+  data: T | null       // Response data
+}
+```
+
+---
+
+### ⚠️ Common Mistakes to Avoid
+
+1. **❌ ĐỪNG sửa `src/utils/apiClient.ts`**
+   - File này là core utility, đã hoàn thiện
+   - Chỉ import và sử dụng
+
+2. **❌ ĐỪNG gọi API trong View component**
+   ```typescript
+   // ❌ SAI
+   function ProductView() {
+     const [data, setData] = useState([])
+     useEffect(() => {
+       getProducts().then(setData)  // ĐỪNG làm thế này!
+     }, [])
+   }
+   
+   // ✅ ĐÚNG - Gọi API trong Container
+   function Product() {
+     const [data, setData] = useState([])
+     useEffect(() => {
+       loadData()
+     }, [])
+     return <ProductView data={data} />
+   }
+   ```
+
+3. **❌ ĐỪNG hardcode API URLs**
+   ```typescript
+   // ❌ SAI
+   const result = await get('http://localhost:8080/api/users')
+   
+   // ✅ ĐÚNG
+   const result = await get('/api/users')  // apiClient tự động thêm base URL
+   ```
+
+4. **❌ ĐỪNG quên handle errors**
+   ```typescript
+   // ❌ SAI
+   const result = await getProducts()
+   setProducts(result.data)  // Crash nếu result.data = null
+   
+   // ✅ ĐÚNG
+   if (result.resultCd === 0 && result.data) {
+     setProducts(result.data)
+   } else {
+     setError(result.message || 'Error occurred')
+   }
+   ```
+
+---
+
+### 📚 Real Examples in Codebase
+
+**Tham khảo các file đã implement:**
+
+1. **Authentication APIs:**
+   - Service: `src/services/authService.ts`
+   - Components: 
+     - `src/components/login/Login.tsx` (Container)
+     - `src/components/login/LoginView.tsx` (View)
+     - `src/components/register/Register.tsx` (Container)
+     - `src/components/forgot-password/ForgotPassword.tsx` (Container)
+
+2. **Pattern đã proven:**
+   - ✅ Separation of concerns (Container vs View)
+   - ✅ Type safety với TypeScript
+   - ✅ Error handling consistency
+   - ✅ Loading states
+   - ✅ Vietnamese error messages via `getDisplayMessage()`
+
+---
+
 ## 🚀 Quick Start
 
 ### Import

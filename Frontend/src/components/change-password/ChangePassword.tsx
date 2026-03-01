@@ -5,13 +5,13 @@ import { callApi } from '../../utils/apiClient'
 
 export default function ChangePassword() {
   const navigate = useNavigate()
-  
+
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
-  
+
   // Password visibility toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -20,23 +20,23 @@ export default function ChangePassword() {
   // Calculate password strength (0-4)
   const calculatePasswordStrength = (password: string): number => {
     if (password.length === 0) return 0
-    
+
     let strength = 0
-    
+
     // Length check
     if (password.length >= 8) strength++
     if (password.length >= 12) strength++
-    
+
     // Character variety
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++
     if (/\d/.test(password)) strength++
     if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++
-    
+
     return Math.min(strength, 4)
   }
 
   const passwordStrength = calculatePasswordStrength(newPassword)
-  
+
   const getStrengthLabel = (strength: number): string => {
     const labels = ['Weak', 'Weak', 'Fair', 'Good', 'Strong']
     return labels[strength] || 'Weak'
@@ -104,8 +104,8 @@ export default function ChangePassword() {
           navigate('/profile')
         }, 1500)
       } else {
-        setErrors({ 
-          general: result.message || 'Failed to update password. Please check your current password.' 
+        setErrors({
+          general: result.message || 'Failed to update password. Please check your current password.'
         })
       }
     } catch (error) {
