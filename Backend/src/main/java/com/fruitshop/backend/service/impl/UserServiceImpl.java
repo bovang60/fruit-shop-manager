@@ -4,11 +4,15 @@ import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.ChangePasswordDto;
 import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
+import com.fruitshop.backend.dto.RequestForgotPasswordDto;
+import com.fruitshop.backend.dto.ResetPasswordDto;
 import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
+import com.fruitshop.backend.model.PasswordResetOtp;
 import com.fruitshop.backend.model.PendingRegistration;
 import com.fruitshop.backend.model.User;
+import com.fruitshop.backend.repository.PasswordResetOtpRepository;
 import com.fruitshop.backend.repository.PendingRegistrationRepository;
 import com.fruitshop.backend.repository.UserRepository;
 import com.fruitshop.backend.service.EmailService;
@@ -30,6 +34,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PendingRegistrationRepository pendingRegistrationRepository;
+    private final PasswordResetOtpRepository passwordResetOtpRepository;
     private final EmailService emailService;
 
     @Override
@@ -312,6 +317,92 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return ApiResponse.success("Password changed successfully", null);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<String> requestForgotPassword(RequestForgotPasswordDto requestForgotPasswordDto) {
+        // Tìm user theo email
+        User user = userRepository.findByEmail(requestForgotPasswordDto.getEmail())
+                .orElse(null);
+
+        if (user == null) {
+            return ApiResponse.error("No account found with this email address");
+        }
+
+        // Tạo OTP code 6 số
+        String otpCode = generateOtpCode();
+
+        // Xóa OTP cũ của user (nếu có)
+        passwordResetOtpRepository.findByUserIdAndIsUsedFalse(user.getUserId())
+                .ifPresent(passwordResetOtpRepository::delete);
+
+        // Tạo OTP record mới
+        PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
+        passwordResetOtp.setUserId(user.getUserId());
+        passwordResetOtp.setOtpCode(otpCode);
+        passwordResetOtp.setNewPassword(""); // Placeholder, sẽ set ở bước reset
+        passwordResetOtp.setCreatedAt(LocalDateTime.now());
+        passwordResetOtp.setExpiryTime(LocalDateTime.now().plusMinutes(5)); // Hết hạn sau 5 phút
+        passwordResetOtp.setIsUsed(false);
+
+        passwordResetOtpRepository.save(passwordResetOtp);
+
+        // Gửi OTP qua email
+        try {
+            emailService.sendOtpEmail(user.getEmail(), user.getFullName(), otpCode);
+        } catch (Exception e) {
+            return ApiResponse.error("Failed to send OTP email. Please try again.");
+        }
+
+        return ApiResponse.success("OTP code has been sent to your email. Please verify within 5 minutes.", null);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<String> resetPassword(ResetPasswordDto resetPasswordDto) {
+        // Tìm user theo email
+        User user = userRepository.findByEmail(resetPasswordDto.getEmail())
+                .orElse(null);
+
+        if (user == null) {
+            return ApiResponse.error("No account found with this email address");
+        }
+
+        // Tìm OTP record
+        PasswordResetOtp passwordResetOtp = passwordResetOtpRepository
+                .findByUserIdAndIsUsedFalse(user.getUserId())
+                .orElse(null);
+
+        if (passwordResetOtp == null) {
+            return ApiResponse.error("No password reset request found. Please request a new OTP.");
+        }
+
+        // Kiểm tra OTP đã hết hạn chưa
+        if (passwordResetOtp.getExpiryTime().isBefore(LocalDateTime.now())) {
+            passwordResetOtpRepository.delete(passwordResetOtp);
+            return ApiResponse.error("OTP code has expired. Please request a new one.");
+        }
+
+        // Verify OTP code
+        if (!passwordResetOtp.getOtpCode().equals(resetPasswordDto.getOtpCode())) {
+            return ApiResponse.error("Invalid OTP code");
+        }
+
+        // Kiểm tra new password và confirm password có khớp không
+        if (!resetPasswordDto.getNewPassword().equals(resetPasswordDto.getConfirmPassword())) {
+            return ApiResponse.error("New password and confirm password do not match");
+        }
+
+        // Update password mới (TODO: Cần hash với BCrypt trong production)
+        user.setPassword(resetPasswordDto.getNewPassword());
+        userRepository.save(user);
+
+        // Xóa OTP record sau khi đã sử dụng
+        passwordResetOtpRepository.delete(passwordResetOtp);
+
+        return ApiResponse.success("Password has been reset successfully. You can now login with your new password.",
+                null);
     }
 
     private UserDto convertToDto(User user) {

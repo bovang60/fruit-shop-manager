@@ -4,6 +4,8 @@ import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.ChangePasswordDto;
 import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
+import com.fruitshop.backend.dto.RequestForgotPasswordDto;
+import com.fruitshop.backend.dto.ResetPasswordDto;
 import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
@@ -85,6 +87,22 @@ public class UserController {
             @PathVariable Integer id,
             @Valid @RequestBody ChangePasswordDto changePasswordDto) {
         ApiResponse<String> response = userService.changePassword(id, changePasswordDto);
+        return ResponseEntity.ok(response);
+    }
+
+    // Forgot password with OTP - Step 1: Request OTP
+    @PostMapping("/forgot-password/request")
+    public ResponseEntity<ApiResponse<String>> requestForgotPassword(
+            @Valid @RequestBody RequestForgotPasswordDto requestForgotPasswordDto) {
+        ApiResponse<String> response = userService.requestForgotPassword(requestForgotPasswordDto);
+        return ResponseEntity.ok(response);
+    }
+
+    // Forgot password with OTP - Step 2: Reset password with OTP
+    @PostMapping("/forgot-password/reset")
+    public ResponseEntity<ApiResponse<String>> resetPassword(
+            @Valid @RequestBody ResetPasswordDto resetPasswordDto) {
+        ApiResponse<String> response = userService.resetPassword(resetPasswordDto);
         return ResponseEntity.ok(response);
     }
 }

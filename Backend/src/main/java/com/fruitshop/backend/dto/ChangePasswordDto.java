@@ -18,7 +18,8 @@ import lombok.Data;
  * Validation:
  * - currentPassword: Bắt buộc
  * - newPassword: Bắt buộc, 6-50 ký tự
- * - confirmPassword: Bắt buộc, phải giống newPassword (validate ở service layer)
+ * - confirmPassword: Bắt buộc, phải giống newPassword (validate ở service
+ * layer)
  */
 @Data
 public class ChangePasswordDto {
