@@ -43,6 +43,21 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public ApiResponse<CategoryDto> createCategory(CategoryDto categoryDto) {
+        // Validate categoryName
+        if (categoryDto.getCategoryName() == null) {
+            throw new IllegalArgumentException("Tên là null");
+        }
+        if (categoryDto.getCategoryName().length() < 4) {
+            throw new IllegalArgumentException("Tên dưới 4 kí tự");
+        }
+        if (categoryDto.getCategoryName().length() > 100) {
+            throw new IllegalArgumentException("Tên nhiều hơn 100 ký tự");
+        }
+        // Validate description
+        if (categoryDto.getDescription() != null && categoryDto.getDescription().length() > 255) {
+            throw new IllegalArgumentException("Miêu tả nhiều hơn 255 ký tự");
+        }
+
         Category category = new Category();
         category.setCategoryName(categoryDto.getCategoryName());
         category.setDescription(categoryDto.getDescription());
@@ -54,10 +69,24 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public ApiResponse<CategoryDto> updateCategory(Integer id, CategoryDto categoryDto) {
-        Category category = categoryRepository.findById(id).orElse(null);
-        if (category == null) {
-            return ApiResponse.error("Category not found");
+        Category category = categoryRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Category not found"));
+
+        // Validate categoryName
+        if (categoryDto.getCategoryName() == null) {
+            throw new IllegalArgumentException("Tên là null");
         }
+        if (categoryDto.getCategoryName().length() < 4) {
+            throw new IllegalArgumentException("Tên dưới 4 kí tự");
+        }
+        if (categoryDto.getCategoryName().length() > 100) {
+            throw new IllegalArgumentException("Tên nhiều hơn 100 ký tự");
+        }
+        // Validate description
+        if (categoryDto.getDescription() != null && categoryDto.getDescription().length() > 255) {
+            throw new IllegalArgumentException("Miêu tả nhiều hơn 255 ký tự");
+        }
+
         category.setCategoryName(categoryDto.getCategoryName());
         category.setDescription(categoryDto.getDescription());
         Category updatedCategory = categoryRepository.save(category);

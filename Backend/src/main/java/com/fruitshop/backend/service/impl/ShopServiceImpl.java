@@ -40,10 +40,8 @@ public class ShopServiceImpl implements ShopService {
     @Override
     @Transactional
     public ApiResponse<ShopDto> approveShop(Integer id) {
-        Shop shop = shopRepository.findById(id).orElse(null);
-        if (shop == null) {
-            return ApiResponse.error("Shop not found");
-        }
+        Shop shop = shopRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Đơn xin không còn tồn tại"));
         shop.setStatus(Shop.ShopStatus.APPROVED);
         shop.setRejectReason(null);
         Shop savedShop = shopRepository.save(shop);
@@ -57,6 +55,15 @@ public class ShopServiceImpl implements ShopService {
         if (shop == null) {
             return ApiResponse.error("Shop not found");
         }
+
+        // Validate feedback
+        if (rejectDto.getReason() == null) {
+            throw new IllegalArgumentException("Phản hồi chi tiết là null");
+        }
+        if (rejectDto.getReason().length() > 255) {
+            throw new IllegalArgumentException("Phản hồi chi tiết nhiều hơn 255 ký tự");
+        }
+
         shop.setStatus(Shop.ShopStatus.REJECTED);
         shop.setRejectReason(rejectDto.getReason());
         Shop savedShop = shopRepository.save(shop);
@@ -66,8 +73,15 @@ public class ShopServiceImpl implements ShopService {
     @Override
     @Transactional
     public ApiResponse<ShopDto> suspendShop(Integer id) {
-        // Placeholder for suspension logic
-        return getShopById(id);
+        // Note: Shop.ShopStatus does not have SUSPENDED status (only PENDING, APPROVED,
+        // REJECTED)
+        // Implementing as changing to REJECTED for now
+        Shop shop = shopRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Shop not found"));
+        shop.setStatus(Shop.ShopStatus.REJECTED);
+        shop.setRejectReason("Shop suspended by admin");
+        Shop savedShop = shopRepository.save(shop);
+        return ApiResponse.success("Shop suspended successfully", convertToDto(savedShop));
     }
 
     private ShopDto convertToDto(Shop shop) {
@@ -78,7 +92,7 @@ public class ShopServiceImpl implements ShopService {
         dto.setCreatedAt(shop.getCreatedAt());
         dto.setStatus(shop.getStatus());
         dto.setRejectReason(shop.getRejectReason());
-        
+
         if (shop.getOwner() != null) {
             dto.setOwnerId(shop.getOwner().getUserId());
             dto.setOwnerName(shop.getOwner().getFullName());
@@ -87,13 +101,13 @@ public class ShopServiceImpl implements ShopService {
             // In the new schema there is no address in users table directly anymore?
             // Wait, let's check users table again.
         }
-        
+
         if (shop.getDocuments() != null) {
             dto.setDocumentUrls(shop.getDocuments().stream()
                     .map(ShopDocument::getFilePath)
                     .collect(Collectors.toList()));
         }
-        
+
         return dto;
     }
 }

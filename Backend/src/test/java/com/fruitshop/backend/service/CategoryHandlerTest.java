@@ -45,7 +45,7 @@ class CategoryHandlerTest {
 
         when(categoryRepository.save(any(Category.class))).thenReturn(category);
 
-        CategoryDto result = categoryService.createCategory(dto);
+        CategoryDto result = categoryService.createCategory(dto).getData();
 
         assertNotNull(result);
         assertEquals("Fruit", result.getCategoryName());
@@ -142,7 +142,7 @@ class CategoryHandlerTest {
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existingCategory));
         when(categoryRepository.save(any(Category.class))).thenReturn(existingCategory);
 
-        CategoryDto result = categoryService.updateCategory(id, dto);
+        CategoryDto result = categoryService.updateCategory(id, dto).getData();
 
         assertNotNull(result);
         assertEquals("Updated Fruit", result.getCategoryName());

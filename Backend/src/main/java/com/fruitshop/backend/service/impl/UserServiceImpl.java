@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto updateUserStatus(Integer id, User.UserStatus status) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
         user.setStatus(status);
         return convertToDto(userRepository.save(user));
     }
