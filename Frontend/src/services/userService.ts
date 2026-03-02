@@ -2,13 +2,21 @@ import { callApi, callApiWithMethod, type ApiResponse } from "../utils/apiClient
 
 // ============= Types =============
 
+export const UserStatus = {
+    ACTIVE: 'ACTIVE',
+    INACTIVE: 'INACTIVE',
+    BANNED: 'BANNED'
+} as const;
+
+export type UserStatus = keyof typeof UserStatus;
+
 export interface UserDto {
     userId: number;
     fullName: string;
     email: string;
     phoneNumber: string;
     role: string;
-    status: string;
+    status: UserStatus;
     createdAt: string;
 }
 
@@ -58,7 +66,8 @@ export async function getUsers(filter: UserFilter): Promise<ApiResponse<PageResp
  * @param status - New status (ACTIVE, INACTIVE, BANNED)
  * @returns ApiResponse with updated UserDto
  */
-export async function updateUserStatus(userId: number, status: string): Promise<ApiResponse<UserDto>> {
+export async function updateUserStatus(userId: number, status: UserStatus): Promise<ApiResponse<UserDto>> {
+    // API uses @RequestParam, so we pass status in the query string
     const url = `/api/users/${userId}/status?status=${status}`;
     return callApiWithMethod<null, ApiResponse<UserDto>>("PUT", url, null);
 }
