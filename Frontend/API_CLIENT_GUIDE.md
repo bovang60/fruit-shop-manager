@@ -1,777 +1,427 @@
-# API Client Usage Guide
+# API Client Integration Guide
 
-## 📦 Overview
+## 🎯 Mục đích
 
-Hệ thống API Client cung cấp một cách tiếp cận thống nhất và dễ sử dụng để gọi API trong toàn bộ ứng dụng.
-
-**File:** `src/utils/apiClient.ts`
+Hướng dẫn AI agents cách tích hợp API endpoints mới vào hệ thống **ĐÚNG CÁCH**.
 
 ---
 
-## 🚀 Quick Start
+## ⚠️ QUY TẮC QUAN TRỌNG
 
-### Import
+### ❌ KHÔNG ĐƯỢC LÀM
 
-```typescript
-import { apiRequest, get, post, put, del, patch } from '@/utils/apiClient'
-import type { ApiResponse } from '@/utils/apiClient'
-```
+1. **KHÔNG sửa file `src/utils/apiClient.ts`** - File core này đã hoàn thiện
+2. **KHÔNG gọi API trong View components** - Chỉ gọi trong Container components
+3. **KHÔNG hardcode URLs** - Dùng relative paths như `/api/users`
+4. **KHÔNG skip error handling** - Luôn check `resultCd` và handle errors
+
+### ✅ PHẢI LÀM
+
+1. **Tạo Service file mới** trong `src/services/`
+2. **Tạo Container + View components** trong `src/components/[feature]/`
+3. **Import và sử dụng** các methods có sẵn: `get`, `post`, `put`, `del`
+4. **Handle errors proper** với Vietnamese messages
 
 ---
 
-## 📋 Basic Usage
+## 📁 Folder Structure
 
-### 1. Method Wrappers (Recommended)
-
-#### GET Request
-
-```typescript
-// Basic GET
-const users = await get<User[]>('/api/users')
-
-// GET with query params
-const products = await get<Product[]>('/api/products', {
-  page: 1,
-  limit: 10,
-  category: 'fruits'
-})
-// → /api/products?page=1&limit=10&category=fruits
-
-// GET with custom headers
-const data = await get<Data>('/api/data', undefined, {
-  'X-Custom-Header': 'value'
-})
+```
+src/
+├── utils/
+│   └── apiClient.ts              ❌ ĐỪNG SỬA - Core utility đã hoàn thiện
+│
+├── services/                      ✅ TẠO FILE MỚI Ở ĐÂY
+│   ├── authService.ts            
+│   └── [feature]Service.ts       ← Tạo service file mới
+│
+└── components/
+    └── [feature]/                 ✅ TẠO COMPONENTS Ở ĐÂY
+        ├── [Feature].tsx          ← Container: Logic + API calls
+        ├── [Feature]View.tsx      ← View: UI only, nhận props
+        ├── [Feature].css
+        └── [Feature].types.ts     ← (Optional) Model types cho component này
 ```
 
-#### POST Request
-
-```typescript
-// Create user
-const result = await post<ApiResponse<User>>('/api/users', {
-  name: 'John Doe',
-  email: 'john@example.com'
-})
-
-// Login
-const loginResult = await post<ApiResponse<UserDto>>('/api/users/login', {
-  email: 'user@example.com',
-  password: '123456'
-})
+**Ví dụ cụ thể:**
 ```
-
-#### PUT Request
-
-```typescript
-// Update user
-const updated = await put<ApiResponse<User>>(`/api/users/${userId}`, {
-  name: 'Jane Doe',
-  email: 'jane@example.com'
-})
-```
-
-#### DELETE Request
-
-```typescript
-// Delete user
-const result = await del<ApiResponse<null>>(`/api/users/${userId}`)
-```
-
-#### PATCH Request
-
-```typescript
-// Partial update
-const result = await patch<ApiResponse<User>>(`/api/users/${userId}`, {
-  status: 'active'
-})
-```
-
-### 2. Generic apiRequest (Advanced)
-
-Cho các use cases phức tạp hơn:
-
-```typescript
-// Full control
-const result = await apiRequest<ApiResponse<Data>>('/api/endpoint', {
-  method: 'POST',
-  body: { key: 'value' },
-  headers: { 'X-Custom': 'header' },
-  params: { filter: 'active', sort: 'desc' }
-})
+src/components/change-password/
+├── ChangePassword.tsx          ← Container
+├── ChangePasswordView.tsx      ← View
+├── ChangePassword.css          ← Styles
+└── ChangePassword.types.ts     ← Types/Models cho ChangePassword
 ```
 
 ---
 
-## 🏗️ Real World Examples
+## 📝 Model Types (Optional)
 
-### Authentication Service
+Nếu component cần các types/models riêng, tạo file `[Feature].types.ts` trong folder component:
 
-```typescript
-// authService.ts
-import { post, put, type ApiResponse } from '../utils/apiClient'
-
-export async function login(data: LoginRequest): Promise<ApiResponse<UserDto>> {
-  return post<ApiResponse<UserDto>>('/api/users/login', data)
-}
-
-export async function register(data: RegisterRequest): Promise<ApiResponse<null>> {
-  return post<ApiResponse<null>>('/api/users/request-register', data)
-}
-
-export async function updateProfile(
-  userId: number, 
-  data: UpdateProfileRequest
-): Promise<ApiResponse<UserDto>> {
-  return put<ApiResponse<UserDto>>(`/api/users/${userId}/profile`, data)
-}
-
-// Forgot Password - Step 1: Request OTP
-export async function requestPasswordReset(
-  data: ForgotPasswordRequestData
-): Promise<ApiResponse<null>> {
-  return post<ApiResponse<null>>('/api/users/forgot-password/request', data)
-}
-
-// Forgot Password - Step 2: Reset password with OTP
-export async function resetPasswordWithOtp(
-  data: ResetPasswordRequest
-): Promise<ApiResponse<null>> {
-  return post<ApiResponse<null>>('/api/users/forgot-password/reset', data)
-}
-```
-
-### Forgot Password Flow (2-Step OTP Verification)
+**File:** `src/components/change-password/ChangePassword.types.ts`
 
 ```typescript
-// authService.ts - Forgot Password Types & Functions
-export interface ForgotPasswordRequestData {
-  email: string
-}
-
-export interface ResetPasswordRequest {
-  email: string
-  otpCode: string
+// Request/Response types cho API
+export interface ChangePasswordRequest {
+  currentPassword: string
   newPassword: string
   confirmPassword: string
 }
 
-// Step 1: Request OTP via email
-export async function requestPasswordReset(
-  data: ForgotPasswordRequestData
-): Promise<ApiResponse<null>> {
-  return post<ApiResponse<null>>('/api/users/forgot-password/request', data)
+export interface ChangePasswordResponse {
+  message: string
+  success: boolean
 }
 
-// Step 2: Reset password with OTP
-export async function resetPasswordWithOtp(
-  data: ResetPasswordRequest
-): Promise<ApiResponse<null>> {
-  return post<ApiResponse<null>>('/api/users/forgot-password/reset', data)
+// Props types cho View component
+export interface ChangePasswordViewProps {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+  errors: Record<string, string>
+  loading: boolean
+  onCurrentPasswordChange: (value: string) => void
+  onNewPasswordChange: (value: string) => void
+  onConfirmPasswordChange: (value: string) => void
+  onSubmit: (e: React.FormEvent) => void
 }
 
-// Usage Example in Component:
-const handleRequestOtp = async () => {
-  const result = await requestPasswordReset({ email: 'user@example.com' })
-  
-  if (result.resultCd === 0) {
-    // OTP sent successfully
-    console.log(result.message)
-    // Show OTP input form
-  } else {
-    // Handle error
-    console.error(result.message)
-  }
-}
-
-const handleResetPassword = async () => {
-  const result = await resetPasswordWithOtp({
-    email: 'user@example.com',
-    otpCode: '123456',
-    newPassword: 'newPass123',
-    confirmPassword: 'newPass123'
-  })
-  
-  if (result.resultCd === 0) {
-    // Password reset successful
-    console.log('Password reset! Redirecting to login...')
-    navigate('/login')
-  } else {
-    // Handle error (invalid OTP, expired, etc.)
-    console.error(result.message)
-  }
+// Form state type
+export interface ChangePasswordFormState {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
 }
 ```
 
-### Product Service
+**Sử dụng trong Container:**
 
 ```typescript
-// productService.ts
-import { get, post, put, del, type ApiResponse } from '../utils/apiClient'
+import { useState } from 'react'
+import ChangePasswordView from './ChangePasswordView'
+import { changePassword } from '../../services/authService'
+import type { 
+  ChangePasswordRequest, 
+  ChangePasswordFormState 
+} from './ChangePassword.types'
 
-// Get all products with pagination
-export async function getProducts(page: number, limit: number) {
+export default function ChangePassword() {
+  const [formData, setFormData] = useState<ChangePasswordFormState>({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  // ... rest of logic
+}
+```
+
+**Khi nào cần tạo file `.types.ts`:**
+- ✅ Component có nhiều types phức tạp (>3 interfaces)
+- ✅ Types chỉ dùng trong component đó, không share với services khác
+- ✅ Props types cho View component phức tạp
+- ❌ Types đơn giản có thể define trực tiếp trong View component
+- ❌ Types dùng chung nhiều nơi → nên đặt trong service file
+
+---
+
+## 🔄 3 BƯỚC TÍCH HỢP API
+
+### BƯỚC 1: Tạo Service File
+
+**File:** `src/services/productService.ts`
+
+```typescript
+import { get, post, put, del } from '../utils/apiClient'
+import type { ApiResponse } from '../utils/apiClient'
+
+// Types
+export interface Product {
+  id: number
+  name: string
+  price: number
+}
+
+export interface CreateProductDto {
+  name: string
+  price: number
+}
+
+// API Functions
+export async function getProducts(page: number, limit: number): Promise<ApiResponse<Product[]>> {
   return get<ApiResponse<Product[]>>('/api/products', { page, limit })
 }
 
-// Get product by ID
-export async function getProductById(id: number) {
-  return get<ApiResponse<Product>>(`/api/products/${id}`)
-}
-
-// Create product
-export async function createProduct(data: CreateProductDto) {
+export async function createProduct(data: CreateProductDto): Promise<ApiResponse<Product>> {
   return post<ApiResponse<Product>>('/api/products', data)
 }
 
-// Update product
-export async function updateProduct(id: number, data: UpdateProductDto) {
+export async function updateProduct(id: number, data: Partial<CreateProductDto>): Promise<ApiResponse<Product>> {
   return put<ApiResponse<Product>>(`/api/products/${id}`, data)
 }
 
-// Delete product
-export async function deleteProduct(id: number) {
+export async function deleteProduct(id: number): Promise<ApiResponse<null>> {
   return del<ApiResponse<null>>(`/api/products/${id}`)
 }
 
-// Search products
-export async function searchProducts(query: string, category?: string) {
-  return get<ApiResponse<Product[]>>('/api/products/search', {
-    q: query,
-    ...(category && { category })
-  })
-}
-```
-
-### Order Service
-
-```typescript
-// orderService.ts
-import { get, post, type ApiResponse } from '../utils/apiClient'
-
-export interface CreateOrderDto {
-  items: Array<{ productId: number; quantity: number }>
-  deliveryAddress: string
-  paymentMethod: string
-}
-
-// Get user orders
-export async function getMyOrders(status?: string) {
-  return get<ApiResponse<Order[]>>('/api/orders/my-orders', {
-    ...(status && { status })
-  })
-}
-
-// Create order
-export async function createOrder(data: CreateOrderDto) {
-  return post<ApiResponse<Order>>('/api/orders', data)
-}
-
-// Get order details
-export async function getOrderById(orderId: number) {
-  return get<ApiResponse<Order>>(`/api/orders/${orderId}`)
+// Error messages helper (Optional)
+export function getErrorMessage(message: string): string {
+  const MESSAGES: Record<string, string> = {
+    "Product not found": "Không tìm thấy sản phẩm",
+    "Invalid data": "Dữ liệu không hợp lệ",
+  }
+  return MESSAGES[message] || message
 }
 ```
 
 ---
 
-## 🎯 Component Usage
+### BƯỚC 2: Tạo Container Component
 
-### In React Component
+**File:** `src/components/product-list/ProductList.tsx`
 
 ```typescript
-// ProductList.tsx
-import { useEffect, useState } from 'react'
-import { getProducts } from '@/services/productService'
-import type { Product } from '@/types'
+import { useState, useEffect } from 'react'
+import ProductListView from './ProductListView'
+import { getProducts, getErrorMessage } from '../../services/productService'
+import type { Product } from '../../services/productService'
 
-export function ProductList() {
+export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    async function loadProducts() {
-      setLoading(true)
-      setError('')
-      
-      try {
-        const result = await getProducts(1, 10)
-        
-        if (result.resultCd === 0 && result.data) {
-          setProducts(result.data)
-        } else {
-          setError(result.message)
-        }
-      } catch (err) {
-        setError('Có lỗi xảy ra. Vui lòng thử lại!')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     loadProducts()
   }, [])
 
-  if (loading) return <div>Loading...</div>
-  if (error) return <div>Error: {error}</div>
+  const loadProducts = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const result = await getProducts(1, 10)
+
+      if (result.resultCd === 0 && result.data) {
+        setProducts(result.data)
+      } else {
+        setError(getErrorMessage(result.message || 'Unknown error'))
+      }
+    } catch (err) {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div>
-      {products.map(product => (
-        <div key={product.id}>{product.name}</div>
+    <ProductListView
+      products={products}
+      loading={loading}
+      error={error}
+    />
+  )
+}
+```
+
+---
+
+### BƯỚC 3: Tạo View Component
+
+**File:** `src/components/product-list/ProductListView.tsx`
+
+```typescript
+import type { Product } from '../../services/productService'
+
+export type Props = {
+  products: Product[]
+  loading: boolean
+  error: string
+}
+
+export default function ProductListView({ products, loading, error }: Props) {
+  if (loading) return <div>Loading...</div>
+  if (error) return <div className="error">{error}</div>
+
+  return (
+    <div className="product-list">
+      {products.map(p => (
+        <div key={p.id} className="product-card">
+          <h3>{p.name}</h3>
+          <p>${p.price}</p>
+        </div>
       ))}
     </div>
   )
 }
 ```
 
-### Form Submission
+---
+
+## 📚 API Methods Available
+
+Import từ `apiClient.ts` (KHÔNG cần sửa file này):
 
 ```typescript
-// CreateProductForm.tsx
-import { useState } from 'react'
-import { createProduct } from '@/services/productService'
+import { get, post, put, del, patch } from '../utils/apiClient'
+import type { ApiResponse } from '../utils/apiClient'
 
-export function CreateProductForm() {
-  const [formData, setFormData] = useState({ name: '', price: 0 })
-  const [loading, setLoading] = useState(false)
+// GET
+get<T>(url: string, params?: object, headers?: object): Promise<T>
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+// POST
+post<T>(url: string, body?: object, headers?: object): Promise<T>
 
-    try {
-      const result = await createProduct(formData)
-      
-      if (result.resultCd === 0) {
-        alert('Tạo sản phẩm thành công!')
-        // Reset form hoặc redirect
-      } else {
-        alert(result.message)
-      }
-    } catch (error) {
-      alert('Có lỗi xảy ra!')
-    } finally {
-      setLoading(false)
-    }
-  }
+// PUT
+put<T>(url: string, body?: object, headers?: object): Promise<T>
 
-  return (
-    <form onSubmit={handleSubmit}>
-      {/* Form fields */}
-      <button type="submit" disabled={loading}>
-        {loading ? 'Đang tạo...' : 'Tạo sản phẩm'}
-      </button>
-    </form>
-  )
+// DELETE
+del<T>(url: string, headers?: object): Promise<T>
+
+// PATCH
+patch<T>(url: string, body?: object, headers?: object): Promise<T>
+```
+
+**Response Format:**
+
+```typescript
+interface ApiResponse<T> {
+  resultCd: number      // 0 = success, 1+ = error
+  message?: string      // Message from backend
+  data: T | null       // Response data
 }
 ```
 
 ---
 
-## ⚙️ Configuration
+## ✅ Checklist
 
-### Environment Variables
-
-Tạo file `.env` để config API base URL:
-
-```env
-VITE_API_BASE_URL=http://localhost:8080
-```
-
-Production:
-```env
-VITE_API_BASE_URL=https://api.yourapp.com
-```
-
-API Client sẽ tự động sử dụng đúng URL theo environment.
+- [ ] Tạo service file trong `src/services/[feature]Service.ts`
+- [ ] Import `get, post, put, del` từ `../utils/apiClient`
+- [ ] Import `type { ApiResponse }` từ `../utils/apiClient`
+- [ ] Define TypeScript interfaces cho data types
+- [ ] Viết API functions với type annotations đúng
+- [ ] (Optional) Tạo file `[Feature].types.ts` trong folder component nếu có nhiều types phức tạp
+- [ ] Tạo Container component trong `src/components/[feature]/[Feature].tsx`
+- [ ] Import service functions và gọi API trong Container
+- [ ] Handle loading, success, error states
+- [ ] Validate input trước khi gọi API
+- [ ] Tạo View component nhận props từ Container
+- [ ] View component KHÔNG gọi API, chỉ render UI
 
 ---
 
-## 🔒 Authentication Headers
+## 🎯 Examples Trong Codebase
 
-Nếu API yêu cầu authentication token:
+**Tham khảo code đã có:**
 
-```typescript
-import { authHeader, saveAuthToken, getAuthToken } from '@/utils/apiClient'
+1. **Auth Service:** `src/services/authService.ts`
+   - Functions: `login()`, `requestRegister()`, `verifyOtp()`, `requestPasswordReset()`, `resetPasswordWithOtp()`
+   - Helper: `getDisplayMessage()` - Vietnamese error messages
 
-// Sau khi login thành công, lưu token
-const loginResult = await login({ email, password })
-if (loginResult.resultCd === 0 && loginResult.data.token) {
-  saveAuthToken(loginResult.data.token)
-}
+2. **Login Component:** `src/components/login/`
+   - Container: `Login.tsx` - State management + API calls
+   - View: `LoginView.tsx` - UI only
 
-// Gọi API với auth header
-const token = getAuthToken()
-if (token) {
-  const result = await get<ApiResponse<User>>('/api/profile', undefined, authHeader(token))
-}
-```
+3. **Forgot Password:** `src/components/forgot-password/`
+   - Container: `ForgotPassword.tsx` - 2-step flow (Request OTP → Reset Password)
+   - View: `ForgotPasswordView.tsx` - Conditional rendering based on step
+
+4. **Change Password:** `src/components/change-password/`
+   - Container: `ChangePassword.tsx` - State management + validation
+   - View: `ChangePasswordView.tsx` - Form UI
+   - Types: `ChangePassword.types.ts` - Model types cho component (nếu cần)
 
 ---
 
-## 🛠️ Advanced Features
+## ⚠️ Common Mistakes
 
-### Custom Headers
+### ❌ SAI
 
 ```typescript
-const result = await post<ApiResponse<Data>>('/api/endpoint', data, {
-  'Authorization': `Bearer ${token}`,
-  'X-Custom-Header': 'value',
-  'X-Request-ID': crypto.randomUUID()
-})
+// 1. Gọi API trong View component
+function ProductView() {
+  const [data, setData] = useState([])
+  useEffect(() => {
+    getProducts().then(setData)  // ĐỪNG!
+  }, [])
+}
+
+// 2. Hardcode URL
+const result = await get('http://localhost:8080/api/users')
+
+// 3. Không check resultCd
+const result = await getProducts()
+setProducts(result.data)  // Crash if data = null!
+
+// 4. Sửa apiClient.ts
+// ĐỪNG thêm code vào apiClient.ts!
 ```
 
-### Query Parameters
+### ✅ ĐÚNG
 
 ```typescript
-// Simple params
-const users = await get<User[]>('/api/users', {
-  page: 1,
-  limit: 20,
-  active: true
-})
-
-// Complex filtering
-const products = await get<Product[]>('/api/products', {
-  category: 'fruits',
-  minPrice: 100,
-  maxPrice: 500,
-  sort: 'price',
-  order: 'asc'
-})
-```
-
-### Error Handling
-
-```typescript
-try {
-  const result = await post<ApiResponse<User>>('/api/users', userData)
+// 1. Gọi API trong Container
+function ProductList() {
+  const [data, setData] = useState([])
+  useEffect(() => { loadData() }, [])
   
-  if (result.resultCd === 0) {
-    // Success
-    console.log('User created:', result.data)
-  } else {
-    // Business logic error
-    console.error('Error:', result.message)
-  }
-} catch (error) {
-  // Network error, server error, etc.
-  console.error('Request failed:', error)
-  // Show user friendly message
-  alert('Không thể kết nối đến server. Vui lòng thử lại!')
-}
-```
-
----
-
-## 📝 Type Safety
-
-Always define interfaces for your API responses:
-
-```typescript
-// types/product.ts
-export interface Product {
-  id: number
-  name: string
-  price: number
-  category: string
-  stock: number
-}
-
-export interface CreateProductDto {
-  name: string
-  price: number
-  category: string
-}
-
-// services/productService.ts
-import type { ApiResponse } from '@/utils/apiClient'
-import type { Product, CreateProductDto } from '@/types/product'
-
-export async function createProduct(
-  data: CreateProductDto
-): Promise<ApiResponse<Product>> {
-  return post<ApiResponse<Product>>('/api/products', data)
-}
-```
-
-Type safety giúp:
-- IDE autocomplete
-- Compile-time error checking
-- Better documentation
-- Easier refactoring
-
----
-
-## ✅ Best Practices
-
-1. **Tạo dedicated service file cho mỗi resource**
-   ```
-   src/services/
-     ├── authService.ts
-     ├── productService.ts
-     ├── orderService.ts
-     └── userService.ts
-   ```
-
-2. **Sử dụng type safety**
-   - Định nghĩa interfaces cho tất cả API requests/responses
-   - Sử dụng TypeScript generics
-
-3. **Error handling nhất quán**
-   ```typescript
-   // Check resultCd từ backend
-   if (result.resultCd === 0) {
-     // Success
-   } else {
-     // Business error
-   }
-   ```
-
-4. **Không hardcode URLs**
-   - Sử dụng environment variables
-   - Centralize base URL trong apiClient
-
-5. **Loading và error states**
-   - Luôn hiển thị loading state
-   - Handle errors gracefully
-   - Show user-friendly messages
-
----
-
-## 🧪 Testing
-
-Example với Jest:
-
-```typescript
-// productService.test.ts
-import { createProduct } from './productService'
-import * as apiClient from '@/utils/apiClient'
-
-jest.mock('@/utils/apiClient')
-
-describe('productService', () => {
-  it('should create product successfully', async () => {
-    const mockResponse = {
-      resultCd: 0,
-      message: 'Success',
-      data: { id: 1, name: 'Apple', price: 50 }
+  const loadData = async () => {
+    const result = await getProducts(1, 10)
+    if (result.resultCd === 0 && result.data) {
+      setData(result.data)
     }
-    
-    jest.spyOn(apiClient, 'post').mockResolvedValue(mockResponse)
-    
-    const result = await createProduct({ name: 'Apple', price: 50 })
-    
-    expect(result.resultCd).toBe(0)
-    expect(result.data?.name).toBe('Apple')
-  })
-})
-```
-
----
-
-## � Complete Example: Forgot Password Flow
-
-Đây là ví dụ đầy đủ về cách implement forgot password với 2-step OTP verification:
-
-```typescript
-// ForgotPassword.tsx - Container Component
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { requestPasswordReset, resetPasswordWithOtp, getDisplayMessage } from '@/services/authService'
-import ForgotPasswordView from './ForgotPasswordView'
-
-type Step = 'request' | 'reset'
-
-export default function ForgotPassword() {
-  const navigate = useNavigate()
+  }
   
-  // State management
-  const [step, setStep] = useState<Step>('request')
-  const [email, setEmail] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
+  return <ProductListView data={data} />
+}
 
-  // Step 1: Request OTP
-  const handleRequestOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!email.trim()) {
-      setErrors({ email: 'Email is required' })
-      return
-    }
+// 2. Dùng relative path
+const result = await get('/api/users')
 
-    setLoading(true)
-    setErrors({})
+// 3. Luôn check resultCd
+if (result.resultCd === 0 && result.data) {
+  setProducts(result.data)
+} else {
+  setError(result.message || 'Error')
+}
 
-    try {
-      const result = await requestPasswordReset({ email })
+// 4. Tạo service file mới
+// Tạo src/services/myService.ts, import và dùng apiClient
+```
 
-      if (result.resultCd === 0) {
-        // Success - OTP sent
-        setStep('reset')
-        alert(getDisplayMessage(result.message || '') || 'OTP sent to your email!')
-      } else {
-        // Error
-        setErrors({ 
-          general: getDisplayMessage(result.message || '') || 'Failed to send OTP' 
-        })
-      }
-    } catch (error) {
-      setErrors({ general: 'Network error. Please try again.' })
-    } finally {
-      setLoading(false)
-    }
-  }
+---
 
-  // Step 2: Reset Password with OTP
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Validation
-    if (!otpCode || otpCode.length !== 6) {
-      setErrors({ otpCode: 'OTP must be 6 digits' })
-      return
-    }
-    
-    if (newPassword.length < 6) {
-      setErrors({ newPassword: 'Password must be at least 6 characters' })
-      return
-    }
-    
-    if (newPassword !== confirmPassword) {
-      setErrors({ confirmPassword: 'Passwords do not match' })
-      return
-    }
+## 🎓 Summary
 
-    setLoading(true)
-    setErrors({})
+**Workflow chuẩn:**
+1. ✅ Tạo `src/services/[feature]Service.ts` với API functions
+2. ✅ (Optional) Tạo `src/components/[feature]/[Feature].types.ts` nếu cần nhiều types phức tạp
+3. ✅ Tạo `src/components/[feature]/[Feature].tsx` (Container) - gọi API
+4. ✅ Tạo `src/components/[feature]/[Feature]View.tsx` (View) - render UI
+5. ✅ Handle errors với Vietnamese messages
+6. ✅ KHÔNG sửa `apiClient.ts`
 
-    try {
-      const result = await resetPasswordWithOtp({
-        email,
-        otpCode,
-        newPassword,
-        confirmPassword
-      })
-
-      if (result.resultCd === 0) {
-        // Success
-        setSuccess(true)
-        alert(getDisplayMessage(result.message || '') || 'Password reset successfully!')
-        
-        // Redirect to login after 2 seconds
-        setTimeout(() => navigate('/login'), 2000)
-      } else {
-        // Error (invalid OTP, expired, etc.)
-        setErrors({ 
-          general: getDisplayMessage(result.message || '') || 'Failed to reset password' 
-        })
-      }
-    } catch (error) {
-      setErrors({ general: 'Network error. Please try again.' })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Resend OTP
-  const handleResendOtp = async () => {
-    setLoading(true)
-    try {
-      const result = await requestPasswordReset({ email })
-      if (result.resultCd === 0) {
-        alert('OTP resent successfully!')
-      }
-    } catch (error) {
-      alert('Failed to resend OTP')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <ForgotPasswordView
-      step={step}
-      email={email}
-      otpCode={otpCode}
-      newPassword={newPassword}
-      confirmPassword={confirmPassword}
-      errors={errors}
-      loading={loading}
-      success={success}
-      onEmailChange={setEmail}
-      onOtpChange={(v) => setOtpCode(v.replace(/\D/g, '').slice(0, 6))}
-      onNewPasswordChange={setNewPassword}
-      onConfirmPasswordChange={setConfirmPassword}
-      onSubmit={step === 'request' ? handleRequestOtp : handleResetPassword}
-      onResendOtp={handleResendOtp}
-      onGoToLogin={() => navigate('/login')}
-    />
-  )
+**Response structure từ backend:**
+```typescript
+{
+  resultCd: 0,           // 0 = success
+  message: "Success",
+  data: { ... }          // Your data here
 }
 ```
 
-**Key Points:**
-- ✅ 2-step flow: Request OTP → Reset with OTP
-- ✅ Proper validation for each step
-- ✅ User-friendly Vietnamese error messages via `getDisplayMessage()`
-- ✅ Loading states and error handling
-- ✅ Auto-redirect after success
-- ✅ OTP resend functionality
-- ✅ Type-safe with TypeScript
-
----
-
-## 🧪 Testing
-
-Example với Jest:
-
+**Error handling pattern:**
 ```typescript
-// productService.test.ts
-import { createProduct } from './productService'
-import * as apiClient from '@/utils/apiClient'
-
-jest.mock('@/utils/apiClient')
-
-describe('productService', () => {
-  it('should create product successfully', async () => {
-    const mockResponse = {
-      resultCd: 0,
-      message: 'Success',
-      data: { id: 1, name: 'Apple', price: 50 }
-    }
-    
-    jest.spyOn(apiClient, 'post').mockResolvedValue(mockResponse)
-    
-    const result = await createProduct({ name: 'Apple', price: 50 })
-    
-    expect(result.resultCd).toBe(0)
-    expect(result.data?.name).toBe('Apple')
-  })
-})
+if (result.resultCd === 0 && result.data) {
+  // Success
+} else {
+  // Error - show result.message
+}
 ```
 
 ---
 
-## �📚 Summary
-
-**API Client** cung cấp:
-- ✅ Centralized API handling
-- ✅ Type-safe requests
-- ✅ Consistent error handling
-- ✅ Easy to use wrappers (get, post, put, del, patch)
-- ✅ Query params support
-- ✅ Custom headers support
-- ✅ Environment-based configuration
-- ✅ Clean and maintainable code
-
-**Next Steps:**
-- Tạo service files cho các resources khác (products, orders, etc.)
-- Implement token-based authentication nếu cần
-- Add request/response interceptors nếu cần (logging, error tracking)
-- Consider adding retry logic cho network failures
+**Xem thêm:**
+- [authService.ts](src/services/authService.ts) - Authentication API implementation
+- [Login component](src/components/login/) - Login flow example  
+- [ForgotPassword component](src/components/forgot-password/) - 2-step OTP flow example
