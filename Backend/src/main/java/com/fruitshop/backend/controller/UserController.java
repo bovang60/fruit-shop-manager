@@ -47,25 +47,28 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
-    public ResponseEntity<Page<UserDto>> getUsers(
+    @GetMapping("/list")
+    public ResponseEntity<ApiResponse<Page<UserDto>>> getUsers(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) User.UserStatus status,
             @RequestParam(required = false) User.Role role,
             Pageable pageable) {
-        return ResponseEntity.ok(userService.getUsers(search, status, role, pageable));
+        ApiResponse<Page<UserDto>> response = userService.getUsers(search, status, role, pageable);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUser(@PathVariable Integer id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable Integer id) {
+        ApiResponse<UserDto> response = userService.getUserById(id);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<UserDto> updateUserStatus(
+    public ResponseEntity<ApiResponse<UserDto>> updateUserStatus(
             @PathVariable Integer id,
             @RequestParam User.UserStatus status) {
-        return ResponseEntity.ok(userService.updateUserStatus(id, status));
+        ApiResponse<UserDto> response = userService.updateUserStatus(id, status);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/profile")

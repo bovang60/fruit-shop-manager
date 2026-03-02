@@ -1,5 +1,6 @@
 package com.fruitshop.backend.service;
 
+import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.model.User;
 import com.fruitshop.backend.repository.UserRepository;
@@ -34,7 +35,7 @@ class UserHandlerTest {
      * Chuyển trạng thái từ ACTIVE sang BANNED
      */
     @Test
-    void testUpdateUserStatus_Banned_Success() {
+    void testUpdateUserStatus_UTCID01_Banned_Success() {
         Integer userId = 1;
         User existingUser = new User();
         existingUser.setUserId(userId);
@@ -44,9 +45,11 @@ class UserHandlerTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserDto result = userService.updateUserStatus(userId, User.UserStatus.BANNED);
+        ApiResponse<UserDto> response = userService.updateUserStatus(userId, User.UserStatus.BANNED);
+        UserDto result = response.getData();
 
         assertNotNull(result);
+        assertEquals(0, response.getResultCd());
         assertEquals(User.UserStatus.BANNED, result.getStatus());
         verify(userRepository, times(1)).save(any(User.class));
     }
@@ -56,7 +59,7 @@ class UserHandlerTest {
      * Chuyển trạng thái từ BANNED sang ACTIVE
      */
     @Test
-    void testUpdateUserStatus_Active_Success() {
+    void testUpdateUserStatus_UTCID02_Active_Success() {
         Integer userId = 2;
         User existingUser = new User();
         existingUser.setUserId(userId);
@@ -66,9 +69,11 @@ class UserHandlerTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserDto result = userService.updateUserStatus(userId, User.UserStatus.ACTIVE);
+        ApiResponse<UserDto> response = userService.updateUserStatus(userId, User.UserStatus.ACTIVE);
+        UserDto result = response.getData();
 
         assertNotNull(result);
+        assertEquals(0, response.getResultCd());
         assertEquals(User.UserStatus.ACTIVE, result.getStatus());
         verify(userRepository, times(1)).save(any(User.class));
     }
@@ -78,15 +83,15 @@ class UserHandlerTest {
      * Thử cập nhật trạng thái cho một ID không có trong database
      */
     @Test
-    void testUpdateUserStatus_UserNotFound_Error() {
+    void testUpdateUserStatus_UTCID03_UserNotFound_Error() {
         Integer userId = 999;
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userService.updateUserStatus(userId, User.UserStatus.ACTIVE);
-        });
+        ApiResponse<UserDto> response = userService.updateUserStatus(userId, User.UserStatus.ACTIVE);
 
-        assertEquals("Người dùng không tồn tại", exception.getMessage());
+        assertEquals(1, response.getResultCd());
+        assertEquals("User not found", response.getMessage());
+        assertNull(response.getData());
         verify(userRepository, never()).save(any());
     }
 }

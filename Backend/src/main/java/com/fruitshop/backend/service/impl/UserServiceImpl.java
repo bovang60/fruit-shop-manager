@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
 
     @Override
-    public Page<UserDto> getUsers(String search, User.UserStatus status, User.Role role, Pageable pageable) {
+    public ApiResponse<Page<UserDto>> getUsers(String search, User.UserStatus status, User.Role role, Pageable pageable) {
         Page<User> users;
         if (search != null && !search.isEmpty()) {
             users = userRepository.findByFullNameContainingIgnoreCase(search, pageable);
@@ -46,23 +46,35 @@ public class UserServiceImpl implements UserService {
         } else {
             users = userRepository.findAll(pageable);
         }
-        return users.map(this::convertToDto);
+        return ApiResponse.success(users.map(this::convertToDto));
     }
 
     @Override
-    public UserDto getUserById(Integer id) {
+    public ApiResponse<UserDto> getUserById(Integer id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        return convertToDto(user);
+                .orElse(null);
+
+        if (user == null) {
+            return ApiResponse.error("User not found");
+        }
+
+        return ApiResponse.success(convertToDto(user));
     }
 
     @Override
     @Transactional
-    public UserDto updateUserStatus(Integer id, User.UserStatus status) {
+    public ApiResponse<UserDto> updateUserStatus(Integer id, User.UserStatus status) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+                .orElse(null);
+
+        if (user == null) {
+            return ApiResponse.error("User not found");
+        }
+
         user.setStatus(status);
-        return convertToDto(userRepository.save(user));
+        userRepository.save(user);
+
+        return ApiResponse.success("User status updated successfully", convertToDto(user));
     }
 
     @Override

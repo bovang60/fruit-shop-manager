@@ -89,6 +89,9 @@ public class CategoryServiceImpl implements CategoryService {
 
         category.setCategoryName(categoryDto.getCategoryName());
         category.setDescription(categoryDto.getDescription());
+        if (categoryDto.getStatus() != null) {
+            category.setStatus(categoryDto.getStatus());
+        }
         Category updatedCategory = categoryRepository.save(category);
         return ApiResponse.success("Category updated successfully", convertToDto(updatedCategory));
     }
