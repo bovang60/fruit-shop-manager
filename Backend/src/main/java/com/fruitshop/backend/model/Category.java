@@ -19,13 +19,29 @@ public class Category {
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    @Convert(converter = CategoryStatus.CategoryStatusConverter.class)
     private CategoryStatus status = CategoryStatus.ACTIVE;
 
     @OneToMany(mappedBy = "category")
     private List<Fruit> fruits;
 
     public enum CategoryStatus {
-        ACTIVE, INACTIVE
+        ACTIVE, INACTIVE;
+
+        @Converter(autoApply = true)
+        public static class CategoryStatusConverter implements AttributeConverter<CategoryStatus, String> {
+            @Override
+            public String convertToDatabaseColumn(CategoryStatus status) {
+                return status == null ? null : status.name().toLowerCase();
+            }
+
+            @Override
+            public CategoryStatus convertToEntityAttribute(String value) {
+                if (value == null)
+                    return null;
+                return CategoryStatus.valueOf(value.toUpperCase());
+            }
+        }
     }
 }

@@ -328,10 +328,13 @@ class UserServiceImplTest {
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
 
         // When
-        UserDto result = userService.getUserById(1);
+        ApiResponse<UserDto> response = userService.getUserById(1);
 
         // Then
-        assertNotNull(result);
+        assertNotNull(response);
+        assertEquals(0, response.getResultCd());
+        assertNotNull(response.getData());
+        UserDto result = response.getData();
         assertEquals(user.getUserId(), result.getUserId());
         assertEquals(user.getFullName(), result.getFullName());
         assertEquals(user.getEmail(), result.getEmail());
@@ -489,68 +492,6 @@ class UserServiceImplTest {
         assertNull(response.getData());
 
         verify(userRepository, times(1)).findById(999);
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    void updateProfile_WithPasswordChange_Success() {
-        // Given
-        updateProfileDto.setCurrentPassword("password123");
-        updateProfileDto.setNewPassword("newPassword456");
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(user);
-
-        // When
-        ApiResponse<UserDto> response = userService.updateProfile(1, updateProfileDto);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(0, response.getResultCd());
-        assertEquals("Profile updated successfully", response.getMessage());
-        assertNotNull(response.getData());
-        assertEquals("newPassword456", user.getPassword());
-
-        verify(userRepository, times(1)).findById(1);
-        verify(userRepository, times(1)).save(any(User.class));
-    }
-
-    @Test
-    void updateProfile_WithPasswordChange_MissingCurrentPassword() {
-        // Given
-        updateProfileDto.setNewPassword("newPassword456");
-        updateProfileDto.setCurrentPassword(null);
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-
-        // When
-        ApiResponse<UserDto> response = userService.updateProfile(1, updateProfileDto);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(1, response.getResultCd());
-        assertEquals("Current password is required to change password", response.getMessage());
-        assertNull(response.getData());
-
-        verify(userRepository, times(1)).findById(1);
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    void updateProfile_WithPasswordChange_WrongCurrentPassword() {
-        // Given
-        updateProfileDto.setCurrentPassword("wrongPassword");
-        updateProfileDto.setNewPassword("newPassword456");
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-
-        // When
-        ApiResponse<UserDto> response = userService.updateProfile(1, updateProfileDto);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(1, response.getResultCd());
-        assertEquals("Current password is incorrect", response.getMessage());
-        assertNull(response.getData());
-
-        verify(userRepository, times(1)).findById(1);
         verify(userRepository, never()).save(any(User.class));
     }
 

@@ -22,11 +22,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Random;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -254,22 +252,6 @@ public class UserServiceImpl implements UserService {
             return ApiResponse.error("User not found");
         }
 
-        // Nếu muốn đổi password, kiểm tra password hiện tại
-        if (updateProfileDto.getNewPassword() != null && !updateProfileDto.getNewPassword().isEmpty()) {
-            // Kiểm tra current password có được cung cấp không
-            if (updateProfileDto.getCurrentPassword() == null || updateProfileDto.getCurrentPassword().isEmpty()) {
-                return ApiResponse.error("Current password is required to change password");
-            }
-
-            // Verify current password (TODO: Cần dùng BCrypt trong production)
-            if (!user.getPassword().equals(updateProfileDto.getCurrentPassword())) {
-                return ApiResponse.error("Current password is incorrect");
-            }
-
-            // Update password mới (TODO: Cần hash với BCrypt trong production)
-            user.setPassword(updateProfileDto.getNewPassword());
-        }
-
         // Update full name
         user.setFullName(updateProfileDto.getFullName());
 
@@ -278,11 +260,16 @@ public class UserServiceImpl implements UserService {
             user.setPhoneNumber(updateProfileDto.getPhoneNumber());
         }
 
-        // Save changes
-        userRepository.save(user);
+        // Update address (if provided)
+        if (updateProfileDto.getAddress() != null && !updateProfileDto.getAddress().isEmpty()) {
+            user.setAddress(updateProfileDto.getAddress());
+        }
+
+        // Save changes and get updated user
+        User updatedUser = userRepository.save(user);
 
         // Return updated user info
-        UserDto userDto = convertToDto(user);
+        UserDto userDto = convertToDto(updatedUser);
         return ApiResponse.success("Profile updated successfully", userDto);
     }
 
@@ -411,6 +398,7 @@ public class UserServiceImpl implements UserService {
         dto.setFullName(user.getFullName());
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setAddress(user.getAddress());
         dto.setRole(user.getRole());
         dto.setStatus(user.getStatus());
         dto.setCreatedAt(user.getCreatedAt());
