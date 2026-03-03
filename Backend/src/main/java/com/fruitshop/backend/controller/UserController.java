@@ -49,7 +49,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<ApiResponse<Page<UserDto>>> getUsers(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) User.UserStatus status,

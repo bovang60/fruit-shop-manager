@@ -1,5 +1,6 @@
 package com.fruitshop.backend.controller;
 
+import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.CategoryDto;
 import com.fruitshop.backend.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<Page<CategoryDto>> getCategories(
+    public ResponseEntity<ApiResponse<Page<CategoryDto>>> getCategories(
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "false") Boolean sortByFruitCount,
             Pageable pageable) {
@@ -25,24 +26,24 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDto> getCategory(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<CategoryDto>> getCategory(@PathVariable Integer id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
     @PostMapping
-    public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
+    public ResponseEntity<ApiResponse<CategoryDto>> createCategory(@RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok(categoryService.createCategory(categoryDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryDto> updateCategory(
+    public ResponseEntity<ApiResponse<CategoryDto>> updateCategory(
             @PathVariable Integer id,
             @RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok(categoryService.updateCategory(id, categoryDto));
     }
 
     @PutMapping("/{id}/toggle-status")
-    public ResponseEntity<CategoryDto> toggleStatus(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<CategoryDto>> toggleStatus(@PathVariable Integer id) {
         return ResponseEntity.ok(categoryService.toggleCategoryStatus(id));
     }
 }

@@ -36,8 +36,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
 
     @Override
-    public ApiResponse<Page<UserDto>> getUsers(String search, User.UserStatus status, User.Role role,
-            Pageable pageable) {
+    public ApiResponse<Page<UserDto>> getUsers(String search, User.UserStatus status, User.Role role, Pageable pageable) {
         Page<User> users;
         if (search != null && !search.isEmpty()) {
             users = userRepository.findByFullNameContainingIgnoreCase(search, pageable);
@@ -50,8 +49,7 @@ public class UserServiceImpl implements UserService {
         } else {
             users = userRepository.findAll(pageable);
         }
-        Page<UserDto> userDtos = users.map(this::convertToDto);
-        return ApiResponse.success("Users retrieved successfully", userDtos);
+        return ApiResponse.success(users.map(this::convertToDto));
     }
 
     @Override
@@ -63,7 +61,7 @@ public class UserServiceImpl implements UserService {
             return ApiResponse.error("User not found");
         }
 
-        return ApiResponse.success("User retrieved successfully", convertToDto(user));
+        return ApiResponse.success(convertToDto(user));
     }
 
     @Override
@@ -77,8 +75,9 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setStatus(status);
-        UserDto userDto = convertToDto(userRepository.save(user));
-        return ApiResponse.success("User status updated successfully", userDto);
+        userRepository.save(user);
+
+        return ApiResponse.success("User status updated successfully", convertToDto(user));
     }
 
     @Override
