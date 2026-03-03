@@ -98,6 +98,56 @@ export async function callApiWithMethod<TRequest = any, TResponse = any>(
   }
 }
 
+// ============= HTTP Method Helpers =============
+
+/**
+ * GET request
+ */
+export async function get<TResponse = any>(
+  url: string,
+): Promise<TResponse> {
+  return callApiWithMethod<any, TResponse>('GET', url);
+}
+
+/**
+ * POST request
+ */
+export async function post<TRequest = any, TResponse = any>(
+  url: string,
+  data?: TRequest,
+): Promise<TResponse> {
+  return callApiWithMethod<TRequest, TResponse>('POST', url, data);
+}
+
+/**
+ * PUT request
+ */
+export async function put<TRequest = any, TResponse = any>(
+  url: string,
+  data?: TRequest,
+): Promise<TResponse> {
+  return callApiWithMethod<TRequest, TResponse>('PUT', url, data);
+}
+
+/**
+ * DELETE request
+ */
+export async function del<TResponse = any>(
+  url: string,
+): Promise<TResponse> {
+  return callApiWithMethod<any, TResponse>('DELETE', url);
+}
+
+/**
+ * PATCH request
+ */
+export async function patch<TRequest = any, TResponse = any>(
+  url: string,
+  data?: TRequest,
+): Promise<TResponse> {
+  return callApiWithMethod<TRequest, TResponse>('PATCH', url, data);
+}
+
 // ============= Helper Functions =============
 
 /**

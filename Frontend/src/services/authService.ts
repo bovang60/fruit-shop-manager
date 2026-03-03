@@ -31,6 +31,17 @@ export interface UpdateProfileRequest {
   currentPassword?: string;
 }
 
+export interface ForgotPasswordRequestData {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  otpCode: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface UserDto {
   userId: number;
   fullName: string;
@@ -97,6 +108,34 @@ export async function updateProfile(
   );
 }
 
+/**
+ * Forgot Password - Step 1: Request OTP via email
+ * @param data - ForgotPasswordRequestData with email
+ * @returns ApiResponse (data will be null, OTP sent to email)
+ */
+export async function requestPasswordReset(
+  data: ForgotPasswordRequestData,
+): Promise<ApiResponse<null>> {
+  return callApi<ForgotPasswordRequestData, ApiResponse<null>>(
+    "/api/users/forgot-password/request",
+    data,
+  );
+}
+
+/**
+ * Forgot Password - Step 2: Reset password with OTP
+ * @param data - ResetPasswordRequest with email, OTP code, and new password
+ * @returns ApiResponse (data will be null on success)
+ */
+export async function resetPasswordWithOtp(
+  data: ResetPasswordRequest,
+): Promise<ApiResponse<null>> {
+  return callApi<ResetPasswordRequest, ApiResponse<null>>(
+    "/api/users/forgot-password/reset",
+    data,
+  );
+}
+
 // ============= Helper Functions =============
 
 /**
@@ -118,6 +157,20 @@ export function getDisplayMessage(message: string): string {
       "Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.",
     "No pending registration found for this email":
       "Không tìm thấy yêu cầu đăng ký. Vui lòng đăng ký lại.",
+    "No account found with this email address":
+      "Không tìm thấy tài khoản với email này",
+    "Failed to send OTP email. Please try again.":
+      "Không thể gửi email OTP. Vui lòng thử lại.",
+    "No password reset request found. Please request a new OTP.":
+      "Không tìm thấy yêu cầu đặt lại mật khẩu. Vui lòng yêu cầu OTP mới.",
+    "OTP code has been sent to your email. Please verify within 5 minutes.":
+      "Mã OTP đã được gửi đến email của bạn. Vui lòng xác thực trong 5 phút.",
+    "Password has been reset successfully. You can now login with your new password.":
+      "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập với mật khẩu mới.",
+    "New password and confirm password do not match":
+      "Mật khẩu mới và xác nhận mật khẩu không khớp",
+    "New password must be between 6 and 50 characters":
+      "Mật khẩu mới phải có từ 6 đến 50 ký tự",
     "User not found": "Không tìm thấy người dùng",
     "Current password is required to change password":
       "Cần nhập mật khẩu hiện tại để đổi mật khẩu",

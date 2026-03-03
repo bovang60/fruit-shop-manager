@@ -11,12 +11,29 @@ export type Props = {
   onQueryChange: (v: string) => void
   products: Product[]
   displayed: Product[]
+  newArrivals: Product[]
+  trending: Product[]
   page: number
   totalPages: number
   onPageChange: (p: number) => void
+  onAddToCart: (productId: number) => void
+  loading: boolean
+  error: string
 }
 
-export default function HomeView({ query, onQueryChange, displayed, page, totalPages, onPageChange }: Props) {
+export default function HomeView({ 
+  query, 
+  onQueryChange, 
+  displayed, 
+  newArrivals,
+  trending,
+  page, 
+  totalPages, 
+  onPageChange,
+  onAddToCart,
+  loading,
+  error
+}: Props) {
   return (
     <div className="home-root">
       {/* Sticky Header */}
@@ -126,37 +143,52 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
             </div>
           </div>
 
+          {/* Loading & Error States */}
+          {loading && (
+            <div className="loading-state">
+              <p>Đang tải sản phẩm...</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className="error-state">
+              <p style={{color: 'red'}}>{error}</p>
+            </div>
+          )}
+
           {/* Products Grid */}
-          <div className="modern-products-grid">
-            {displayed.map((p) => (
-              <div key={p.id} className="modern-product-card">
-                <div className="product-image-wrap">
-                  {p.img ? (
-                    <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
-                  ) : (
-                    <div className="product-image-placeholder">🍊</div>
-                  )}
-                  {p.tag && <div className="product-tag">{p.tag}</div>}
-                  <div className="product-favorite">❤</div>
-                </div>
-                <div className="product-info">
-                  <div className="product-details">
-                    <div>
-                      <p className="product-name-modern">{p.name}</p>
-                      {p.desc && <p className="product-desc">{p.desc}</p>}
-                    </div>
-                    <p className="product-price-modern">{p.price}</p>
+          {!loading && !error && (
+            <div className="modern-products-grid">
+              {displayed.map((p) => (
+                <div key={p.id} className="modern-product-card">
+                  <div className="product-image-wrap">
+                    {p.img ? (
+                      <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
+                    ) : (
+                      <div className="product-image-placeholder">🍊</div>
+                    )}
+                    {p.tag && <div className="product-tag">{p.tag}</div>}
+                    <div className="product-favorite">❤</div>
                   </div>
-                  <button 
-                    className="add-to-cart-btn" 
-                    onClick={() => alert('Đã thêm vào giỏ (mock)')}
-                  >
-                    🛒 Add to Cart
-                  </button>
+                  <div className="product-info">
+                    <div className="product-details">
+                      <div>
+                        <p className="product-name-modern">{p.name}</p>
+                        {p.desc && <p className="product-desc">{p.desc}</p>}
+                      </div>
+                      <p className="product-price-modern">{p.price}</p>
+                    </div>
+                    <button 
+                      className="add-to-cart-btn" 
+                      onClick={() => onAddToCart(p.id)}
+                    >
+                      🛒 Add to Cart
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Pagination */}
           <div className="pagination-wrap">
@@ -175,11 +207,11 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')`}}></div>
-                    <p className="mini-card-name">Fruit {i}</p>
-                    <p className="mini-card-price">${(i*3.5+2).toFixed(2)}</p>
+                {newArrivals.map(p => (
+                  <div key={p.id} className="mini-card">
+                    <div className="mini-card-img" style={{backgroundImage: p.img ? `url('${p.img}')` : 'none'}}></div>
+                    <p className="mini-card-name">{p.name}</p>
+                    <p className="mini-card-price">{p.price}</p>
                   </div>
                 ))}
               </div>
@@ -198,11 +230,11 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {[5,6,7].map(i => (
-                  <div key={i} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')`}}></div>
-                    <p className="mini-card-name">Fruit {i}</p>
-                    <p className="mini-card-price">${(i*3.5+2).toFixed(2)}</p>
+                {trending.map(p => (
+                  <div key={p.id} className="mini-card">
+                    <div className="mini-card-img" style={{backgroundImage: p.img ? `url('${p.img}')` : 'none'}}></div>
+                    <p className="mini-card-name">{p.name}</p>
+                    <p className="mini-card-price">{p.price}</p>
                   </div>
                 ))}
               </div>

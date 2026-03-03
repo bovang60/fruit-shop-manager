@@ -11,6 +11,7 @@ export type Props = {
   onPasswordChange: (v: string) => void
   onSubmit: (e: React.FormEvent) => void
   onGoToRegister: () => void
+  onGoToForgotPassword: () => void
 }
 
 export default function LoginView({
@@ -22,6 +23,7 @@ export default function LoginView({
   onPasswordChange,
   onSubmit,
   onGoToRegister,
+  onGoToForgotPassword,
 }: Props) {
   return (
     <div className="login-root">
@@ -88,7 +90,9 @@ export default function LoginView({
               <div className="field">
                 <div className="field-header">
                   <label htmlFor="password">Password</label>
-                  <a href="#" className="forgot-link">Forgot Password?</a>
+                  <button type="button" className="forgot-link" onClick={onGoToForgotPassword}>
+                    Forgot Password?
+                  </button>
                 </div>
                 <div className="input-wrapper">
                   {/* <span className="input-icon">🔒</span> */}
