@@ -4,6 +4,10 @@ import Login from './components/login/Login'
 import Register from './components/register/Register'
 import ForgotPassword from './components/forgot-password/ForgotPassword'
 import ChangePassword from './components/change-password/ChangePassword'
+import CategoryManagement from './components/category-management/CategoryManagement'
+import AdminDashboard from './components/dashboard-admin/AdminDashboard'
+import ShopManagement from './components/shop-management/ShopManagement'
+import UserManagement from './components/user-management/UserManagement'
 import Profile from './components/profile/Profile'
 import './App.css'
 
@@ -17,10 +21,14 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/home" element={<Home />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/category-management" element={<CategoryManagement />} />
+        <Route path="/shop-management" element={<ShopManagement />} />
+        <Route path="/user-management" element={<UserManagement />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   )
 }
 
-export default App
+export default App;

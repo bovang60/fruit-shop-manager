@@ -128,11 +128,11 @@ export default function HomeView({
               <p className="content-subtitle">Showing {displayed.length} results for "All Fruits"</p>
             </div>
             <div className="content-actions">
-              <input 
-                className="search-input" 
-                placeholder="Search fruits..." 
-                value={query} 
-                onChange={(e) => onQueryChange(e.target.value)} 
+              <input
+                className="search-input"
+                placeholder="Search fruits..."
+                value={query}
+                onChange={(e) => onQueryChange(e.target.value)}
               />
               <select className="sort-select">
                 <option>Sort by: Popularity</option>
