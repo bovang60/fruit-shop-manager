@@ -80,37 +80,45 @@ export default function ChangePassword() {
     setErrors({})
 
     try {
-      // Get user from localStorage
-      const userStr = localStorage.getItem('user')
-      if (!userStr) {
+      // Get userId from localStorage
+      const userId = localStorage.getItem('userId')
+      if (!userId) {
         setErrors({ general: 'Please login first' })
         navigate('/login')
         return
       }
 
-      const user = JSON.parse(userStr)
-
-      // API call to update password
-      const result = await callApi('/api/user/update-profile', 'POST', {
-        userId: user.userId,
+      // API call to change password
+      const result = await callApi(`/api/users/${userId}/change-password`, 'PUT', {
         currentPassword,
-        newPassword
+        newPassword,
+        confirmPassword
       })
 
       if (result.resultCd === 0) {
-        // Success - redirect to profile or dashboard
-        alert('Password updated successfully!')
+        // Success - show success message and redirect
+        setErrors({})
+        alert(result.message || 'Password changed successfully!')
+        
+        // Clear form
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        
+        // Redirect after 2 seconds
         setTimeout(() => {
           navigate('/profile')
-        }, 1500)
+        }, 2000)
       } else {
         setErrors({
           general: result.message || 'Failed to update password. Please check your current password.'
         })
       }
-    } catch (error) {
-      console.error('Error updating password:', error)
-      setErrors({ general: 'An error occurred. Please try again!' })
+    } catch (error: any) {
+      console.error('Error changing password:', error)
+      setErrors({ 
+        general: error.response?.data?.message || 'Network error. Please try again.' 
+      })
     } finally {
       setLoading(false)
     }

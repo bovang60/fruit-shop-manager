@@ -75,6 +75,10 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
     }
   }
 
+  const handleGoToForgotPassword = () => {
+    navigate('/forgot-password')
+  }
+
   return (
     <LoginView
       email={email}
@@ -85,6 +89,7 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
       onPasswordChange={setPassword}
       onSubmit={handleSubmit}
       onGoToRegister={handleGoToRegister}
+      onGoToForgotPassword={handleGoToForgotPassword}
     />
   )
 }
