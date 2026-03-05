@@ -1,5 +1,6 @@
 package com.fruitshop.backend.service.impl;
 
+import com.fruitshop.backend.dto.SalesReportDto;
 import com.fruitshop.backend.model.Order;
 import com.fruitshop.backend.repository.OrderRepository;
 import com.fruitshop.backend.service.OrderService;
@@ -32,7 +33,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Logic chặn: Nếu đơn đã hủy hoặc đã hoàn thành thì không cho đổi trạng thái nữa
         if (order.getStatus() == Order.OrderStatus.CANCELLED ||
-                order.getStatus() == Order.OrderStatus.DELIVERED) {
+                order.getStatus() == Order.OrderStatus.COMPLETED) {
             throw new IllegalStateException("Đơn hàng đã đóng, không thể thay đổi trạng thái!");
         }
 
@@ -42,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public SalesReportDto getShopSalesReport(Integer shopId) {
         Integer totalOrders = (int) orderRepository.count(); // Có thể lọc thêm theo shopId
-        Integer successfulOrders = orderRepository.countByShopIdAndStatus(shopId, Order.OrderStatus.DELIVERED);
+        Integer successfulOrders = orderRepository.countByShopIdAndStatus(shopId, Order.OrderStatus.COMPLETED);
         java.math.BigDecimal revenue = orderRepository.sumRevenueByShopId(shopId);
         Integer quantitySold = orderRepository.sumQuantitySoldByShopId(shopId);
 

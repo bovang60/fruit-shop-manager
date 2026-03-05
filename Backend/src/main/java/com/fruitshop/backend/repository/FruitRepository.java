@@ -1,59 +1,12 @@
-package com.fruitshop.backend.service.impl;
+package com.fruitshop.backend.repository;
 
 import com.fruitshop.backend.model.Fruit;
-import com.fruitshop.backend.model.Shop;
-import com.fruitshop.backend.repository.FruitRepository;
-import com.fruitshop.backend.repository.ShopRepository; // Giả định đã có
-import com.fruitshop.backend.service.FruitService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@Service
-@RequiredArgsConstructor
-public class FruitServiceImpl implements FruitService {
+import java.util.List;
 
-    private final FruitRepository fruitRepository;
-    private final ShopRepository shopRepository;
-
-    @Override
-    @Transactional
-    public Fruit createFruit(Fruit fruit, Integer shopId) {
-        Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy cửa hàng!"));
-        fruit.setShop(shop);
-        return fruitRepository.save(fruit);
-    }
-
-    @Override
-    @Transactional
-    public Fruit updateFruit(Integer fruitId, Fruit fruitDetails) {
-        Fruit existingFruit = fruitRepository.findById(fruitId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
-
-        // Chỉ cập nhật các trường cần thiết
-        existingFruit.setFruitName(fruitDetails.getFruitName());
-        existingFruit.setPrice(fruitDetails.getPrice());
-        existingFruit.setStockQuantity(fruitDetails.getStockQuantity());
-        existingFruit.setCategory(fruitDetails.getCategory());
-        existingFruit.setDescription(fruitDetails.getDescription());
-        existingFruit.setImageUrl(fruitDetails.getImageUrl());
-        existingFruit.setStatus(fruitDetails.getStatus());
-
-        return fruitRepository.save(existingFruit);
-    }
-
-    @Override
-    @Transactional
-    public void deleteFruit(Integer fruitId) {
-        if (!fruitRepository.existsById(fruitId)) {
-            throw new RuntimeException("Sản phẩm không tồn tại!");
-        }
-        fruitRepository.deleteById(fruitId);
-    }
-
-    @Override
-    public List<Fruit> getFruitsByShop(Integer shopId) {
-        return fruitRepository.findByShop_ShopId(shopId);
-    }
+@Repository
+public interface FruitRepository extends JpaRepository<Fruit, Integer> {
+    List<Fruit> findByShop_ShopId(Integer shopId);
 }

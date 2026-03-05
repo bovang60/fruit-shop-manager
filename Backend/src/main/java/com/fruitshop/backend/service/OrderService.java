@@ -1,5 +1,6 @@
 package com.fruitshop.backend.service;
 
+import com.fruitshop.backend.dto.SalesReportDto;
 import com.fruitshop.backend.model.Order;
 import java.util.List;
 

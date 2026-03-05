@@ -1,3 +1,14 @@
+package com.fruitshop.backend.controller;
+
+import com.fruitshop.backend.dto.SalesReportDto;
+import com.fruitshop.backend.service.OrderService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 @RestController
 @RequestMapping("/api/seller")
 @RequiredArgsConstructor

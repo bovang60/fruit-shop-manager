@@ -1,37 +1,60 @@
+package com.fruitshop.backend.service.impl;
+
+import com.fruitshop.backend.model.Fruit;
+import com.fruitshop.backend.model.Shop;
+import com.fruitshop.backend.repository.FruitRepository;
+import com.fruitshop.backend.repository.ShopRepository;
+import com.fruitshop.backend.service.FruitService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class FruitServiceImpl implements FruitService {
+
     private final FruitRepository fruitRepository;
     private final ShopRepository shopRepository;
 
     @Override
-    public FruitResponseDto createFruit(FruitRequestDto fruitDto, Integer userId) {
-        Shop shop = shopRepository.findByOwnerUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Shop not found for this seller"));
-
-        Fruit fruit = new Fruit();
-        // Map DTO to Entity
-        fruit.setFruitName(fruitDto.getFruitName());
+    @Transactional
+    public Fruit createFruit(Fruit fruit, Integer shopId) {
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay cua hang!"));
         fruit.setShop(shop);
-        // ... các fields khác
-
-        Fruit savedFruit = fruitRepository.save(fruit);
-        return mapToResponseDto(savedFruit);
+        return fruitRepository.save(fruit);
     }
 
     @Override
-    public void deleteFruit(Integer fruitId, Integer userId) {
-        Fruit fruit = fruitRepository.findById(fruitId)
-                .orElseThrow(() -> new ResourceNotFoundException("Fruit not found"));
+    @Transactional
+    public Fruit updateFruit(Integer fruitId, Fruit fruitDetails) {
+        Fruit existingFruit = fruitRepository.findById(fruitId)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay san pham!"));
 
-        // Kiểm tra quyền sở hữu: Chỉ chủ Shop mới được xóa sản phẩm của Shop đó
-        if (!fruit.getShop().getOwner().getUserId().equals(userId)) {
-            throw new UnauthorizedException("You don't have permission to delete this fruit");
+        existingFruit.setFruitName(fruitDetails.getFruitName());
+        existingFruit.setPrice(fruitDetails.getPrice());
+        existingFruit.setStockQuantity(fruitDetails.getStockQuantity());
+        existingFruit.setCategory(fruitDetails.getCategory());
+        existingFruit.setDescription(fruitDetails.getDescription());
+        existingFruit.setImageUrl(fruitDetails.getImageUrl());
+        existingFruit.setStatus(fruitDetails.getStatus());
+
+        return fruitRepository.save(existingFruit);
+    }
+
+    @Override
+    @Transactional
+    public void deleteFruit(Integer fruitId) {
+        if (!fruitRepository.existsById(fruitId)) {
+            throw new RuntimeException("San pham khong ton tai!");
         }
+        fruitRepository.deleteById(fruitId);
+    }
 
-        // Nên dùng Soft Delete (đổi status) để tránh lỗi vãng lai với Order cũ
-        fruit.setStatus(FruitStatus.HIDDEN);
-        fruitRepository.save(fruit);
+    @Override
+    public List<Fruit> getFruitsByShop(Integer shopId) {
+        return fruitRepository.findByShop_ShopId(shopId);
     }
 }
