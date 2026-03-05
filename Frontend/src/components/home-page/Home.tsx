@@ -20,7 +20,10 @@ import {
   mapProductSummaryToUI as mapSummary 
 } from './Home.types'
 
+import { usePopup } from '../common/popup'
+
 export default function Home() {
+  const { showNotice, showError } = usePopup()
   // State management
   const [products, setProducts] = useState<Product[]>([])
   const [newArrivals, setNewArrivals] = useState<Product[]>([])
@@ -155,13 +158,13 @@ export default function Home() {
       const response = await addToCart({ productId, quantity: 1 })
       
       if (response.resultCd === 0) {
-        alert('Đã thêm vào giỏ hàng!')
+        showNotice('Đã thêm vào giỏ hàng!', 'Thành công')
       } else {
-        alert(getErrorMessage(response.message || 'Failed to add to cart'))
+        showError(getErrorMessage(response.message || 'Failed to add to cart'))
       }
     } catch (err) {
       console.error('Error adding to cart:', err)
-      alert('Có lỗi xảy ra. Vui lòng thử lại!')
+      showError('Có lỗi xảy ra. Vui lòng thử lại!')
     }
   }
 
