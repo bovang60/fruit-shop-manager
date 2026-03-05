@@ -19,8 +19,8 @@ Hướng dẫn AI agents cách tích hợp API endpoints mới vào hệ thống
 
 1. **Tạo Service file mới** trong `src/services/`
 2. **Tạo Container + View components** trong `src/components/[feature]/`
-3. **Import và sử dụng** các methods có sẵn: `get`, `post`, `put`, `del`
-4. **Handle errors proper** với Vietnamese messages
+3. **Import và sử dụng** `callApiWithMethod` từ `apiClient.ts`
+4. **Handle errors proper** với Vietnamese messages và try-catch blocks
 
 ---
 
@@ -131,8 +131,7 @@ export default function ChangePassword() {
 **File:** `src/services/productService.ts`
 
 ```typescript
-import { get, post, put, del } from '../utils/apiClient'
-import type { ApiResponse } from '../utils/apiClient'
+import { callApiWithMethod, type ApiResponse } from '../utils/apiClient'
 
 // Types
 export interface Product {
@@ -148,19 +147,40 @@ export interface CreateProductDto {
 
 // API Functions
 export async function getProducts(page: number, limit: number): Promise<ApiResponse<Product[]>> {
-  return get<ApiResponse<Product[]>>('/api/products', { page, limit })
+  try {
+    const url = `/api/products?page=${page}&limit=${limit}`
+    return await callApiWithMethod<never, ApiResponse<Product[]>>('GET', url)
+  } catch (error) {
+    console.error('Error fetching products:', error)
+    return { resultCd: 1, message: 'Failed to fetch products', data: null }
+  }
 }
 
 export async function createProduct(data: CreateProductDto): Promise<ApiResponse<Product>> {
-  return post<ApiResponse<Product>>('/api/products', data)
+  try {
+    return await callApiWithMethod<CreateProductDto, ApiResponse<Product>>('POST', '/api/products', data)
+  } catch (error) {
+    console.error('Error creating product:', error)
+    return { resultCd: 1, message: 'Failed to create product', data: null }
+  }
 }
 
 export async function updateProduct(id: number, data: Partial<CreateProductDto>): Promise<ApiResponse<Product>> {
-  return put<ApiResponse<Product>>(`/api/products/${id}`, data)
+  try {
+    return await callApiWithMethod<Partial<CreateProductDto>, ApiResponse<Product>>('PUT', `/api/products/${id}`, data)
+  } catch (error) {
+    console.error('Error updating product:', error)
+    return { resultCd: 1, message: 'Failed to update product', data: null }
+  }
 }
 
 export async function deleteProduct(id: number): Promise<ApiResponse<null>> {
-  return del<ApiResponse<null>>(`/api/products/${id}`)
+  try {
+    return await callApiWithMethod<never, ApiResponse<null>>('DELETE', `/api/products/${id}`)
+  } catch (error) {
+    console.error('Error deleting product:', error)
+    return { resultCd: 1, message: 'Failed to delete product', data: null }
+  }
 }
 
 // Error messages helper (Optional)

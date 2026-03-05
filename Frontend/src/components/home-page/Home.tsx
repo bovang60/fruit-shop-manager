@@ -33,11 +33,20 @@ export default function Home() {
   const [totalPages, setTotalPages] = useState(1)
   const pageSize = 25
   
-  // Filter state
+  // Filter state (applied filters that trigger API calls)
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     sortBy: 'popularity',
     sortOrder: 'desc'
+  })
+
+  // Temporary filter state (for sidebar inputs before Apply)
+  const [tempFilters, setTempFilters] = useState<Omit<FilterState, 'search' | 'sortBy' | 'sortOrder'>>({
+    category: undefined,
+    minPrice: undefined,
+    maxPrice: undefined,
+    origin: undefined,
+    organic: undefined
   })
 
   // Load products on mount and when filters/page change
@@ -156,6 +165,57 @@ export default function Home() {
     }
   }
 
+  /**
+   * Handle category filter change
+   */
+  const handleCategoryChange = (category: string) => {
+    setTempFilters(prev => ({ ...prev, category }))
+  }
+
+  /**
+   * Handle price range change
+   */
+  const handlePriceChange = (minPrice: number, maxPrice: number) => {
+    setTempFilters(prev => ({ ...prev, minPrice, maxPrice }))
+  }
+
+  /**
+   * Handle origin filter change
+   */
+  const handleOriginChange = (origin: string | undefined) => {
+    setTempFilters(prev => ({ ...prev, origin }))
+  }
+
+  /**
+   * Handle organic filter change
+   */
+  const handleOrganicChange = (organic: boolean | undefined) => {
+    setTempFilters(prev => ({ ...prev, organic }))
+  }
+
+  /**
+   * Handle sort change
+   */
+  const handleSortChange = (sortBy: string, sortOrder: string) => {
+    setFilters(prev => ({ ...prev, sortBy, sortOrder }))
+    setPage(1)
+  }
+
+  /**
+   * Apply filters - copy temp filters to actual filters
+   */
+  const handleApplyFilters = () => {
+    setFilters(prev => ({
+      ...prev,
+      category: tempFilters.category,
+      minPrice: tempFilters.minPrice,
+      maxPrice: tempFilters.maxPrice,
+      origin: tempFilters.origin,
+      organic: tempFilters.organic
+    }))
+    setPage(1) // Reset to first page
+  }
+
   // Memoized displayed products (already filtered by API, no need to filter again)
   const displayedProducts = useMemo(() => products, [products])
 
@@ -173,6 +233,21 @@ export default function Home() {
       onAddToCart={handleAddToCart}
       loading={loading}
       error={error}
+      // Filter props
+      category={tempFilters.category}
+      minPrice={tempFilters.minPrice}
+      maxPrice={tempFilters.maxPrice}
+      origin={tempFilters.origin}
+      organic={tempFilters.organic}
+      sortBy={filters.sortBy}
+      sortOrder={filters.sortOrder}
+      // Filter handlers
+      onCategoryChange={handleCategoryChange}
+      onPriceChange={handlePriceChange}
+      onOriginChange={handleOriginChange}
+      onOrganicChange={handleOrganicChange}
+      onSortChange={handleSortChange}
+      onApplyFilters={handleApplyFilters}
     />
   )
 }
