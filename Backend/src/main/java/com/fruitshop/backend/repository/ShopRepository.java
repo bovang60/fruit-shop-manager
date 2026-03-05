@@ -12,4 +12,5 @@ import java.util.List;
 public interface ShopRepository extends JpaRepository<Shop, Integer> {
     List<Shop> findByStatus(Shop.ShopStatus status);
     Page<Shop> findByStatus(Shop.ShopStatus status, Pageable pageable);
+    long countByStatus(Shop.ShopStatus status);
 }

@@ -15,8 +15,6 @@ public class UpdateProfileDto {
     @Pattern(regexp = "^(0|\\+84)[0-9]{9,10}$", message = "Phone number must be valid Vietnamese phone number")
     private String phoneNumber;
 
-    @Size(min = 6, max = 50, message = "Password must be between 6 and 50 characters")
-    private String newPassword; // Optional - only if user wants to change password
-
-    private String currentPassword; // Required if changing password
+    @Size(max = 255, message = "Address must not exceed 255 characters")
+    private String address;
 }

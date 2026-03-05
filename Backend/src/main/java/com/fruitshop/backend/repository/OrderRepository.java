@@ -1,20 +1,56 @@
 package com.fruitshop.backend.repository;
 
+import com.fruitshop.backend.dto.DashboardDto;
 import com.fruitshop.backend.model.Order;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
 import java.util.List;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByShop_ShopIdOrderByCreatedAtDesc(Integer shopId);
+
     @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = :status")
     Integer countByShopIdAndStatus(@Param("shopId") Integer shopId, @Param("status") Order.OrderStatus status);
 
-    // Tính tổng doanh thu (Chỉ tính những đơn hàng đã hoàn thành - DELIVERED)
-    @Query("SELECT SUM(o.subTotal) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = 'DELIVERED'")
-    java.math.BigDecimal sumRevenueByShopId(@Param("shopId") Integer shopId);
+    // Tinh tong doanh thu theo shop (chi tinh don da hoan thanh)
+    @Query("SELECT SUM(o.subTotal) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = 'COMPLETED'")
+    BigDecimal sumRevenueByShopId(@Param("shopId") Integer shopId);
 
-    // Tính tổng số lượng sản phẩm đã bán ra
-    @Query("SELECT SUM(oi.quantity) FROM OrderItem oi WHERE oi.order.shop.shopId = :shopId AND oi.order.status = 'DELIVERED'")
+    // Tinh tong so luong san pham da ban ra theo shop
+    @Query("SELECT SUM(oi.quantity) FROM OrderItem oi WHERE oi.order.shop.shopId = :shopId AND oi.order.status = 'COMPLETED'")
     Integer sumQuantitySoldByShopId(@Param("shopId") Integer shopId);
+
+    @Query("SELECT SUM(o.subTotal + o.shippingFee) FROM Order o WHERE o.status = 'COMPLETED'")
+    BigDecimal sumTotalRevenue();
+
+    long countByStatus(Order.OrderStatus status);
+
+    @Query("SELECT new com.fruitshop.backend.dto.DashboardDto$MonthlyOrderDto(" +
+            "CONCAT(YEAR(o.createdAt), '-', MONTH(o.createdAt)), COUNT(o)) " +
+            "FROM Order o GROUP BY YEAR(o.createdAt), MONTH(o.createdAt) " +
+            "ORDER BY YEAR(o.createdAt) DESC, MONTH(o.createdAt) DESC")
+    List<DashboardDto.MonthlyOrderDto> countOrdersByMonth();
+
+    @Query("SELECT new com.fruitshop.backend.dto.DashboardDto$MonthlyPerformanceDto(" +
+            "CONCAT(YEAR(o.createdAt), '-', MONTH(o.createdAt)), " +
+            "COUNT(o), " +
+            "SUM(CASE WHEN o.status = 'CANCELLED' THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN o.status = 'COMPLETED' THEN (o.subTotal + o.shippingFee) ELSE 0 END)) " +
+            "FROM Order o GROUP BY YEAR(o.createdAt), MONTH(o.createdAt) " +
+            "ORDER BY YEAR(o.createdAt) DESC, MONTH(o.createdAt) DESC")
+    List<DashboardDto.MonthlyPerformanceDto> findMonthlyPerformance();
+
+    @Query("SELECT new com.fruitshop.backend.dto.DashboardDto$TopSellerDto(s.shopName, " +
+            "SUM(oi.quantity), SUM(o.subTotal + o.shippingFee), 'APPROVED') " +
+            "FROM OrderItem oi JOIN oi.order o JOIN o.shop s " +
+            "WHERE o.status = 'COMPLETED' " +
+            "GROUP BY s.shopId, s.shopName, s.status " +
+            "ORDER BY SUM(oi.quantity) DESC")
+    List<DashboardDto.TopSellerDto> findTopSellersByQuantity(Pageable pageable);
 }
