@@ -1,0 +1,23 @@
+.voucher-item {
+    border: 2px dashed #28a745;
+    background: #f1fcf4;
+    text-align: center;
+    padding: 20px;
+}
+
+.voucher-item .product-name {
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: #28a745;
+}
+
+.voucher-item .product-meta {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+.voucher-item .price {
+    margin: 10px 0;
+    display: block;
+}

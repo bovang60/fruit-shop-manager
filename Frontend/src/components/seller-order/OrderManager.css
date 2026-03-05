@@ -1,0 +1,21 @@
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge.pending { background: #fff3cd; color: #856404; }
+.status-badge.confirmed { background: #cfe2ff; color: #084298; }
+.status-badge.shipping { background: #e0e0e0; color: #444; }
+.status-badge.completed { background: #d1ecf1; color: #0c5460; }
+
+.order-table th {
+    background-color: #f8f9fa;
+    color: #555;
+}
+
+.form-actions .primary {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
