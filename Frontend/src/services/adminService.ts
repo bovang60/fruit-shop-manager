@@ -1,5 +1,20 @@
-import { get, post, put, type ApiResponse } from "../utils/apiClient";
-import { buildUrlWithParams } from "../utils/adminUtils";
+import { callApi, callApiWithMethod } from "../utils/apiClient";
+import type { ApiResponse } from "../utils/apiClient";
+
+/**
+ * Helper to build URL with query parameters
+ */
+function buildUrlWithParams(url: string, params?: any): string {
+    if (!params) return url;
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+            query.append(key, String(value));
+        }
+    });
+    const queryString = query.toString();
+    return queryString ? `${url}?${queryString}` : url;
+}
 
 // ============= Dashboard Types & API =============
 
@@ -28,7 +43,7 @@ export interface DashboardStats {
  * Fetch dashboard statistics
  */
 export async function getDashboardStats() {
-    return get<ApiResponse<DashboardStats>>("/api/admin/dashboard/stats");
+    return callApi<undefined, ApiResponse<DashboardStats>>("/api/admin/dashboard/stats");
 }
 
 // ============= User Management Types & API =============
@@ -64,7 +79,8 @@ export interface UserQueryParams {
  * Get users with pagination and search
  */
 export async function getUsers(params?: UserQueryParams) {
-    return get<ApiResponse<PageResponse<UserDto>>>("/api/users", params);
+    const url = buildUrlWithParams("/api/users", params);
+    return callApi<undefined, ApiResponse<PageResponse<UserDto>>>(url);
 }
 
 /**
@@ -72,7 +88,7 @@ export async function getUsers(params?: UserQueryParams) {
  */
 export async function updateUserStatus(userId: number, status: string) {
     const url = buildUrlWithParams(`/api/users/${userId}/status`, { status });
-    return put<null, ApiResponse<UserDto>>(url, null);
+    return callApiWithMethod<null, ApiResponse<UserDto>>("PUT", url, null);
 }
 
 // ============= Category Management Types & API =============
@@ -95,28 +111,29 @@ export interface CategoryRequest {
  * Get all categories
  */
 export async function getCategories(params?: { search?: string; sortByFruitCount?: boolean }) {
-    return get<ApiResponse<Category[]>>("/api/categories", params);
+    const url = buildUrlWithParams("/api/categories", params);
+    return callApi<undefined, ApiResponse<Category[]>>(url);
 }
 
 /**
  * Create a new category
  */
 export async function createCategory(data: CategoryRequest) {
-    return post<CategoryRequest, ApiResponse<Category>>("/api/categories", data);
+    return callApiWithMethod<CategoryRequest, ApiResponse<Category>>("POST", "/api/categories", data);
 }
 
 /**
  * Update an existing category
  */
 export async function updateCategory(id: number, data: CategoryRequest) {
-    return put<CategoryRequest, ApiResponse<Category>>(`/api/categories/${id}`, data);
+    return callApiWithMethod<CategoryRequest, ApiResponse<Category>>("PUT", `/api/categories/${id}`, data);
 }
 
 /**
  * Toggle category status
  */
 export async function toggleCategoryStatus(id: number) {
-    return put<null, ApiResponse<Category>>(`/api/categories/${id}/toggle-status`);
+    return callApiWithMethod<null, ApiResponse<Category>>("PUT", `/api/categories/${id}/toggle-status`, null);
 }
 
 // ============= Shop Management Types & API =============
@@ -133,26 +150,27 @@ export interface ShopDto {
  * Get shops by status
  */
 export async function getShops(params: { status: string; page?: number }) {
-    return get<ApiResponse<ShopDto[]>>("/api/shops", params);
+    const url = buildUrlWithParams("/api/shops", params);
+    return callApi<undefined, ApiResponse<ShopDto[]>>(url);
 }
 
 /**
  * Approve a shop
  */
 export async function approveShop(id: number) {
-    return put<null, ApiResponse<null>>(`/api/shops/${id}/approve`);
+    return callApiWithMethod<null, ApiResponse<null>>("PUT", `/api/shops/${id}/approve`, null);
 }
 
 /**
  * Reject a shop
  */
 export async function rejectShop(id: number, reason: string) {
-    return put<{ reason: string }, ApiResponse<null>>(`/api/shops/${id}/reject`, { reason });
+    return callApiWithMethod<{ reason: string }, ApiResponse<null>>("PUT", `/api/shops/${id}/reject`, { reason });
 }
 
 /**
  * Suspend a shop
  */
 export async function suspendShop(id: number) {
-    return put<null, ApiResponse<null>>(`/api/shops/${id}/suspend`);
+    return callApiWithMethod<null, ApiResponse<null>>("PUT", `/api/shops/${id}/suspend`, null);
 }

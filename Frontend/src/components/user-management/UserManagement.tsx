@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import UserManagementView from './UserManagementView'
 import type { UserData, SortConfig } from './UserManagementView'
-import { getUsers, updateUserStatus, type UserFilter } from '../../services/userService'
+import { getUsers, updateUserStatus, type UserFilter, type UserStatus } from '../../services/userService'
 
 export default function UserManagement() {
     // UI State
@@ -99,7 +99,7 @@ export default function UserManagement() {
     const handleStatusChange = async (id: number, status: string) => {
         try {
             // Map UI status back to API status if needed
-            const apiStatus = status.toUpperCase()
+            const apiStatus = status.toUpperCase() as UserStatus
             const response = await updateUserStatus(id, apiStatus)
             if (response.resultCd === 0) {
                 fetchUsers() // Refresh list

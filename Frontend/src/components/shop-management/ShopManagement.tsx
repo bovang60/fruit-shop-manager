@@ -14,6 +14,10 @@ const ShopManagement: React.FC = () => {
     const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
     const [viewMode, setViewMode] = useState<'LIST' | 'DETAIL'>('LIST');
 
+    // Pagination State
+    const [page, setPage] = useState(0);
+    const [loading] = useState(false);
+
     const fetchShops = () => {
         // Mock Data based on activeTab
         const mockShops: Shop[] = [
@@ -68,6 +72,9 @@ const ShopManagement: React.FC = () => {
         shop.ownerName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const totalElements = filteredShops.length;
+    const totalPages = Math.ceil(totalElements / 10) || 1;
+
     return (
         <ShopManagementView
             isSidebarCollapsed={isSidebarCollapsed}
@@ -83,6 +90,11 @@ const ShopManagement: React.FC = () => {
             onApprove={handleApprove}
             onSuspend={handleSuspend}
             setSelectedShop={setSelectedShop}
+            page={page}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            onPageChange={setPage}
+            loading={loading}
         />
     );
 };

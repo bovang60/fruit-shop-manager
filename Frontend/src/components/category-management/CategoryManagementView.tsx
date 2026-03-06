@@ -6,6 +6,7 @@ import './CategoryManagement.css';
 export interface Category {
     id: number;
     name: string;
+    description?: string;
     productCount: number;
     status: 'Active' | 'Inactive';
 }
@@ -22,7 +23,15 @@ interface CategoryManagementViewProps {
     onSort: (key: string) => void;
     viewMode: 'LIST' | 'CREATE' | 'EDIT';
     setViewMode: (mode: 'LIST' | 'CREATE' | 'EDIT') => void;
-    onSave: (values: { name: string, status: 'Active' | 'Inactive' }) => void;
+    onSave: (values: { name: string, status: 'Active' | 'Inactive', description: string }) => void;
+    onUpdate: (id: number, values: { name: string, status: 'Active' | 'Inactive', description: string }) => void;
+    onEdit: (id: number) => void;
+    currentCategory?: Category | null;
+    page: number;
+    totalPages: number;
+    totalElements: number;
+    onPageChange: (page: number) => void;
+    loading?: boolean;
 }
 
 const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
@@ -37,10 +46,31 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
     onSort,
     viewMode,
     setViewMode,
-    onSave
+    onSave,
+    onUpdate,
+    onEdit,
+    currentCategory,
+    page,
+    totalPages,
+    totalElements,
+    onPageChange,
+    loading = false
 }) => {
     const [newName, setNewName] = useState('');
     const [newStatus, setNewStatus] = useState<'Active' | 'Inactive'>('Active');
+    const [newDescription, setNewDescription] = useState('');
+
+    React.useEffect(() => {
+        if (viewMode === 'EDIT' && currentCategory) {
+            setNewName(currentCategory.name);
+            setNewStatus(currentCategory.status);
+            setNewDescription(currentCategory.description || '');
+        } else if (viewMode === 'CREATE') {
+            setNewName('');
+            setNewStatus('Active');
+            setNewDescription('');
+        }
+    }, [viewMode, currentCategory]);
 
     const renderSortIcon = (key: string) => {
         if (sortConfig.key !== key) return <span className="material-symbols-outlined sort-icon-hidden">unfold_more</span>
@@ -101,7 +131,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
             </div>
 
             <div className="table-card">
-                <table className="admin-table">
+                <table className={`admin-table ${loading ? 'table-loading' : ''}`}>
                     <thead>
                         <tr>
                             <th onClick={() => onSort('name')} style={{ cursor: 'pointer' }}>
@@ -119,7 +149,11 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {categories.length === 0 ? (
+                        {loading ? (
+                            <tr>
+                                <td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>Loading categories...</td>
+                            </tr>
+                        ) : categories.length === 0 ? (
                             <tr>
                                 <td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>No categories found.</td>
                             </tr>
@@ -135,7 +169,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                                     </td>
                                     <td>
                                         <div className="status-actions-group">
-                                            <button className="icon-btn-action">
+                                            <button className="icon-btn-action" onClick={() => onEdit(cat.id)}>
                                                 <span className="material-symbols-outlined">edit</span>
                                             </button>
                                             <button className="icon-btn-action" style={{ color: '#ef4444' }}>
@@ -148,6 +182,39 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                         )}
                     </tbody>
                 </table>
+                <div className="table-footer">
+                    <p className="footer-stats">
+                        Showing {categories.length} of {totalElements} categories
+                    </p>
+                    <div className="pagination-group">
+                        <button
+                            className="page-btn"
+                            disabled={page === 0 || loading}
+                            onClick={() => onPageChange(page - 1)}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_left</span>
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i).map(p => (
+                            <button
+                                key={p}
+                                className={`page-btn ${page === p ? 'active' : ''}`}
+                                onClick={() => onPageChange(p)}
+                                disabled={loading}
+                            >
+                                {p + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            className="page-btn"
+                            disabled={page >= totalPages - 1 || loading}
+                            onClick={() => onPageChange(page + 1)}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </>
     );
@@ -174,23 +241,33 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
 
             <div className="detail-section-card">
                 <h3 className="section-title-label" style={{ marginBottom: '1.5rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Category Details</h3>
-                <div className="section-content-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '500px' }}>
+                <div className="section-content-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '600px' }}>
                     <div className="info-group">
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>CATEGORY NAME</label>
                         <input
                             type="text"
-                            className="search-input-admin"
-                            style={{ padding: '0.75rem', fontSize: '0.875rem' }}
+                            className="modern-search-input-wrap"
+                            style={{ padding: '0 0.75rem', fontSize: '0.875rem', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', height: '48px', width: '100%' }}
                             placeholder="e.g. Tropical Fruits"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                         />
                     </div>
                     <div className="info-group">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>DESCRIPTION</label>
+                        <textarea
+                            className="modern-search-input-wrap"
+                            style={{ padding: '0.75rem', fontSize: '0.875rem', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', minHeight: '120px', width: '100%', resize: 'vertical', display: 'block' }}
+                            placeholder="Write a brief description of this category..."
+                            value={newDescription}
+                            onChange={(e) => setNewDescription(e.target.value)}
+                        />
+                    </div>
+                    <div className="info-group">
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>STATUS</label>
                         <select
-                            className="search-input-admin"
-                            style={{ padding: '0.75rem', fontSize: '0.875rem', appearance: 'auto' }}
+                            className="modern-search-input-wrap"
+                            style={{ padding: '0 0.75rem', fontSize: '0.875rem', appearance: 'auto', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', height: '48px', width: '100%' }}
                             value={newStatus}
                             onChange={(e) => setNewStatus(e.target.value as 'Active' | 'Inactive')}
                         >
@@ -203,7 +280,79 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
 
             <div className="detail-action-footer">
                 <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Cancel</button>
-                <button className="btn-status-toggle is-activate" onClick={() => onSave({ name: newName, status: newStatus })}>Save Category</button>
+                <button className="btn-status-toggle is-activate" onClick={() => onSave({ name: newName, status: newStatus, description: newDescription })}>Save Category</button>
+            </div>
+        </div>
+    );
+
+    const renderEditView = () => (
+        <div className="user-detail-container">
+            <div className="detail-top-bar" style={{ marginBottom: '1.5rem' }}>
+                <button className="btn-back-circle" onClick={() => setViewMode('LIST')} title="Back to List">
+                    <span className="material-symbols-outlined">arrow_back</span>
+                </button>
+            </div>
+
+            <div className="page-header-content" style={{ marginBottom: '2rem' }}>
+                <nav className="breadcrumbs-modern">
+                    <Link to="/admin-dashboard">Dashboard</Link>
+                    <span className="material-symbols-outlined">chevron_right</span>
+                    <span onClick={() => setViewMode('LIST')} style={{ cursor: 'pointer' }}>Category Management</span>
+                    <span className="material-symbols-outlined">chevron_right</span>
+                    <span className="current">Edit Category</span>
+                </nav>
+                <h1>Edit Category</h1>
+                <p>Modify existing segment details.</p>
+            </div>
+
+            <div className="detail-section-card">
+                <h3 className="section-title-label" style={{ marginBottom: '1.5rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Category Details</h3>
+                <div className="section-content-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '600px' }}>
+                    <div className="info-group">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>CATEGORY NAME</label>
+                        <input
+                            type="text"
+                            className="modern-search-input-wrap"
+                            style={{ padding: '0 0.75rem', fontSize: '0.875rem', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', height: '48px', width: '100%' }}
+                            placeholder="e.g. Tropical Fruits"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                        />
+                    </div>
+                    <div className="info-group">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>DESCRIPTION</label>
+                        <textarea
+                            className="modern-search-input-wrap"
+                            style={{ padding: '0.75rem', fontSize: '0.875rem', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', minHeight: '120px', width: '100%', resize: 'vertical', display: 'block' }}
+                            placeholder="Write a brief description of this category..."
+                            value={newDescription}
+                            onChange={(e) => setNewDescription(e.target.value)}
+                        />
+                    </div>
+                    <div className="info-group">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>STATUS</label>
+                        <select
+                            className="modern-search-input-wrap"
+                            style={{ padding: '0 0.75rem', fontSize: '0.875rem', appearance: 'auto', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', height: '48px', width: '100%' }}
+                            value={newStatus}
+                            onChange={(e) => setNewStatus(e.target.value as 'Active' | 'Inactive')}
+                        >
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div className="detail-action-footer">
+                <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Cancel</button>
+                <button
+                    className="btn-status-toggle is-activate"
+                    onClick={() => currentCategory && onUpdate(currentCategory.id, { name: newName, status: newStatus, description: newDescription })}
+                    disabled={loading}
+                >
+                    {loading ? 'Updating...' : 'Update Category'}
+                </button>
             </div>
         </div>
     );
@@ -282,7 +431,9 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                 </header>
 
                 <div className="admin-content-scroll">
-                    {viewMode === 'CREATE' ? renderCreateView() : renderListView()}
+                    {viewMode === 'CREATE' ? renderCreateView() :
+                        viewMode === 'EDIT' ? renderEditView() :
+                            renderListView()}
                 </div>
             </main>
         </div>

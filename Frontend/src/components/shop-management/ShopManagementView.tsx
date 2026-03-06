@@ -34,6 +34,11 @@ interface ShopManagementViewProps {
     onApprove: (id: number) => void;
     onSuspend: (id: number) => void;
     setSelectedShop: (shop: Shop) => void;
+    page: number;
+    totalPages: number;
+    totalElements: number;
+    onPageChange: (page: number) => void;
+    loading?: boolean;
 }
 
 const ShopManagementView: React.FC<ShopManagementViewProps> = ({
@@ -49,7 +54,12 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
     setViewMode,
     onApprove,
     onSuspend,
-    setSelectedShop
+    setSelectedShop,
+    page,
+    totalPages,
+    totalElements,
+    onPageChange,
+    loading = false
 }) => {
     const renderListView = () => (
         <>
@@ -99,7 +109,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
             </div>
 
             <div className="table-card">
-                <table className="admin-table">
+                <table className={`admin-table ${loading ? 'table-loading' : ''}`}>
                     <thead>
                         <tr>
                             <th>Shop Name</th>
@@ -111,7 +121,11 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {shops.length === 0 ? (
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>Loading shops...</td>
+                            </tr>
+                        ) : shops.length === 0 ? (
                             <tr>
                                 <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>No shops found.</td>
                             </tr>
@@ -160,6 +174,39 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                         )}
                     </tbody>
                 </table>
+                <div className="table-footer">
+                    <p className="footer-stats">
+                        Showing {shops.length} of {totalElements} shops
+                    </p>
+                    <div className="pagination-group">
+                        <button
+                            className="page-btn"
+                            disabled={page === 0 || loading}
+                            onClick={() => onPageChange(page - 1)}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_left</span>
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i).map(p => (
+                            <button
+                                key={p}
+                                className={`page-btn ${page === p ? 'active' : ''}`}
+                                onClick={() => onPageChange(p)}
+                                disabled={loading}
+                            >
+                                {p + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            className="page-btn"
+                            disabled={page >= totalPages - 1 || loading}
+                            onClick={() => onPageChange(page + 1)}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </>
     );
