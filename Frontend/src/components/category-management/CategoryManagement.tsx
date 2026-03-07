@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import CategoryManagementView from './CategoryManagementView';
 import type { Category } from './CategoryManagementView';
-import { getCategories, createCategory, getCategoryById, updateCategory, type CategoryDto } from '../../services/categoryService';
+import { getCategories, createCategory, getCategoryById, updateCategory, deleteCategory, type CategoryDto } from '../../services/categoryService';
+
+import { usePopup } from '../common/popup/PopupProvider';
+
 
 export type SortDirection = 'asc' | 'desc' | null
 
@@ -27,6 +30,8 @@ const CategoryManagement: React.FC = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
     const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+    const { showNotice, showError, showConfirm } = usePopup();
+
 
     const handleToggleSidebar = () => {
         setIsSidebarCollapsed((prev) => {
@@ -98,15 +103,16 @@ const CategoryManagement: React.FC = () => {
                 setCurrentCategory(category);
                 setViewMode('EDIT');
             } else {
-                alert(response.message || "Failed to fetch category details");
+                showError(response.message || "Không thể lấy thông tin danh mục");
             }
         } catch (error) {
             console.error("Error fetching category details:", error);
-            alert("Network error");
+            showError("Lỗi kết nối khi lấy thông tin danh mục");
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleUpdateCategory = async (id: number, values: { name: string, status: 'Active' | 'Inactive', description: string }) => {
         setLoading(true);
@@ -118,18 +124,20 @@ const CategoryManagement: React.FC = () => {
             });
 
             if (response.resultCd === 0) {
+                showNotice('Cập nhật danh mục thành công!');
                 setViewMode('LIST');
                 loadCategories();
             } else {
-                alert(response.message || "Failed to update category");
+                showError(response.message || "Không thể cập nhật danh mục");
             }
         } catch (error) {
             console.error("Error updating category:", error);
-            alert("Network error");
+            showError("Lỗi kết nối khi cập nhật danh mục");
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleSaveCategory = async (values: { name: string, status: 'Active' | 'Inactive', description: string }) => {
         setLoading(true);
@@ -141,17 +149,43 @@ const CategoryManagement: React.FC = () => {
             });
 
             if (response.resultCd === 0) {
+                showNotice('Thêm danh mục mới thành công!');
                 setViewMode('LIST');
                 loadCategories();
             } else {
-                alert(response.message || "Failed to save category");
+                showError(response.message || "Không thể lưu danh mục");
             }
         } catch (error) {
             console.error("Error saving category:", error);
-            alert("Network error");
+            showError("Lỗi kết nối khi lưu danh mục");
         } finally {
             setLoading(false);
         }
+    };
+
+
+    const handleDeleteCategory = (id: number, name: string) => {
+        showConfirm(
+            `Bạn có chắc chắn muốn xóa danh mục "${name}"?`,
+            async () => {
+                setLoading(true);
+                try {
+                    const response = await deleteCategory(id);
+                    if (response.resultCd === 0) {
+                        showNotice('Xóa danh mục thành công!');
+                        loadCategories();
+                    } else {
+                        showError(response.message || "Không thể xóa danh mục");
+                    }
+                } catch (error) {
+                    console.error("Error deleting category:", error);
+                    showError("Lỗi kết nối khi xóa danh mục");
+                } finally {
+                    setLoading(false);
+                }
+            },
+            'Xác nhận xóa'
+        );
     };
 
     return (
@@ -170,6 +204,7 @@ const CategoryManagement: React.FC = () => {
             onSave={handleSaveCategory}
             onUpdate={handleUpdateCategory}
             onEdit={handleEditCategory}
+            onDelete={handleDeleteCategory}
             currentCategory={currentCategory}
             page={page}
             totalPages={totalPages}
@@ -179,5 +214,6 @@ const CategoryManagement: React.FC = () => {
         />
     );
 };
+
 
 export default CategoryManagement;

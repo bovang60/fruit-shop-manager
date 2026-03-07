@@ -12,6 +12,8 @@ export type Props = {
   onConfirm: () => void
   onCancel: () => void
   onClose: () => void
+  isPrompt?: boolean
+  placeholder?: string
 }
 
 export default function PopupView({
@@ -22,8 +24,20 @@ export default function PopupView({
   cancelText,
   onConfirm,
   onCancel,
-  onClose
+  onClose,
+  isPrompt,
+  placeholder
 }: Props) {
+  const [promptValue, setPromptValue] = React.useState('')
+
+  const handleConfirm = () => {
+    if (isPrompt) {
+      ; (window as any)._popup_prompt_callback?.(promptValue)
+    } else {
+      onConfirm()
+    }
+  }
+
   const getIcon = () => {
     switch (type) {
       case 'notice':
@@ -45,7 +59,7 @@ export default function PopupView({
         <button className="popup-close" onClick={onClose}>
           ✕
         </button>
-        
+
         <div className="popup-header">
           <span className="popup-icon">{getIcon()}</span>
           <h3 className="popup-title">{title}</h3>
@@ -53,6 +67,17 @@ export default function PopupView({
 
         <div className="popup-body">
           <p className="popup-message">{message}</p>
+          {isPrompt && (
+            <div className="popup-prompt-input-container">
+              <textarea
+                className="popup-prompt-input"
+                placeholder={placeholder}
+                value={promptValue}
+                onChange={(e) => setPromptValue(e.target.value)}
+                autoFocus
+              />
+            </div>
+          )}
         </div>
 
         <div className="popup-footer">
@@ -61,10 +86,11 @@ export default function PopupView({
               {cancelText}
             </button>
           )}
-          <button className={`popup-btn popup-btn-confirm popup-btn-${type}`} onClick={onConfirm}>
+          <button className={`popup-btn popup-btn-confirm popup-btn-${type}`} onClick={handleConfirm}>
             {confirmText}
           </button>
         </div>
+
       </div>
     </div>
   )

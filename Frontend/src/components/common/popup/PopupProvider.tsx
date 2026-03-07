@@ -11,14 +11,19 @@ interface PopupConfig {
   onCancel?: () => void
   confirmText?: string
   cancelText?: string
+  isPrompt?: boolean
+  placeholder?: string
 }
+
 
 interface PopupContextValue {
   showNotice: (message: string, title?: string) => void
   showConfirm: (message: string, onConfirm: () => void, title?: string, onCancel?: () => void) => void
   showError: (message: string, title?: string) => void
   showWarning: (message: string, title?: string) => void
+  showPrompt: (message: string, onConfirm: (value: string) => void, title?: string, placeholder?: string, onCancel?: () => void) => void
 }
+
 
 const PopupContext = createContext<PopupContextValue | null>(null)
 
@@ -85,13 +90,48 @@ export function PopupProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  const showPrompt = useCallback(
+    (message: string, onConfirm: (value: string) => void, title?: string, placeholder?: string, onCancel?: () => void) => {
+      setPopupConfig({
+        type: 'confirm',
+        title: title || 'Nhập thông tin',
+        message,
+        isPrompt: true,
+        placeholder: placeholder || 'Nhập tại đây...',
+        onConfirm: () => {
+          // The actual value will be handled by the PopupView and passed back
+          // We'll need to adjust how handleConfirm works or pass a ref
+        },
+        onCancel: () => {
+          onCancel?.()
+          hidePopup()
+        },
+        confirmText: 'Xác nhận',
+        cancelText: 'Hủy'
+      })
+
+        // Store the callback separately to be called by PopupView
+        ; (window as any)._popup_prompt_callback = (val: string) => {
+          onConfirm(val)
+          hidePopup()
+        }
+    },
+    [hidePopup]
+  )
+
+
   const handleConfirm = () => {
+    if (popupConfig?.isPrompt) {
+      // Prompt value is handled via the window callback from PopupView
+      return
+    }
     if (popupConfig?.onConfirm) {
       popupConfig.onConfirm()
     } else {
       hidePopup()
     }
   }
+
 
   const handleCancel = () => {
     if (popupConfig?.onCancel) {
@@ -102,8 +142,9 @@ export function PopupProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <PopupContext.Provider value={{ showNotice, showConfirm, showError, showWarning }}>
+    <PopupContext.Provider value={{ showNotice, showConfirm, showError, showWarning, showPrompt }}>
       {children}
+
       {popupConfig && (
         <PopupView
           type={popupConfig.type}
@@ -114,7 +155,10 @@ export function PopupProvider({ children }: { children: React.ReactNode }) {
           onConfirm={handleConfirm}
           onCancel={handleCancel}
           onClose={hidePopup}
+          isPrompt={popupConfig.isPrompt}
+          placeholder={popupConfig.placeholder}
         />
+
       )}
     </PopupContext.Provider>
   )

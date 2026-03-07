@@ -32,8 +32,10 @@ interface ShopManagementViewProps {
     selectedShop: Shop | null;
     setViewMode: (mode: 'LIST' | 'DETAIL') => void;
     onApprove: (id: number) => void;
+    onReject: (id: number) => void;
     onSuspend: (id: number) => void;
     setSelectedShop: (shop: Shop) => void;
+
     page: number;
     totalPages: number;
     totalElements: number;
@@ -53,8 +55,10 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
     selectedShop,
     setViewMode,
     onApprove,
+    onReject,
     onSuspend,
     setSelectedShop,
+
     page,
     totalPages,
     totalElements,
@@ -69,7 +73,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                     <span className="material-symbols-outlined">chevron_right</span>
                     <span className="current">Shop Management</span>
                 </nav>
-                <h1>Seller Approvals</h1>
+                <h1>Shop Management</h1>
                 <p>Review and manage merchant applications and storefront approvals.</p>
             </div>
 
@@ -274,10 +278,11 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                 <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Close</button>
                 {shop.status === 'PENDING' && (
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <button className="btn-status-toggle is-deactivate">Reject Shop</button>
+                        <button className="btn-status-toggle is-deactivate" onClick={() => onReject(shop.id)}>Reject Shop</button>
                         <button className="btn-status-toggle is-activate" onClick={() => onApprove(shop.id)}>Approve Shop</button>
                     </div>
                 )}
+
             </div>
         </div>
     );

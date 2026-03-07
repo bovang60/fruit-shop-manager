@@ -31,7 +31,9 @@ interface CategoryManagementViewProps {
     totalPages: number;
     totalElements: number;
     onPageChange: (page: number) => void;
+    onDelete: (id: number, name: string) => void;
     loading?: boolean;
+
 }
 
 const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
@@ -54,8 +56,10 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
     totalPages,
     totalElements,
     onPageChange,
+    onDelete,
     loading = false
 }) => {
+
     const [newName, setNewName] = useState('');
     const [newStatus, setNewStatus] = useState<'Active' | 'Inactive'>('Active');
     const [newDescription, setNewDescription] = useState('');
@@ -87,7 +91,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                     <span className="material-symbols-outlined">chevron_right</span>
                     <span className="current">Category Management</span>
                 </nav>
-                <h1>Product Categories</h1>
+                <h1>Category Management</h1>
                 <p>Manage the global taxonomy for the fruit marketplace.</p>
             </div>
 
@@ -172,11 +176,16 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                                             <button className="icon-btn-action" onClick={() => onEdit(cat.id)}>
                                                 <span className="material-symbols-outlined">edit</span>
                                             </button>
-                                            <button className="icon-btn-action" style={{ color: '#ef4444' }}>
+                                            <button
+                                                className="icon-btn-action"
+                                                style={{ color: '#ef4444' }}
+                                                onClick={() => onDelete(cat.id, cat.name)}
+                                            >
                                                 <span className="material-symbols-outlined">delete</span>
                                             </button>
                                         </div>
                                     </td>
+
                                 </tr>
                             ))
                         )}

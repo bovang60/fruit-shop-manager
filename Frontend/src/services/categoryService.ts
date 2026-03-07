@@ -43,6 +43,13 @@ export interface CreateCategoryDto {
     status: CategoryStatus;
 }
 
+export interface UpdateCategoryPayload {
+    categoryName: string;
+    description?: string;
+    status?: CategoryStatus;
+}
+
+
 // ============= API Functions =============
 
 /**
@@ -57,36 +64,66 @@ export async function getCategories(filter: CategoryFilter): Promise<ApiResponse
     if (filter.sort) params.append("sort", filter.sort);
 
     const url = `/api/categories?${params.toString()}`;
-    return callApi<undefined, ApiResponse<PageResponse<CategoryDto>>>(url);
+    try {
+        return await callApi<undefined, ApiResponse<PageResponse<CategoryDto>>>(url);
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi lấy danh sách danh mục", data: null };
+    }
 }
+
 
 /**
  * Get category by ID
  */
 export async function getCategoryById(id: number): Promise<ApiResponse<CategoryDto>> {
-    return callApi<undefined, ApiResponse<CategoryDto>>(`/api/categories/${id}`);
+    try {
+        return await callApi<undefined, ApiResponse<CategoryDto>>(`/api/categories/${id}`);
+    } catch (error) {
+        console.error("Error fetching category:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi lấy thông tin danh mục", data: null };
+    }
 }
+
 
 /**
  * Create a new category
  */
 export async function createCategory(data: CreateCategoryDto): Promise<ApiResponse<CategoryDto>> {
-    return callApiWithMethod<CreateCategoryDto, ApiResponse<CategoryDto>>("POST", "/api/categories", data);
+    try {
+        return await callApiWithMethod<CreateCategoryDto, ApiResponse<CategoryDto>>("POST", "/api/categories", data);
+    } catch (error) {
+        console.error("Error creating category:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi tạo danh mục", data: null };
+    }
 }
+
 
 /**
  * Update an existing category
  */
-export async function updateCategory(id: number, data: Partial<CreateCategoryDto>): Promise<ApiResponse<CategoryDto>> {
-    return callApiWithMethod<Partial<CreateCategoryDto>, ApiResponse<CategoryDto>>("PUT", `/api/categories/${id}`, data);
+export async function updateCategory(id: number, data: UpdateCategoryPayload): Promise<ApiResponse<CategoryDto>> {
+    try {
+        return await callApiWithMethod<UpdateCategoryPayload, ApiResponse<CategoryDto>>("PUT", `/api/categories/${id}`, data);
+    } catch (error) {
+        console.error("Error updating category:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi cập nhật danh mục", data: null };
+    }
 }
+
 
 /**
  * Delete a category
  */
 export async function deleteCategory(id: number): Promise<ApiResponse<null>> {
-    return callApiWithMethod<undefined, ApiResponse<null>>("DELETE", `/api/categories/${id}`);
+    try {
+        return await callApiWithMethod<undefined, ApiResponse<null>>("DELETE", `/api/categories/${id}`);
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi xóa danh mục", data: null };
+    }
 }
+
 
 // ============= Helper Functions =============
 

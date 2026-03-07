@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ShopManagementView, { type Shop } from './ShopManagementView';
 import { usePopup } from '../common/popup';
+import { getShops, approveShop, rejectShop, type ShopDto } from '../../services/shopService';
 
 const ShopManagement: React.FC = () => {
-    const { showNotice, showConfirm, showError } = usePopup();
+    const { showNotice, showConfirm, showError, showWarning, showPrompt } = usePopup();
     // UI State
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         return localStorage.getItem('sidebar-collapsed') === 'true'
@@ -16,23 +17,59 @@ const ShopManagement: React.FC = () => {
 
     // Pagination State
     const [page, setPage] = useState(0);
-    const [loading] = useState(false);
+    const [totalElements, setTotalElements] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState(false);
 
-    const fetchShops = () => {
-        // Mock Data based on activeTab
-        const mockShops: Shop[] = [
-            { id: 1, shopName: 'Sun Kissed Orchards', ownerName: 'Jonathan Miller', regDate: 'October 24, 2023', status: 'PENDING', description: 'Sun Kissed Orchards is a family-owned sustainable farm specializing in heritage citrus and stone fruits. We pride ourselves on tree-ripened produce delivered straight from our orchards to local communities. All our practices are organic-certified, ensuring the highest quality and nutritional value for our customers. We seek to join the platform to expand our reach to health-conscious consumers in the greater metropolitan area.', ownerPhone: '+1 (555) 902-3482', ownerEmail: 'contact@sunkisedorchards.com', businessAddress: '1242 Harvest Lane, Riverside Valley, CA 92501', documentUrls: ['Business_License.pdf', 'Organic_Certification.pdf'], productCount: 150, yearsInBusiness: 12, locationType: 'Rural', staffCount: 25 },
-            { id: 2, shopName: 'Organic Veggies', ownerName: 'Jane Smith', regDate: '2023-02-15', status: 'APPROVED', description: 'Organic only', ownerPhone: '0987654321', ownerEmail: 'jane@example.com', businessAddress: '456 Farm Rd' },
-            { id: 3, shopName: 'Bad Apples', ownerName: 'Bad Guy', regDate: '2023-03-10', status: 'REJECTED', rejectReason: 'Incomplete documents' },
-        ];
-        // Filter by tab status
-        const filtered = mockShops.filter(s => s.status === activeTab || (activeTab === 'APPROVED' && s.status === 'SUSPENDED'));
-        setShops(filtered);
-    };
+    const loadShops = useCallback(async () => {
+        setLoading(true);
+        try {
+            const filter = {
+                status: activeTab,
+                page: page,
+                size: 10,
+                sort: 'createdAt,desc'
+            };
+
+            const response = await getShops(filter);
+
+            if (response.resultCd === 0 && response.data) {
+                const mappedShops: Shop[] = response.data.content.map((dto: ShopDto) => ({
+                    id: dto.shopId,
+                    shopName: dto.shopName,
+                    ownerName: dto.ownerName,
+                    regDate: new Date(dto.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }),
+                    status: dto.status as any,
+                    description: dto.description,
+                    ownerPhone: dto.ownerPhone,
+                    ownerEmail: dto.ownerEmail,
+                    businessAddress: dto.businessAddress,
+                    documentUrls: dto.documentUrls,
+                    rejectReason: dto.rejectReason
+                    // Other fields (productCount, etc.) can be added if available in DTO
+                }));
+
+                setShops(mappedShops);
+                setTotalElements(response.data.totalElements);
+                setTotalPages(response.data.totalPages);
+            } else {
+                showError(response.message || "Không thể tải danh sách cửa hàng");
+            }
+        } catch (error) {
+            console.error("Failed to fetch shops:", error);
+            showError("Lỗi kết nối khi tải danh sách cửa hàng");
+        } finally {
+            setLoading(false);
+        }
+    }, [activeTab, page, showError]);
 
     useEffect(() => {
-        fetchShops();
-    }, [activeTab]);
+        loadShops();
+    }, [loadShops]);
 
     const handleToggleSidebar = () => {
         setIsSidebarCollapsed((prev) => {
@@ -44,36 +81,86 @@ const ShopManagement: React.FC = () => {
 
     const handleApprove = (id: number) => {
         showConfirm(
-            `Bạn có chắc chắn muốn phê duyệt shop này?`,
-            () => {
-                // Call API here
-                showNotice(`Shop ${id} đã được phê duyệt thành công!`);
-                setViewMode('LIST');
-                fetchShops();
+            `Bạn có chắc chắn muốn phê duyệt shop này ? `,
+            async () => {
+                setLoading(true);
+                try {
+                    const response = await approveShop(id);
+                    if (response.resultCd === 0) {
+                        showNotice(`Shop đã được phê duyệt thành công!`);
+                        setViewMode('LIST');
+                        loadShops();
+                    } else {
+                        showError(response.message || "Không thể phê duyệt cửa hàng");
+                    }
+                } catch (error) {
+                    showError("Lỗi kết nối khi phê duyệt cửa hàng");
+                } finally {
+                    setLoading(false);
+                }
             },
             'Xác nhận phê duyệt'
         );
     };
 
+    const handleReject = (id: number) => {
+        showPrompt(
+            "Vui lòng nhập lý do từ chối đơn đăng ký này:",
+            (reason: string) => {
+
+                if (!reason || reason.trim().length < 3) {
+                    showWarning("Lý do quá ngắn! Vui lòng nhập ít nhất 3 ký tự.");
+                    return;
+                }
+                if (reason.trim().length > 255) {
+                    showWarning("Lý do quá dài! Vui lòng nhập dưới 255 ký tự.");
+                    return;
+                }
+
+                showConfirm(
+                    `Bạn có chắc chắn muốn từ chối shop này với lý do: "${reason.trim()}" ? `,
+                    async () => {
+                        setLoading(true);
+                        try {
+                            const response = await rejectShop(id, reason.trim());
+                            if (response.resultCd === 0) {
+                                showNotice(`Shop đã bị từ chối thành công!`);
+                                setViewMode('LIST');
+                                loadShops();
+                            } else {
+                                showError(response.message || "Không thể từ chối cửa hàng");
+                            }
+                        } catch (error) {
+                            showError("Lỗi kết nối khi từ chối cửa hàng");
+                        } finally {
+                            setLoading(false);
+                        }
+                    },
+                    'Xác nhận từ chối'
+                );
+            },
+            'Từ chối cửa hàng',
+            'Nhập lý do tại đây...'
+        );
+    };
+
+
     const handleSuspend = (id: number) => {
         showConfirm(
-            `Bạn có chắc chắn muốn thay đổi trạng thái shop này?`,
+            `Bạn có chắc chắn muốn thay đổi trạng thái shop ${id}?(Tính năng đang phát triển)`,
             () => {
-                // Call API here
-                showNotice(`Shop ${id} đã thay đổi trạng thái`);
-                fetchShops();
+                showNotice(`Tính năng tạm dừng shop sẽ sớm ra mắt của cửa hàng ${id} !`);
             },
             'Xác nhận thay đổi'
         );
     }
 
+
+    // Local search filtering as backend doesn't seem to support search param in guide
     const filteredShops = shops.filter(shop =>
         shop.shopName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         shop.ownerName.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    const totalElements = filteredShops.length;
-    const totalPages = Math.ceil(totalElements / 10) || 1;
 
     return (
         <ShopManagementView
@@ -82,12 +169,13 @@ const ShopManagement: React.FC = () => {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={(tab) => { setActiveTab(tab); setPage(0); }}
             shops={filteredShops}
             viewMode={viewMode}
             selectedShop={selectedShop}
             setViewMode={setViewMode}
             onApprove={handleApprove}
+            onReject={handleReject}
             onSuspend={handleSuspend}
             setSelectedShop={setSelectedShop}
             page={page}
