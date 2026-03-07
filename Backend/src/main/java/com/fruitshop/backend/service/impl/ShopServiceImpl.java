@@ -23,8 +23,13 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public ApiResponse<Page<ShopDto>> getShopsByStatus(Shop.ShopStatus status, Pageable pageable) {
-        Page<ShopDto> shopDtos = shopRepository.findByStatus(status, pageable)
-                .map(this::convertToDto);
+        Page<Shop> shops;
+        if (status == null) {
+            shops = shopRepository.findAll(pageable);
+        } else {
+            shops = shopRepository.findByStatus(status, pageable);
+        }
+        Page<ShopDto> shopDtos = shops.map(this::convertToDto);
         return ApiResponse.success("Shops retrieved successfully", shopDtos);
     }
 

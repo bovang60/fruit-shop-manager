@@ -17,4 +17,6 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     
     @Query("SELECT c FROM Category c LEFT JOIN c.fruits f GROUP BY c ORDER BY COUNT(f) ASC")
     Page<Category> findAllOrderByFruitCountAsc(Pageable pageable);
+
+    boolean existsByCategoryNameIgnoreCase(String categoryName);
 }

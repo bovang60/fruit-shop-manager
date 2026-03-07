@@ -3,19 +3,20 @@ package com.fruitshop.backend.controller;
 import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.CategoryDto;
 import com.fruitshop.backend.service.CategoryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/categories")
-@CrossOrigin("*")
+@RequiredArgsConstructor
 public class CategoryController {
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<CategoryDto>>> getCategories(

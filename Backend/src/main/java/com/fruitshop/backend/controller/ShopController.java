@@ -6,19 +6,20 @@ import com.fruitshop.backend.dto.ShopRejectDto;
 import com.fruitshop.backend.model.Shop;
 import com.fruitshop.backend.service.ShopService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/shops")
-@CrossOrigin("*")
+@RequiredArgsConstructor
 public class ShopController {
 
-    @Autowired
-    private ShopService shopService;
+    private final ShopService shopService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ShopDto>>> getShops(

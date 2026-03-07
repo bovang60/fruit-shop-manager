@@ -58,6 +58,11 @@ public class CategoryServiceImpl implements CategoryService {
             throw new IllegalArgumentException("Miêu tả nhiều hơn 255 ký tự");
         }
 
+        // Check if category name already exists
+        if (categoryRepository.existsByCategoryNameIgnoreCase(categoryDto.getCategoryName())) {
+            return ApiResponse.error("Danh mục này đã tồn tại rồi!");
+        }
+
         Category category = new Category();
         category.setCategoryName(categoryDto.getCategoryName());
         category.setDescription(categoryDto.getDescription());
@@ -119,6 +124,7 @@ public class CategoryServiceImpl implements CategoryService {
         dto.setDescription(category.getDescription());
         dto.setStatus(category.getStatus());
         dto.setFruitCount(category.getFruits() != null ? (long) category.getFruits().size() : 0L);
+        dto.setCreatedAt(category.getCreatedAt());
         return dto;
     }
 }
