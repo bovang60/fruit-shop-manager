@@ -1,0 +1,332 @@
+@import "../AdminShared.css";
+
+/* User Management - Page Specific Content */
+.user-management-root {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* User Management Content Styles */
+.user-name-cell {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #e5e7eb;
+}
+
+.role-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 0.25rem;
+    display: inline-block;
+}
+
+.role-admin {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.role-customer {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.role-seller {
+    background: #fef9c3;
+    color: #a16207;
+}
+
+.status-chip {
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.status-banned {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Data Table */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.admin-table th {
+    padding: 1rem 1.5rem;
+    background: #f4f6f8;
+    color: #637381;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 1px solid rgba(145, 158, 171, 0.12);
+}
+
+.admin-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px dotted rgba(145, 158, 171, 0.12);
+    font-size: 0.875rem;
+    color: #212b36;
+}
+
+.admin-table tr:hover {
+    background: rgba(145, 158, 171, 0.04);
+}
+
+.sort-icon {
+    font-size: 16px !important;
+    color: var(--primary-green);
+    margin-left: 2px;
+}
+
+.sort-icon-hidden {
+    font-size: 16px !important;
+    color: #919eab;
+    opacity: 0;
+    margin-left: 2px;
+    transition: opacity 0.2s;
+}
+
+.admin-table th:hover .sort-icon-hidden {
+    opacity: 0.5;
+}
+
+.table-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
+
+.status-actions-group {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.icon-btn-action {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #637381;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.icon-btn-action:hover {
+    color: var(--primary-green);
+}
+
+.action-status-btn {
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.action-status-btn.activate {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.action-status-btn.activate:hover {
+    background: #b9f6da;
+}
+
+.action-status-btn.deactivate {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.action-status-btn.deactivate:hover {
+    background: #e5e7eb;
+}
+
+.action-divider-vertical {
+    width: 1px;
+    height: 16px;
+    background: #e5e7eb;
+}
+
+/* Pagination */
+.table-footer {
+    padding: 1rem 1.5rem;
+    background: #f9fafb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-stats {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.pagination-group {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.page-btn {
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #f4f6f8;
+    color: var(--primary-green);
+}
+
+.page-btn.active {
+    background: var(--primary-green);
+    color: white;
+    border-color: var(--primary-green);
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* User Detail View Styles */
+.user-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem 0 3rem;
+}
+
+.user-identity-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(145, 158, 171, 0.12);
+}
+
+.user-avatar-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 20px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #e5e7eb;
+}
+
+.detail-section-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(145, 158, 171, 0.12);
+}
+
+.grid-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.info-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: #637381;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.info-group p {
+    font-size: 0.875rem;
+    color: #212b36;
+    font-weight: 600;
+    margin: 0;
+}
+
+.detail-action-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.btn-cancel-action {
+    padding: 0.625rem 1.5rem;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    color: #637381;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-status-toggle {
+    padding: 0.625rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-status-toggle.is-deactivate {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.btn-status-toggle.is-activate {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+@media (max-width: 768px) {
+    .grid-info {
+        grid-template-columns: 1fr;
+    }
+}

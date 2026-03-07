@@ -11,12 +11,59 @@ export type Props = {
   onQueryChange: (v: string) => void
   products: Product[]
   displayed: Product[]
+  newArrivals: Product[]
+  trending: Product[]
   page: number
   totalPages: number
   onPageChange: (p: number) => void
+  onAddToCart: (productId: number) => void
+  loading: boolean
+  error: string
+  // Filter values
+  category?: string
+  minPrice?: number
+  maxPrice?: number
+  origin?: string
+  organic?: boolean
+  sortBy: string
+  sortOrder: string
+  // Filter handlers
+  onCategoryChange: (category: string) => void
+  onPriceChange: (minPrice: number, maxPrice: number) => void
+  onOriginChange: (origin: string | undefined) => void
+  onOrganicChange: (organic: boolean | undefined) => void
+  onSortChange: (sortBy: string, sortOrder: string) => void
+  onApplyFilters: () => void
 }
 
-export default function HomeView({ query, onQueryChange, displayed, page, totalPages, onPageChange }: Props) {
+export default function HomeView({ 
+  query, 
+  onQueryChange, 
+  displayed, 
+  newArrivals,
+  trending,
+  page, 
+  totalPages, 
+  onPageChange,
+  onAddToCart,
+  loading,
+  error,
+  // Filter values
+  category,
+  minPrice = 0,
+  maxPrice = 500000,
+  origin,
+  organic,
+  sortBy,
+  sortOrder,
+  // Filter handlers
+  onCategoryChange,
+  onPriceChange,
+  onOriginChange,
+  onOrganicChange,
+  onSortChange,
+  onApplyFilters
+}: Props) {
   return (
     <div className="home-root">
       {/* Sticky Header */}
@@ -36,23 +83,48 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
               <h3 className="filter-title">Category</h3>
               <div className="filter-options">
                 <label className="filter-option">
-                  <input type="checkbox" defaultChecked />
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={!category} 
+                    onChange={() => onCategoryChange('')}
+                  />
                   <span>All Fruits</span>
                 </label>
                 <label className="filter-option">
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={category === 'berries'}
+                    onChange={() => onCategoryChange('berries')}
+                  />
                   <span>Berries</span>
                 </label>
                 <label className="filter-option">
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={category === 'citrus'}
+                    onChange={() => onCategoryChange('citrus')}
+                  />
                   <span>Citrus</span>
                 </label>
                 <label className="filter-option">
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={category === 'tropical'}
+                    onChange={() => onCategoryChange('tropical')}
+                  />
                   <span>Tropical</span>
                 </label>
                 <label className="filter-option">
-                  <input type="checkbox" />
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={category === 'seasonal'}
+                    onChange={() => onCategoryChange('seasonal')}
+                  />
                   <span>Seasonal</span>
                 </label>
               </div>
@@ -62,10 +134,18 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
             <div className="filter-section">
               <h3 className="filter-title">Price Range</h3>
               <div className="price-range-wrap">
-                <input type="range" min="0" max="50" defaultValue="25" className="price-slider" />
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="500000" 
+                  step="10000"
+                  value={maxPrice} 
+                  onChange={(e) => onPriceChange(minPrice, Number(e.target.value))}
+                  className="price-slider" 
+                />
                 <div className="price-labels">
-                  <span>$0</span>
-                  <span>$50</span>
+                  <span>₫{minPrice.toLocaleString('vi-VN')}</span>
+                  <span>₫{maxPrice.toLocaleString('vi-VN')}</span>
                 </div>
               </div>
             </div>
@@ -75,15 +155,30 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
               <h3 className="filter-title">Origin</h3>
               <div className="filter-options">
                 <label className="filter-option">
-                  <input type="radio" name="origin" defaultChecked />
+                  <input 
+                    type="radio" 
+                    name="origin" 
+                    checked={!origin} 
+                    onChange={() => onOriginChange(undefined)}
+                  />
                   <span>Any</span>
                 </label>
                 <label className="filter-option">
-                  <input type="radio" name="origin" />
+                  <input 
+                    type="radio" 
+                    name="origin" 
+                    checked={origin === 'local'}
+                    onChange={() => onOriginChange('local')}
+                  />
                   <span>Local Farms</span>
                 </label>
                 <label className="filter-option">
-                  <input type="radio" name="origin" />
+                  <input 
+                    type="radio" 
+                    name="origin" 
+                    checked={origin === 'imported'}
+                    onChange={() => onOriginChange('imported')}
+                  />
                   <span>Imported</span>
                 </label>
               </div>
@@ -93,12 +188,16 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
             <div className="filter-section">
               <h3 className="filter-title">Organic Status</h3>
               <label className="filter-option-organic">
-                <input type="checkbox" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  checked={organic === true} 
+                  onChange={(e) => onOrganicChange(e.target.checked ? true : undefined)}
+                />
                 <span>Certified Organic</span>
               </label>
             </div>
 
-            <button className="apply-filters-btn">Apply Filters</button>
+            <button className="apply-filters-btn" onClick={onApplyFilters}>Apply Filters</button>
           </div>
         </aside>
 
@@ -111,52 +210,74 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
               <p className="content-subtitle">Showing {displayed.length} results for "All Fruits"</p>
             </div>
             <div className="content-actions">
-              <input 
-                className="search-input" 
-                placeholder="Search fruits..." 
-                value={query} 
-                onChange={(e) => onQueryChange(e.target.value)} 
+              <input
+                className="search-input"
+                placeholder="Search fruits..."
+                value={query}
+                onChange={(e) => onQueryChange(e.target.value)}
               />
-              <select className="sort-select">
-                <option>Sort by: Popularity</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Newest First</option>
+              <select 
+                className="sort-select"
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortOrder] = e.target.value.split('-')
+                  onSortChange(newSortBy, newSortOrder)
+                }}
+              >
+                <option value="popularity-desc">Sort by: Popularity</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="createdAt-desc">Newest First</option>
               </select>
             </div>
           </div>
 
+          {/* Loading & Error States */}
+          {loading && (
+            <div className="loading-state">
+              <p>Đang tải sản phẩm...</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className="error-state">
+              <p style={{color: 'red'}}>{error}</p>
+            </div>
+          )}
+
           {/* Products Grid */}
-          <div className="modern-products-grid">
-            {displayed.map((p) => (
-              <div key={p.id} className="modern-product-card">
-                <div className="product-image-wrap">
-                  {p.img ? (
-                    <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
-                  ) : (
-                    <div className="product-image-placeholder">🍊</div>
-                  )}
-                  {p.tag && <div className="product-tag">{p.tag}</div>}
-                  <div className="product-favorite">❤</div>
-                </div>
-                <div className="product-info">
-                  <div className="product-details">
-                    <div>
-                      <p className="product-name-modern">{p.name}</p>
-                      {p.desc && <p className="product-desc">{p.desc}</p>}
-                    </div>
-                    <p className="product-price-modern">{p.price}</p>
+          {!loading && !error && (
+            <div className="modern-products-grid">
+              {displayed.map((p) => (
+                <div key={p.id} className="modern-product-card">
+                  <div className="product-image-wrap">
+                    {p.img ? (
+                      <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
+                    ) : (
+                      <div className="product-image-placeholder">🍊</div>
+                    )}
+                    {p.tag && <div className="product-tag">{p.tag}</div>}
+                    <div className="product-favorite">❤</div>
                   </div>
-                  <button 
-                    className="add-to-cart-btn" 
-                    onClick={() => alert('Đã thêm vào giỏ (mock)')}
-                  >
-                    🛒 Add to Cart
-                  </button>
+                  <div className="product-info">
+                    <div className="product-details">
+                      <div>
+                        <p className="product-name-modern">{p.name}</p>
+                        {p.desc && <p className="product-desc">{p.desc}</p>}
+                      </div>
+                      <p className="product-price-modern">{p.price}</p>
+                    </div>
+                    <button 
+                      className="add-to-cart-btn" 
+                      onClick={() => onAddToCart(p.id)}
+                    >
+                      🛒 Add to Cart
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Pagination */}
           <div className="pagination-wrap">
@@ -175,11 +296,11 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')`}}></div>
-                    <p className="mini-card-name">Fruit {i}</p>
-                    <p className="mini-card-price">${(i*3.5+2).toFixed(2)}</p>
+                {newArrivals.map(p => (
+                  <div key={p.id} className="mini-card">
+                    <div className="mini-card-img" style={{backgroundImage: p.img ? `url('${p.img}')` : 'none'}}></div>
+                    <p className="mini-card-name">{p.name}</p>
+                    <p className="mini-card-price">{p.price}</p>
                   </div>
                 ))}
               </div>
@@ -198,11 +319,11 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {[5,6,7].map(i => (
-                  <div key={i} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')`}}></div>
-                    <p className="mini-card-name">Fruit {i}</p>
-                    <p className="mini-card-price">${(i*3.5+2).toFixed(2)}</p>
+                {trending.map(p => (
+                  <div key={p.id} className="mini-card">
+                    <div className="mini-card-img" style={{backgroundImage: p.img ? `url('${p.img}')` : 'none'}}></div>
+                    <p className="mini-card-name">{p.name}</p>
+                    <p className="mini-card-price">{p.price}</p>
                   </div>
                 ))}
               </div>
