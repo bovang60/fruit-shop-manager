@@ -1,8 +1,11 @@
 package com.fruitshop.backend.controller;
 
 import com.fruitshop.backend.dto.ApiResponse;
+import com.fruitshop.backend.dto.ChangePasswordDto;
+import com.fruitshop.backend.dto.ConfirmChangePasswordDto;
 import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
+import com.fruitshop.backend.dto.RequestChangePasswordDto;
 import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
@@ -76,6 +79,33 @@ public class UserController {
             @PathVariable Integer id,
             @Valid @RequestBody UpdateProfileDto updateProfileDto) {
         ApiResponse<UserDto> response = userService.updateProfile(id, updateProfileDto);
+        return ResponseEntity.ok(response);
+    }
+
+    // Change password - Direct (without OTP)
+    @PutMapping("/{id}/change-password-direct")
+    public ResponseEntity<ApiResponse<String>> changePasswordDirect(
+            @PathVariable Integer id,
+            @Valid @RequestBody ChangePasswordDto changePasswordDto) {
+        ApiResponse<String> response = userService.changePasswordDirect(id, changePasswordDto);
+        return ResponseEntity.ok(response);
+    }
+
+    // Change password with OTP - Step 1: Request OTP
+    @PostMapping("/{id}/request-change-password")
+    public ResponseEntity<ApiResponse<String>> requestChangePassword(
+            @PathVariable Integer id,
+            @Valid @RequestBody RequestChangePasswordDto requestChangePasswordDto) {
+        ApiResponse<String> response = userService.requestChangePassword(id, requestChangePasswordDto);
+        return ResponseEntity.ok(response);
+    }
+
+    // Change password with OTP - Step 2: Confirm with OTP
+    @PostMapping("/{id}/confirm-change-password")
+    public ResponseEntity<ApiResponse<String>> confirmChangePassword(
+            @PathVariable Integer id,
+            @Valid @RequestBody ConfirmChangePasswordDto confirmChangePasswordDto) {
+        ApiResponse<String> response = userService.confirmChangePassword(id, confirmChangePasswordDto);
         return ResponseEntity.ok(response);
     }
 }
