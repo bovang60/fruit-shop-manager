@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
 import ShopManagementView, { type Shop } from './ShopManagementView';
+import { usePopup } from '../common/popup';
 
 const ShopManagement: React.FC = () => {
+    const { showNotice, showConfirm, showError } = usePopup();
     // UI State
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         return localStorage.getItem('sidebar-collapsed') === 'true'
@@ -38,14 +39,28 @@ const ShopManagement: React.FC = () => {
     }
 
     const handleApprove = (id: number) => {
-        message.success(`Shop ${id} Approved`);
-        setViewMode('LIST');
-        fetchShops();
+        showConfirm(
+            `Bạn có chắc chắn muốn phê duyệt shop này?`,
+            () => {
+                // Call API here
+                showNotice(`Shop ${id} đã được phê duyệt thành công!`);
+                setViewMode('LIST');
+                fetchShops();
+            },
+            'Xác nhận phê duyệt'
+        );
     };
 
     const handleSuspend = (id: number) => {
-        message.success(`Shop ${id} Status Toggled`);
-        fetchShops();
+        showConfirm(
+            `Bạn có chắc chắn muốn thay đổi trạng thái shop này?`,
+            () => {
+                // Call API here
+                showNotice(`Shop ${id} đã thay đổi trạng thái`);
+                fetchShops();
+            },
+            'Xác nhận thay đổi'
+        );
     }
 
     const filteredShops = shops.filter(shop =>

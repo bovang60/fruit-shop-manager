@@ -277,7 +277,286 @@ export default function ProductListView({ products, loading, error }: Props) {
 
 ---
 
-## 📚 API Methods Available
+## � Message Display Pattern (Common Popup)
+
+### ⚠️ QUY TẮC HIỂN THỊ MESSAGE
+
+**❌ KHÔNG ĐƯỢC:**
+- `alert()` - UI xấu, blocking
+- `confirm()` - Không customize được
+- `console.log()` cho user messages
+
+**✅ PHẢI DÙNG: Common Popup Component**
+
+Import và sử dụng `usePopup()` hook:
+
+```typescript
+import { usePopup } from '../common/popup'
+```
+
+### 🎯 4 Loại Popup
+
+#### 1️⃣ **showNotice** - Thông báo thành công (màu xanh)
+
+**Khi nào dùng:**
+- ✅ API thành công (thêm/sửa/xóa thành công)
+- ✅ Action hoàn tất
+- ✅ Confirmation messages
+
+**Ví dụ:**
+
+```typescript
+const { showNotice } = usePopup()
+
+// Sau khi API thành công
+const handleSave = async () => {
+  const result = await updateProfile(data)
+  if (result.resultCd === 0) {
+    showNotice('Cập nhật thông tin thành công!', 'Thành công')
+  }
+}
+
+// Thêm sản phẩm vào giỏ hàng
+showNotice('Đã thêm sản phẩm vào giỏ hàng', 'Giỏ hàng')
+
+// Đơn giản nhất
+showNotice('Đã lưu thay đổi!')
+```
+
+#### 2️⃣ **showConfirm** - Xác nhận hành động (màu xanh lá, 2 nút)
+
+**Khi nào dùng:**
+- ✅ Trước khi xóa dữ liệu
+- ✅ Trước khi thay đổi status quan trọng
+- ✅ Confirm actions không thể undo
+
+**Ví dụ:**
+
+```typescript
+const { showConfirm } = usePopup()
+
+// Xóa sản phẩm
+const handleDelete = (productId: number) => {
+  showConfirm(
+    'Bạn có chắc chắn muốn xóa sản phẩm này?',
+    async () => {
+      const result = await deleteProduct(productId)
+      if (result.resultCd === 0) {
+        showNotice('Xóa sản phẩm thành công!')
+        loadProducts()
+      }
+    },
+    'Xác nhận xóa'
+  )
+}
+
+// Đổi trạng thái shop
+const handleSuspend = (shopId: number) => {
+  showConfirm(
+    'Đình chỉ shop này sẽ ẩn toàn bộ sản phẩm. Tiếp tục?',
+    async () => {
+      await updateShopStatus(shopId, 'suspended')
+      loadShops()
+    },
+    'Xác nhận đình chỉ',
+    () => console.log('User cancelled')  // Optional onCancel
+  )
+}
+```
+
+#### 3️⃣ **showError** - Hiển thị lỗi (màu đỏ)
+
+**Khi nào dùng:**
+- ✅ API trả về lỗi (`resultCd !== 0`)
+- ✅ Validation errors
+- ✅ Network errors
+- ✅ Bất kỳ lỗi nào user cần biết
+
+**Ví dụ:**
+
+```typescript
+const { showError } = usePopup()
+
+// API error
+const handleSubmit = async () => {
+  const result = await createProduct(formData)
+  if (result.resultCd !== 0) {
+    showError(result.message || 'Có lỗi xảy ra', 'Lỗi')
+  } else {
+    showNotice('Tạo sản phẩm thành công!')
+  }
+}
+
+// Validation error
+if (!formData.name) {
+  showError('Vui lòng nhập tên sản phẩm', 'Dữ liệu không hợp lệ')
+  return
+}
+
+// Network error
+try {
+  const result = await getProducts()
+} catch (error) {
+  showError('Không thể kết nối đến server. Vui lòng thử lại.', 'Lỗi kết nối')
+}
+```
+
+#### 4️⃣ **showWarning** - Cảnh báo (màu vàng)
+
+**Khi nào dùng:**
+- ✅ Thông báo quan trọng nhưng không phải lỗi
+- ✅ Cảnh báo về dữ liệu
+- ✅ Warnings cần chú ý
+
+**Ví dụ:**
+
+```typescript
+const { showWarning } = usePopup()
+
+// Low stock
+if (product.stock < 10) {
+  showWarning('Sản phẩm sắp hết hàng. Vui lòng nhập thêm.', 'Cảnh báo tồn kho')
+}
+
+// Expiration warning
+showWarning('Tài khoản của bạn sẽ hết hạn trong 3 ngày', 'Cảnh báo')
+
+// Data warning
+if (hasUnsavedChanges) {
+  showWarning('Bạn có thay đổi chưa lưu', 'Chú ý')
+}
+```
+
+### 📋 Full Example trong Container Component
+
+```typescript
+import { useState } from 'react'
+import ProductManagementView from './ProductManagementView'
+import { getProducts, createProduct, deleteProduct } from '../../services/productService'
+import { usePopup } from '../common/popup'
+
+export default function ProductManagement() {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(false)
+  const { showNotice, showConfirm, showError, showWarning } = usePopup()
+
+  // Load danh sách
+  const loadProducts = async () => {
+    setLoading(true)
+    try {
+      const result = await getProducts(1, 50)
+      
+      if (result.resultCd === 0 && result.data) {
+        setProducts(result.data)
+        
+        // Cảnh báo nếu có sản phẩm low stock
+        const lowStock = result.data.filter(p => p.stock < 10)
+        if (lowStock.length > 0) {
+          showWarning(`Có ${lowStock.length} sản phẩm sắp hết hàng`, 'Cảnh báo tồn kho')
+        }
+      } else {
+        showError(result.message || 'Không thể tải danh sách sản phẩm', 'Lỗi')
+      }
+    } catch (error) {
+      showError('Lỗi kết nối. Vui lòng thử lại.', 'Lỗi')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Thêm sản phẩm
+  const handleAdd = async (data: CreateProductDto) => {
+    // Validation
+    if (!data.name || !data.price) {
+      showError('Vui lòng điền đầy đủ thông tin', 'Dữ liệu không hợp lệ')
+      return
+    }
+
+    const result = await createProduct(data)
+    if (result.resultCd === 0) {
+      showNotice('Thêm sản phẩm mới thành công!', 'Thành công')
+      loadProducts()
+    } else {
+      showError(result.message || 'Không thể thêm sản phẩm', 'Lỗi')
+    }
+  }
+
+  // Xóa sản phẩm - CẦN CONFIRM
+  const handleDelete = (productId: number, productName: string) => {
+    showConfirm(
+      `Xóa sản phẩm "${productName}"? Hành động này không thể hoàn tác.`,
+      async () => {
+        const result = await deleteProduct(productId)
+        if (result.resultCd === 0) {
+          showNotice('Đã xóa sản phẩm thành công', 'Thành công')
+          loadProducts()
+        } else {
+          showError(result.message || 'Không thể xóa sản phẩm', 'Lỗi')
+        }
+      },
+      'Xác nhận xóa'
+    )
+  }
+
+  return (
+    <ProductManagementView
+      products={products}
+      loading={loading}
+      onAdd={handleAdd}
+      onDelete={handleDelete}
+    />
+  )
+}
+```
+
+### 🎯 API Reference
+
+```typescript
+// Import
+import { usePopup } from '../common/popup'
+
+// Hook
+const { showNotice, showConfirm, showError, showWarning } = usePopup()
+
+// Methods
+showNotice(message: string, title?: string): void
+showConfirm(message: string, onConfirm: () => void, title?: string, onCancel?: () => void): void
+showError(message: string, title?: string): void
+showWarning(message: string, title?: string): void
+```
+
+### ✅ Best Practices
+
+1. **Luôn dùng popup thay vì alert/confirm**
+   ```typescript
+   ❌ alert('Success!')
+   ✅ showNotice('Success!')
+   
+   ❌ if (confirm('Delete?')) { ... }
+   ✅ showConfirm('Delete?', () => { ... })
+   ```
+
+2. **Chọn đúng loại popup:**
+   - Success/Info → `showNotice` (xanh)
+   - Confirm before action → `showConfirm` (xanh lá, 2 nút)
+   - Errors → `showError` (đỏ)
+   - Warnings → `showWarning` (vàng)
+
+3. **Message rõ ràng, tiếng Việt:**
+   ```typescript
+   ✅ showNotice('Cập nhật thông tin thành công!')
+   ❌ showNotice('Updated')
+   ```
+
+4. **Confirm trước destructive actions:**
+   ```typescript
+   // Luôn confirm trước khi xóa
+   showConfirm('Bạn có chắc chắn?', handleDelete)
+   ```
+
+---
+
+## �📚 API Methods Available
 
 Import từ `apiClient.ts` (KHÔNG cần sửa file này):
 
