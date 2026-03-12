@@ -11,10 +11,11 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
-    Page<User> findByFullNameContainingIgnoreCase(String name, Pageable pageable);
-    
-    Page<User> findByStatusAndRole(User.UserStatus status, User.Role role, Pageable pageable);
-    Page<User> findByStatus(User.UserStatus status, Pageable pageable);
     Page<User> findByRole(User.Role role, Pageable pageable);
+    Page<User> findByStatusAndRole(User.UserStatus status, User.Role role, Pageable pageable);
+    Page<User> findByRoleNot(User.Role role, Pageable pageable);
+    Page<User> findByFullNameContainingIgnoreCaseAndRoleNot(String name, User.Role role, Pageable pageable);
+    Page<User> findByStatusAndRoleNot(User.UserStatus status, User.Role role, Pageable pageable);
+    Page<User> findByFullNameContainingIgnoreCaseAndStatusAndRoleNot(String name, User.UserStatus status, User.Role role, Pageable pageable);
     long countByStatus(User.UserStatus status);
 }

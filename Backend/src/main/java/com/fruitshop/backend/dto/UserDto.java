@@ -10,6 +10,7 @@ public class UserDto {
     private String fullName;
     private String email;
     private String phoneNumber;
+    private String address;
     private User.Role role;
     private User.UserStatus status;
     private LocalDateTime createdAt;

@@ -2,10 +2,10 @@ package com.fruitshop.backend.service.impl;
 
 import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.ChangePasswordDto;
-import com.fruitshop.backend.dto.ConfirmChangePasswordDto;
 import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
-import com.fruitshop.backend.dto.RequestChangePasswordDto;
+import com.fruitshop.backend.dto.RequestForgotPasswordDto;
+import com.fruitshop.backend.dto.ResetPasswordDto;
 import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
@@ -20,14 +20,11 @@ import com.fruitshop.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Random;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,16 +38,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse<Page<UserDto>> getUsers(String search, User.UserStatus status, User.Role role, Pageable pageable) {
         Page<User> users;
+        User.Role excludeRole = User.Role.ADMIN;
+
         if (search != null && !search.isEmpty()) {
-            users = userRepository.findByFullNameContainingIgnoreCase(search, pageable);
-        } else if (status != null && role != null) {
-            users = userRepository.findByStatusAndRole(status, role, pageable);
+            if (status != null) {
+                users = userRepository.findByFullNameContainingIgnoreCaseAndStatusAndRoleNot(search, status, excludeRole, pageable);
+            } else {
+                users = userRepository.findByFullNameContainingIgnoreCaseAndRoleNot(search, excludeRole, pageable);
+            }
         } else if (role != null) {
-            users = userRepository.findByRole(role, pageable);
+            if (role == User.Role.ADMIN) {
+                return ApiResponse.success(Page.empty(pageable));
+            }
+            if (status != null) {
+                users = userRepository.findByStatusAndRole(status, role, pageable);
+            } else {
+                users = userRepository.findByRole(role, pageable);
+            }
         } else if (status != null) {
-            users = userRepository.findByStatus(status, pageable);
+            users = userRepository.findByStatusAndRoleNot(status, excludeRole, pageable);
         } else {
-            users = userRepository.findAll(pageable);
+            users = userRepository.findByRoleNot(excludeRole, pageable);
         }
         return ApiResponse.success(users.map(this::convertToDto));
     }
@@ -254,22 +262,6 @@ public class UserServiceImpl implements UserService {
             return ApiResponse.error("User not found");
         }
 
-        // Nếu muốn đổi password, kiểm tra password hiện tại
-        if (updateProfileDto.getNewPassword() != null && !updateProfileDto.getNewPassword().isEmpty()) {
-            // Kiểm tra current password có được cung cấp không
-            if (updateProfileDto.getCurrentPassword() == null || updateProfileDto.getCurrentPassword().isEmpty()) {
-                return ApiResponse.error("Current password is required to change password");
-            }
-
-            // Verify current password (TODO: Cần dùng BCrypt trong production)
-            if (!user.getPassword().equals(updateProfileDto.getCurrentPassword())) {
-                return ApiResponse.error("Current password is incorrect");
-            }
-
-            // Update password mới (TODO: Cần hash với BCrypt trong production)
-            user.setPassword(updateProfileDto.getNewPassword());
-        }
-
         // Update full name
         user.setFullName(updateProfileDto.getFullName());
 
@@ -278,17 +270,22 @@ public class UserServiceImpl implements UserService {
             user.setPhoneNumber(updateProfileDto.getPhoneNumber());
         }
 
-        // Save changes
-        userRepository.save(user);
+        // Update address (if provided)
+        if (updateProfileDto.getAddress() != null && !updateProfileDto.getAddress().isEmpty()) {
+            user.setAddress(updateProfileDto.getAddress());
+        }
+
+        // Save changes and get updated user
+        User updatedUser = userRepository.save(user);
 
         // Return updated user info
-        UserDto userDto = convertToDto(user);
+        UserDto userDto = convertToDto(updatedUser);
         return ApiResponse.success("Profile updated successfully", userDto);
     }
 
     @Override
     @Transactional
-    public ApiResponse<String> changePasswordDirect(Integer userId, ChangePasswordDto changePasswordDto) {
+    public ApiResponse<String> changePassword(Integer userId, ChangePasswordDto changePasswordDto) {
         // Tìm user
         User user = userRepository.findById(userId)
                 .orElse(null);
@@ -321,32 +318,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public ApiResponse<String> requestChangePassword(Integer userId, RequestChangePasswordDto requestChangePasswordDto) {
-        // Tìm user
-        User user = userRepository.findById(userId)
+    public ApiResponse<String> requestForgotPassword(RequestForgotPasswordDto requestForgotPasswordDto) {
+        // Tìm user theo email
+        User user = userRepository.findByEmail(requestForgotPasswordDto.getEmail())
                 .orElse(null);
 
         if (user == null) {
-            return ApiResponse.error("User not found");
-        }
-
-        // Verify current password (TODO: Cần dùng BCrypt trong production)
-        if (!user.getPassword().equals(requestChangePasswordDto.getCurrentPassword())) {
-            return ApiResponse.error("Current password is incorrect");
+            return ApiResponse.error("No account found with this email address");
         }
 
         // Tạo OTP code 6 số
         String otpCode = generateOtpCode();
 
         // Xóa OTP cũ của user (nếu có)
-        passwordResetOtpRepository.findByUserIdAndIsUsedFalse(userId)
+        passwordResetOtpRepository.findByUserIdAndIsUsedFalse(user.getUserId())
                 .ifPresent(passwordResetOtpRepository::delete);
 
-        // Tạo OTP record mới (chưa có new password, sẽ set ở bước confirm)
+        // Tạo OTP record mới
         PasswordResetOtp passwordResetOtp = new PasswordResetOtp();
-        passwordResetOtp.setUserId(userId);
+        passwordResetOtp.setUserId(user.getUserId());
         passwordResetOtp.setOtpCode(otpCode);
-        passwordResetOtp.setNewPassword(""); // Placeholder, sẽ update ở confirm step
+        passwordResetOtp.setNewPassword(""); // Placeholder, sẽ set ở bước reset
         passwordResetOtp.setCreatedAt(LocalDateTime.now());
         passwordResetOtp.setExpiryTime(LocalDateTime.now().plusMinutes(5)); // Hết hạn sau 5 phút
         passwordResetOtp.setIsUsed(false);
@@ -365,22 +357,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public ApiResponse<String> confirmChangePassword(Integer userId, ConfirmChangePasswordDto confirmChangePasswordDto) {
-        // Tìm user
-        User user = userRepository.findById(userId)
+    public ApiResponse<String> resetPassword(ResetPasswordDto resetPasswordDto) {
+        // Tìm user theo email
+        User user = userRepository.findByEmail(resetPasswordDto.getEmail())
                 .orElse(null);
 
         if (user == null) {
-            return ApiResponse.error("User not found");
+            return ApiResponse.error("No account found with this email address");
         }
 
         // Tìm OTP record
         PasswordResetOtp passwordResetOtp = passwordResetOtpRepository
-                .findByUserIdAndIsUsedFalse(userId)
+                .findByUserIdAndIsUsedFalse(user.getUserId())
                 .orElse(null);
 
         if (passwordResetOtp == null) {
-            return ApiResponse.error("No password change request found. Please request a new OTP.");
+            return ApiResponse.error("No password reset request found. Please request a new OTP.");
         }
 
         // Kiểm tra OTP đã hết hạn chưa
@@ -390,28 +382,24 @@ public class UserServiceImpl implements UserService {
         }
 
         // Verify OTP code
-        if (!passwordResetOtp.getOtpCode().equals(confirmChangePasswordDto.getOtpCode())) {
+        if (!passwordResetOtp.getOtpCode().equals(resetPasswordDto.getOtpCode())) {
             return ApiResponse.error("Invalid OTP code");
         }
 
         // Kiểm tra new password và confirm password có khớp không
-        if (!confirmChangePasswordDto.getNewPassword().equals(confirmChangePasswordDto.getConfirmPassword())) {
+        if (!resetPasswordDto.getNewPassword().equals(resetPasswordDto.getConfirmPassword())) {
             return ApiResponse.error("New password and confirm password do not match");
         }
 
-        // Kiểm tra password mới không được giống password cũ
-        if (user.getPassword().equals(confirmChangePasswordDto.getNewPassword())) {
-            return ApiResponse.error("New password must be different from current password");
-        }
-
         // Update password mới (TODO: Cần hash với BCrypt trong production)
-        user.setPassword(confirmChangePasswordDto.getNewPassword());
+        user.setPassword(resetPasswordDto.getNewPassword());
         userRepository.save(user);
 
         // Xóa OTP record sau khi đã sử dụng
         passwordResetOtpRepository.delete(passwordResetOtp);
 
-        return ApiResponse.success("Password changed successfully", null);
+        return ApiResponse.success("Password has been reset successfully. You can now login with your new password.",
+                null);
     }
 
     private UserDto convertToDto(User user) {
@@ -420,6 +408,7 @@ public class UserServiceImpl implements UserService {
         dto.setFullName(user.getFullName());
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setAddress(user.getAddress());
         dto.setRole(user.getRole());
         dto.setStatus(user.getStatus());
         dto.setCreatedAt(user.getCreatedAt());

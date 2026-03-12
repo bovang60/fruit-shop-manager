@@ -18,12 +18,18 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryRepository categoryRepository;
 
     @Override
-    public ApiResponse<Page<CategoryDto>> getCategories(String search, Boolean sortByFruitCount, Pageable pageable) {
+    public ApiResponse<Page<CategoryDto>> getCategories(String search, Category.CategoryStatus status, Boolean sortByFruitCount, Pageable pageable) {
         Page<Category> categories;
         if (search != null && !search.isEmpty()) {
-            categories = categoryRepository.findByCategoryNameContainingIgnoreCase(search, pageable);
+            if (status != null) {
+                categories = categoryRepository.findByCategoryNameContainingIgnoreCaseAndStatus(search, status, pageable);
+            } else {
+                categories = categoryRepository.findByCategoryNameContainingIgnoreCase(search, pageable);
+            }
         } else if (Boolean.TRUE.equals(sortByFruitCount)) {
-            categories = categoryRepository.findAllOrderByFruitCountDesc(pageable);
+            categories = categoryRepository.findAllOrderByFruitCountDesc(status, pageable);
+        } else if (status != null) {
+            categories = categoryRepository.findByStatus(status, pageable);
         } else {
             categories = categoryRepository.findAll(pageable);
         }

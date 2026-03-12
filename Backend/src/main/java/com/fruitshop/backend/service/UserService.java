@@ -2,10 +2,10 @@ package com.fruitshop.backend.service;
 
 import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.ChangePasswordDto;
-import com.fruitshop.backend.dto.ConfirmChangePasswordDto;
 import com.fruitshop.backend.dto.LoginDto;
 import com.fruitshop.backend.dto.RegisterDto;
-import com.fruitshop.backend.dto.RequestChangePasswordDto;
+import com.fruitshop.backend.dto.RequestForgotPasswordDto;
+import com.fruitshop.backend.dto.ResetPasswordDto;
 import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
@@ -30,11 +30,10 @@ public interface UserService {
 
     ApiResponse<UserDto> updateProfile(Integer userId, UpdateProfileDto updateProfileDto);
 
-    // Change password without OTP (direct change)
-    ApiResponse<String> changePasswordDirect(Integer userId, ChangePasswordDto changePasswordDto);
+    ApiResponse<String> changePassword(Integer userId, ChangePasswordDto changePasswordDto);
 
-    // Change password with OTP verification (2 steps)
-    ApiResponse<String> requestChangePassword(Integer userId, RequestChangePasswordDto requestChangePasswordDto);
+    // Forgot password (2 steps with OTP verification)
+    ApiResponse<String> requestForgotPassword(RequestForgotPasswordDto requestForgotPasswordDto);
 
-    ApiResponse<String> confirmChangePassword(Integer userId, ConfirmChangePasswordDto confirmChangePasswordDto);
+    ApiResponse<String> resetPassword(ResetPasswordDto resetPasswordDto);
 }
