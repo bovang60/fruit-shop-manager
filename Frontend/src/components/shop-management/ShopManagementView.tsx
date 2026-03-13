@@ -1,5 +1,5 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
+import { AdminFrame, ADMIN_NAV_ITEMS } from '../common/admin-frame';
 import './ShopManagement.css';
 
 export interface Shop {
@@ -78,27 +78,6 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
             </div>
 
             <div className="management-filter-section">
-                <div className="filter-tabs-container">
-                    <button
-                        className={`filter-tab-item ${activeTab === 'PENDING' ? 'active' : ''}`}
-                        onClick={() => onTabChange('PENDING')}
-                    >
-                        Pending
-                    </button>
-                    <button
-                        className={`filter-tab-item ${activeTab === 'APPROVED' ? 'active' : ''}`}
-                        onClick={() => onTabChange('APPROVED')}
-                    >
-                        Approval
-                    </button>
-                    <button
-                        className={`filter-tab-item ${activeTab === 'REJECTED' ? 'active' : ''}`}
-                        onClick={() => onTabChange('REJECTED')}
-                    >
-                        Rejected
-                    </button>
-                </div>
-
                 <div className="filter-search-actions">
                     <div className="modern-search-input-wrap">
                         <span className="material-symbols-outlined">search</span>
@@ -108,6 +87,21 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
+                    </div>
+
+                    <div className="custom-dropdown-filters">
+                        <div className="filter-select-wrap">
+                            <select 
+                                value={activeTab} 
+                                onChange={(e) => onTabChange(e.target.value)}
+                                className="modern-filter-select"
+                            >
+                                <option value="PENDING">Status: Pending</option>
+                                <option value="APPROVED">Status: Approval</option>
+                                <option value="REJECTED">Status: Rejected</option>
+                            </select>
+                            <span className="material-symbols-outlined select-arrow">expand_more</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -121,7 +115,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                             <th>Reg Date</th>
                             <th>Status</th>
                             {activeTab === 'REJECTED' && <th>Reason</th>}
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th style={{ textAlign: 'center', width: '200px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -288,85 +282,16 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
     );
 
     return (
-        <div className={`user-management-root ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-            <aside className={`admin-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`} aria-label="Main Sidebar">
-                <div className="sidebar-inner">
-                    <div>
-                        <div className="admin-brand" onClick={onToggleSidebar} style={{ cursor: 'pointer' }}>
-                            <div className="brand-icon">
-                                <span className="material-symbols-outlined">storefront</span>
-                            </div>
-                            <div className="brand-text">
-                                <h1>FruitShop Admin</h1>
-                                <p>Executive Portal</p>
-                            </div>
-                            <button className="toggle-btn">
-                                <span className="material-symbols-outlined">
-                                    {isSidebarCollapsed ? 'menu_open' : 'menu'}
-                                </span>
-                            </button>
-                        </div>
-                        <nav className="admin-nav">
-                            <Link to="/admin-dashboard" className="nav-item" title="Global Overview">
-                                <span className="material-symbols-outlined">dashboard</span>
-                                <span className="nav-label">Global Overview</span>
-                            </Link>
-                            <Link to="/user-management" className="nav-item" title="User Management">
-                                <span className="material-symbols-outlined">person_search</span>
-                                <span className="nav-label">User Management</span>
-                            </Link>
-                            <Link to="/shop-management" className="nav-item active" title="Shop Management">
-                                <span className="material-symbols-outlined">verified</span>
-                                <span className="nav-label">Shop Management</span>
-                            </Link>
-                            <Link to="/category-management" className="nav-item" title="Category Management">
-                                <span className="material-symbols-outlined">category</span>
-                                <span className="nav-label">Category Management</span>
-                            </Link>
-                        </nav>
-                    </div>
-                    <div>
-                        <nav className="admin-nav">
-                            <Link to="#" className="nav-item" title="Help Center">
-                                <span className="material-symbols-outlined">help_outline</span>
-                                <span className="nav-label">Help Center</span>
-                            </Link>
-                            <Link to="/login" className="nav-item" style={{ color: '#ef4444' }} title="Logout">
-                                <span className="material-symbols-outlined">logout</span>
-                                <span className="nav-label">Logout</span>
-                            </Link>
-                        </nav>
-                    </div>
-                </div>
-            </aside>
-
-            <main className="admin-main">
-                <header className="admin-header-rich">
-                    <div className="header-left-part">
-                        <div className="modern-search-bar">
-                            <span className="material-symbols-outlined">search</span>
-                            <input
-                                type="text"
-                                placeholder="Search anything..."
-                                value={searchQuery}
-                                onChange={(e) => onSearchChange(e.target.value)}
-                            />
-                            <span className="search-shortcut">⌘K</span>
-                        </div>
-                    </div>
-                    <div className="header-actions-right">
-                        <div className="user-avatar-circle">AS</div>
-                    </div>
-                </header>
-
-                <div className="admin-content-scroll">
-                    {viewMode === 'DETAIL' && selectedShop
-                        ? renderDetailView(selectedShop)
-                        : renderListView()
-                    }
-                </div>
-            </main>
-        </div>
+        <AdminFrame
+            sidebarItems={ADMIN_NAV_ITEMS}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={onToggleSidebar}
+        >
+            {viewMode === 'DETAIL' && selectedShop
+                ? renderDetailView(selectedShop)
+                : renderListView()
+            }
+        </AdminFrame>
     );
 };
 

@@ -1,4 +1,4 @@
-@import "../AdminShared.css";
+@import "../common/AdminShared.css";
 
 /* User Management - Page Specific Content */
 .user-management-root {
@@ -63,11 +63,6 @@
 .status-inactive {
     background: #f3f4f6;
     color: #6b7280;
-}
-
-.status-banned {
-    background: #fee2e2;
-    color: #dc2626;
 }
 
 /* Data Table */

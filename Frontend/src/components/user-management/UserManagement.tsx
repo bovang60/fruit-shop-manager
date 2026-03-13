@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import UserManagementView from './UserManagementView'
 import type { UserData, SortConfig } from './UserManagementView'
 import { getUsers, updateUserStatus, type UserFilter, type UserStatus } from '../../services/userService'
+import { usePopup } from '../common/popup'
 
 export default function UserManagement() {
+    const { showSuccess, showError } = usePopup()
     // UI State
     const [viewMode, setViewMode] = useState<'LIST' | 'DETAIL'>('LIST')
     const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
@@ -20,6 +22,7 @@ export default function UserManagement() {
     // Filter & Pagination State
     const [searchQuery, setSearchQuery] = useState('')
     const [statusFilter, setStatusFilter] = useState<string>('')
+    const [roleFilter, setRoleFilter] = useState<string>('')
     const [page, setPage] = useState(0)
     const [pageSize] = useState(10)
     const [totalPages, setTotalPages] = useState(0)
@@ -33,6 +36,7 @@ export default function UserManagement() {
             const filter: UserFilter = {
                 search: searchQuery,
                 status: statusFilter,
+                role: roleFilter,
                 page: page,
                 size: pageSize,
                 sort: sortConfig.key ? `${sortConfig.key},${sortConfig.direction}` : undefined
@@ -63,7 +67,7 @@ export default function UserManagement() {
         } finally {
             setLoading(false)
         }
-    }, [searchQuery, statusFilter, page, pageSize, sortConfig])
+    }, [searchQuery, statusFilter, roleFilter, page, pageSize, sortConfig])
 
     useEffect(() => {
         fetchUsers()
@@ -102,12 +106,13 @@ export default function UserManagement() {
             const apiStatus = status.toUpperCase() as UserStatus
             const response = await updateUserStatus(id, apiStatus)
             if (response.resultCd === 0) {
+                showSuccess('User status updated successfully!')
                 fetchUsers() // Refresh list
             } else {
-                alert(response.message || 'Lỗi khi cập nhật trạng thái')
+                showError(response.message || 'Failed to update status')
             }
         } catch (err) {
-            alert('Lỗi kết nối khi cập nhật trạng thái')
+            showError('Connection error when updating status')
         }
     }
 
@@ -134,6 +139,11 @@ export default function UserManagement() {
             statusFilter={statusFilter}
             onStatusFilterChange={(s: string) => {
                 setStatusFilter(s)
+                setPage(0)
+            }}
+            roleFilter={roleFilter}
+            onRoleFilterChange={(r: string) => {
+                setRoleFilter(r)
                 setPage(0)
             }}
             page={page}

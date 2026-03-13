@@ -1,7 +1,7 @@
 import React from 'react'
 import './Popup.css'
 
-type PopupType = 'notice' | 'confirm' | 'error' | 'warning'
+type PopupType = 'notice' | 'confirm' | 'error' | 'warning' | 'success'
 
 export type Props = {
   type: PopupType
@@ -48,6 +48,8 @@ export default function PopupView({
         return '❌'
       case 'warning':
         return '⚠️'
+      case 'success':
+        return '✅'
       default:
         return 'ℹ️'
     }

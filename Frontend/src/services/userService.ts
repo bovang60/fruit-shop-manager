@@ -4,8 +4,7 @@ import { callApi, callApiWithMethod, type ApiResponse } from "../utils/apiClient
 
 export const UserStatus = {
     ACTIVE: 'ACTIVE',
-    INACTIVE: 'INACTIVE',
-    BANNED: 'BANNED'
+    INACTIVE: 'INACTIVE'
 } as const;
 
 export type UserStatus = keyof typeof UserStatus;

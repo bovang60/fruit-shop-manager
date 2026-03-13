@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react'
 import PopupView from './PopupView'
 
-type PopupType = 'notice' | 'confirm' | 'error' | 'warning'
+type PopupType = 'notice' | 'confirm' | 'error' | 'warning' | 'success'
 
 interface PopupConfig {
   type: PopupType
@@ -18,6 +18,7 @@ interface PopupConfig {
 
 interface PopupContextValue {
   showNotice: (message: string, title?: string) => void
+  showSuccess: (message: string, title?: string) => void
   showConfirm: (message: string, onConfirm: () => void, title?: string, onCancel?: () => void) => void
   showError: (message: string, title?: string) => void
   showWarning: (message: string, title?: string) => void
@@ -46,6 +47,15 @@ export function PopupProvider({ children }: { children: React.ReactNode }) {
     setPopupConfig({
       type: 'notice',
       title: title || 'Thông báo',
+      message,
+      confirmText: 'OK'
+    })
+  }, [])
+
+  const showSuccess = useCallback((message: string, title?: string) => {
+    setPopupConfig({
+      type: 'success',
+      title: title || 'Success',
       message,
       confirmText: 'OK'
     })
@@ -142,7 +152,7 @@ export function PopupProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <PopupContext.Provider value={{ showNotice, showConfirm, showError, showWarning, showPrompt }}>
+    <PopupContext.Provider value={{ showNotice, showSuccess, showConfirm, showError, showWarning, showPrompt }}>
       {children}
 
       {popupConfig && (

@@ -171,6 +171,14 @@
   background: #0d7bd6;
 }
 
+.popup-btn-success {
+  background: #52c41a;
+}
+
+.popup-btn-success:hover {
+  background: #38a111;
+}
+
 .popup-btn-confirm.popup-btn-confirm {
   background: #52c41a;
 }
@@ -210,6 +218,10 @@
 
 .popup-warning {
   border-top: 4px solid #faad14;
+}
+
+.popup-success {
+  border-top: 4px solid #52c41a;
 }
 
 /* Responsive */

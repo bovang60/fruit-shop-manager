@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { SortConfig } from './CategoryManagement';
+import { AdminFrame, ADMIN_NAV_ITEMS } from '../common/admin-frame';
 import './CategoryManagement.css';
 
 export interface Category {
@@ -96,27 +97,6 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
             </div>
 
             <div className="management-filter-section">
-                <div className="filter-tabs-container">
-                    <button
-                        className={`filter-tab-item ${statusFilter === '' ? 'active' : ''}`}
-                        onClick={() => onStatusFilterChange('')}
-                    >
-                        All
-                    </button>
-                    <button
-                        className={`filter-tab-item ${statusFilter === 'ACTIVE' ? 'active' : ''}`}
-                        onClick={() => onStatusFilterChange('ACTIVE')}
-                    >
-                        Active
-                    </button>
-                    <button
-                        className={`filter-tab-item ${statusFilter === 'INACTIVE' ? 'active' : ''}`}
-                        onClick={() => onStatusFilterChange('INACTIVE')}
-                    >
-                        Inactive
-                    </button>
-                </div>
-
                 <div className="filter-search-actions">
                     <div className="modern-search-input-wrap">
                         <span className="material-symbols-outlined">search</span>
@@ -127,6 +107,22 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
                     </div>
+
+                    <div className="custom-dropdown-filters">
+                        <div className="filter-select-wrap">
+                            <select 
+                                value={statusFilter} 
+                                onChange={(e) => onStatusFilterChange(e.target.value)}
+                                className="modern-filter-select"
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="ACTIVE">Status: Active</option>
+                                <option value="INACTIVE">Status: Inactive</option>
+                            </select>
+                            <span className="material-symbols-outlined select-arrow">expand_more</span>
+                        </div>
+                    </div>
+
                     <button className="btn-primary-admin" onClick={() => setViewMode('CREATE')}>
                         <span className="material-symbols-outlined">add</span>
                         Add Category
@@ -149,7 +145,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                                 </div>
                             </th>
                             <th>Status</th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th style={{ textAlign: 'center', width: '120px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -176,6 +172,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                                             <button className="icon-btn-action" onClick={() => onEdit(cat.id)}>
                                                 <span className="material-symbols-outlined">edit</span>
                                             </button>
+                                            <div className="action-divider-vertical"></div>
                                             <button
                                                 className="icon-btn-action"
                                                 style={{ color: '#ef4444' }}
@@ -367,85 +364,15 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
     );
 
     return (
-        <div className={`user-management-root ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-            {/* Sidebar matches UserManagement */}
-            <aside className={`admin-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`} aria-label="Main Sidebar">
-                <div className="sidebar-inner">
-                    <div>
-                        <div className="admin-brand" onClick={onToggleSidebar} style={{ cursor: 'pointer' }}>
-                            <div className="brand-icon">
-                                <span className="material-symbols-outlined">storefront</span>
-                            </div>
-                            <div className="brand-text">
-                                <h1>FruitShop Admin</h1>
-                                <p>Executive Portal</p>
-                            </div>
-                            <button className="toggle-btn">
-                                <span className="material-symbols-outlined">
-                                    {isSidebarCollapsed ? 'menu_open' : 'menu'}
-                                </span>
-                            </button>
-                        </div>
-                        <nav className="admin-nav">
-                            <Link to="/admin-dashboard" className="nav-item" title="Global Overview">
-                                <span className="material-symbols-outlined">dashboard</span>
-                                <span className="nav-label">Global Overview</span>
-                            </Link>
-                            <Link to="/user-management" className="nav-item" title="User Management">
-                                <span className="material-symbols-outlined">person_search</span>
-                                <span className="nav-label">User Management</span>
-                            </Link>
-                            <Link to="/shop-management" className="nav-item" title="Shop Management">
-                                <span className="material-symbols-outlined">verified</span>
-                                <span className="nav-label">Shop Management</span>
-                            </Link>
-                            <Link to="/category-management" className="nav-item active" title="Category Management">
-                                <span className="material-symbols-outlined">category</span>
-                                <span className="nav-label">Category Management</span>
-                            </Link>
-                        </nav>
-                    </div>
-                    <div>
-                        <nav className="admin-nav">
-                            <Link to="#" className="nav-item" title="Help Center">
-                                <span className="material-symbols-outlined">help_outline</span>
-                                <span className="nav-label">Help Center</span>
-                            </Link>
-                            <Link to="/login" className="nav-item" style={{ color: '#ef4444' }} title="Logout">
-                                <span className="material-symbols-outlined">logout</span>
-                                <span className="nav-label">Logout</span>
-                            </Link>
-                        </nav>
-                    </div>
-                </div>
-            </aside>
-
-            <main className="admin-main">
-                <header className="admin-header-rich">
-                    <div className="header-left-part">
-                        <div className="modern-search-bar">
-                            <span className="material-symbols-outlined">search</span>
-                            <input
-                                type="text"
-                                placeholder="Search anything..."
-                                value={searchQuery}
-                                onChange={(e) => onSearchChange(e.target.value)}
-                            />
-                            <span className="search-shortcut">⌘K</span>
-                        </div>
-                    </div>
-                    <div className="header-actions-right">
-                        <div className="user-avatar-circle">AS</div>
-                    </div>
-                </header>
-
-                <div className="admin-content-scroll">
-                    {viewMode === 'CREATE' ? renderCreateView() :
-                        viewMode === 'EDIT' ? renderEditView() :
-                            renderListView()}
-                </div>
-            </main>
-        </div>
+        <AdminFrame
+            sidebarItems={ADMIN_NAV_ITEMS}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={onToggleSidebar}
+        >
+            {viewMode === 'CREATE' ? renderCreateView() :
+                viewMode === 'EDIT' ? renderEditView() :
+                    renderListView()}
+        </AdminFrame>
     );
 };
 

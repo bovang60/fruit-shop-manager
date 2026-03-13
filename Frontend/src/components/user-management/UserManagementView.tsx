@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
+import { AdminFrame, ADMIN_NAV_ITEMS } from '../common/admin-frame'
 import './UserManagement.css'
 
 export type UserRole = 'ADMIN' | 'CUSTOMER' | 'SELLER'
-export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'BANNED'
+export type UserStatus = 'ACTIVE' | 'INACTIVE'
 
 export type UserData = {
     id: number
@@ -33,6 +34,8 @@ export type Props = {
     onSearchChange: (v: string) => void
     statusFilter: string
     onStatusFilterChange: (status: string) => void
+    roleFilter: string
+    onRoleFilterChange: (role: string) => void
     page: number
     totalPages: number
     totalElements: number
@@ -58,6 +61,8 @@ export default function UserManagementView({
     onSearchChange,
     statusFilter,
     onStatusFilterChange,
+    roleFilter,
+    onRoleFilterChange,
     page,
     totalPages,
     totalElements,
@@ -97,33 +102,6 @@ export default function UserManagementView({
 
             {/* Filter and Search Section */}
             <div className="management-filter-section">
-                <div className="filter-tabs-container">
-                    <button
-                        className={`filter-tab-item ${statusFilter === '' ? 'active' : ''}`}
-                        onClick={() => onStatusFilterChange('')}
-                    >
-                        All
-                    </button>
-                    <button
-                        className={`filter-tab-item ${statusFilter === 'ACTIVE' ? 'active' : ''}`}
-                        onClick={() => onStatusFilterChange('ACTIVE')}
-                    >
-                        Active
-                    </button>
-                    <button
-                        className={`filter-tab-item ${statusFilter === 'INACTIVE' ? 'active' : ''}`}
-                        onClick={() => onStatusFilterChange('INACTIVE')}
-                    >
-                        Inactive
-                    </button>
-                    <button
-                        className={`filter-tab-item ${statusFilter === 'BANNED' ? 'active' : ''}`}
-                        onClick={() => onStatusFilterChange('BANNED')}
-                    >
-                        Banned
-                    </button>
-                </div>
-
                 <div className="filter-search-actions">
                     <div className="modern-search-input-wrap">
                         <span className="material-symbols-outlined">search</span>
@@ -133,6 +111,34 @@ export default function UserManagementView({
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
+                    </div>
+
+                    <div className="custom-dropdown-filters">
+                        <div className="filter-select-wrap">
+                            <select 
+                                value={roleFilter} 
+                                onChange={(e) => onRoleFilterChange(e.target.value)}
+                                className="modern-filter-select"
+                            >
+                                <option value="">All Roles</option>
+                                <option value="CUSTOMER">Customer</option>
+                                <option value="SELLER">Seller</option>
+                            </select>
+                            <span className="material-symbols-outlined select-arrow">expand_more</span>
+                        </div>
+
+                        <div className="filter-select-wrap">
+                            <select 
+                                value={statusFilter} 
+                                onChange={(e) => onStatusFilterChange(e.target.value)}
+                                className="modern-filter-select"
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="ACTIVE">Status: Active</option>
+                                <option value="INACTIVE">Status: Inactive</option>
+                            </select>
+                            <span className="material-symbols-outlined select-arrow">expand_more</span>
+                        </div>
                     </div>
 
                     <div className="utility-actions">
@@ -210,7 +216,7 @@ export default function UserManagementView({
                                     </div>
                                 </th>
                             )}
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th style={{ textAlign: 'center', width: '200px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -398,91 +404,15 @@ export default function UserManagementView({
     )
 
     return (
-        <div className={`user-management-root ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-            <aside className={`admin-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`} aria-label="Main Sidebar">
-                <div className="sidebar-inner">
-                    <div>
-                        <div className="admin-brand" onClick={onToggleSidebar} style={{ cursor: 'pointer' }}>
-                            <div className="brand-icon">
-                                <span className="material-symbols-outlined">storefront</span>
-                            </div>
-                            <div className="brand-text">
-                                <h1>FruitShop Admin</h1>
-                                <p>Executive Portal</p>
-                            </div>
-                            <button className="toggle-btn">
-                                <span className="material-symbols-outlined">
-                                    {isSidebarCollapsed ? 'menu_open' : 'menu'}
-                                </span>
-                            </button>
-                        </div>
-                        <nav className="admin-nav">
-                            <Link to="/admin-dashboard" className="nav-item" title="Global Overview">
-                                <span className="material-symbols-outlined">dashboard</span>
-                                <span className="nav-label">Global Overview</span>
-                            </Link>
-                            <Link to="/user-management" className="nav-item active" title="User Management">
-                                <span className="material-symbols-outlined">person_search</span>
-                                <span className="nav-label">User Management</span>
-                            </Link>
-                            <Link to="/shop-management" className="nav-item" title="Shop Management">
-                                <span className="material-symbols-outlined">verified</span>
-                                <span className="nav-label">Shop Management</span>
-                            </Link>
-                            <Link to="/category-management" className="nav-item" title="Category Management">
-                                <span className="material-symbols-outlined">category</span>
-                                <span className="nav-label">Category Management</span>
-                            </Link>
-                        </nav>
-                    </div>
-                    <div>
-                        <nav className="admin-nav">
-                            <Link to="#" className="nav-item" title="Help Center">
-                                <span className="material-symbols-outlined">help_outline</span>
-                                <span className="nav-label">Help Center</span>
-                            </Link>
-                            <Link to="/login" className="nav-item" style={{ color: '#ef4444' }} title="Logout">
-                                <span className="material-symbols-outlined">logout</span>
-                                <span className="nav-label">Logout</span>
-                            </Link>
-                        </nav>
-                    </div>
-                </div>
-            </aside>
-
-            <main className="admin-main">
-                <header className="admin-header-rich">
-                    <div className="header-left-part">
-                        {viewMode === 'LIST' ? (
-                            <div className="modern-search-bar">
-                                <span className="material-symbols-outlined">search</span>
-                                <input
-                                    type="text"
-                                    placeholder="Search anything..."
-                                    value={searchQuery}
-                                    onChange={(e) => onSearchChange(e.target.value)}
-                                />
-                                <span className="search-shortcut">⌘K</span>
-                            </div>
-                        ) : (
-                            <div className="detail-view-title" style={{ fontSize: '1.25rem', fontWeight: 700, marginLeft: '1rem' }}>
-                                User Profile Details
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="header-actions-right">
-                        <div className="user-avatar-circle">AS</div>
-                    </div>
-                </header>
-
-                <div className="admin-content-scroll">
-                    {viewMode === 'DETAIL' && selectedUser
-                        ? renderDetailView(selectedUser)
-                        : renderListView()
-                    }
-                </div>
-            </main>
-        </div>
+        <AdminFrame
+            sidebarItems={ADMIN_NAV_ITEMS}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={onToggleSidebar}
+        >
+            {viewMode === 'DETAIL' && selectedUser
+                ? renderDetailView(selectedUser)
+                : renderListView()
+            }
+        </AdminFrame>
     )
 }

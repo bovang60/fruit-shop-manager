@@ -109,11 +109,7 @@
     /* Take out of flow to prevent width jump */
 }
 
-.admin-sidebar.collapsed .toggle-btn {
-    opacity: 0;
-    pointer-events: none;
-    display: none;
-}
+
 
 .admin-sidebar.collapsed .admin-brand {
     justify-content: center;
@@ -186,25 +182,25 @@
 }
 
 .toggle-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
+    background: white;
+    border: 1px solid #e5e7eb;
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
-    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     transition: var(--transition-base);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* Position toggle btn correctly regardless of state */
-.toggle-btn {
-    margin-left: auto;
-}
-
-.admin-sidebar.collapsed .toggle-btn {
-    margin-left: initial;
+.toggle-btn:hover {
+    background: #f9fafb;
+    color: var(--primary-green);
+    border-color: var(--primary-green);
+    transform: scale(1.05);
 }
 
 /* Main Content Area Styling */
@@ -594,15 +590,19 @@
 
 .filter-search-actions {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    width: 100%;
+}
+
+.filter-search-actions .utility-actions,
+.filter-search-actions .btn-primary-admin {
+    margin-left: auto;
 }
 
 .modern-search-input-wrap {
     position: relative;
-    flex: 1;
-    max-width: 480px;
+    flex: 0 1 480px; /* Don't force growth, but allow up to 480px */
 }
 
 .modern-search-input-wrap span {
@@ -635,15 +635,15 @@
 
 .utility-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .btn-utility {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0 12px;
-    height: 40px;
+    padding: 0 16px;
+    height: 48px; /* Normalized to 48px */
     background: white;
     border: 1px solid rgba(145, 158, 171, 0.24);
     border-radius: 8px;
@@ -897,24 +897,29 @@
 
 .status-actions-group {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     gap: 0.5rem;
 }
 
 .icon-btn-action {
-    background: none;
-    border: none;
-    padding: 4px;
-    cursor: pointer;
-    color: #637381;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    transition: color 0.2s;
+    justify-content: center;
+    cursor: pointer;
+    color: #637381;
+    transition: all 0.2s;
 }
 
 .icon-btn-action:hover {
+    background: #f1f5f9;
     color: var(--primary-green);
+    transform: translateY(-1px);
 }
 
 .action-status-btn {
@@ -925,6 +930,8 @@
     cursor: pointer;
     transition: all 0.2s;
     border: 1px solid transparent;
+    min-width: 120px;
+    text-align: center;
 }
 
 .action-status-btn.activate {
@@ -1060,4 +1067,46 @@
 
 .admin-table th:hover .sort-icon-hidden {
     opacity: 0.5;
+}
+
+/* Global Modern Dropdown Filters */
+.custom-dropdown-filters {
+    display: flex;
+    gap: 1rem;
+}
+
+.filter-select-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.modern-filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #f4f6f8; /* Matches search bar background */
+    color: #212b36;
+    border: 1px solid transparent;
+    padding: 0 40px 0 16px;
+    height: 48px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    min-width: 155px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.modern-filter-select:hover {
+    background-color: #e9ecef;
+    border-color: #d1d5db;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 14px;
+    pointer-events: none;
+    font-size: 20px;
+    color: #919eab;
 }

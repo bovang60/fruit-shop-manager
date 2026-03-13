@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { AdminFrame, ADMIN_NAV_ITEMS } from '../common/admin-frame'
 import './AdminDashboard.css'
 
 export type Stat = {
@@ -68,79 +68,15 @@ export default function AdminDashboardView({
     }
 
     return (
-        <div className={`admin-dashboard-root ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-            {/* Sidebar Navigation */}
-            <aside className={`admin-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-                <div className="sidebar-inner">
-                    <div>
-                        <div className="admin-brand" onClick={onToggleSidebar} style={{ cursor: 'pointer' }}>
-                            <div className="brand-icon">
-                                <span className="material-symbols-outlined">storefront</span>
-                            </div>
-                            <div className="brand-text">
-                                <h1>FruitShop Admin</h1>
-                                <p>Executive Portal</p>
-                            </div>
-                            <button className="toggle-btn">
-                                <span className="material-symbols-outlined">
-                                    {isSidebarCollapsed ? 'menu_open' : 'menu'}
-                                </span>
-                            </button>
-                        </div>
-                        <nav className="admin-nav">
-                            <Link to="/admin-dashboard" className="nav-item active">
-                                <span className="material-symbols-outlined">dashboard</span>
-                                <span className="nav-label">Global Overview</span>
-                            </Link>
-                            <Link to="/user-management" className="nav-item">
-                                <span className="material-symbols-outlined">person_search</span>
-                                <span className="nav-label">User Management</span>
-                            </Link>
-                            <Link to="/shop-management" className="nav-item">
-                                <span className="material-symbols-outlined">verified</span>
-                                <span className="nav-label">Shop Management</span>
-                            </Link>
-                            <Link to="/category-management" className="nav-item">
-                                <span className="material-symbols-outlined">category</span>
-                                <span className="nav-label">Category Management</span>
-                            </Link>
-                        </nav>
-                    </div>
-                    <div>
-                        <nav className="admin-nav">
-                            <Link to="#" className="nav-item">
-                                <span className="material-symbols-outlined">help_outline</span>
-                                <span className="nav-label">Help Center</span>
-                            </Link>
-                            <Link to="/login" className="nav-item" style={{ color: '#ef4444' }}>
-                                <span className="material-symbols-outlined">logout</span>
-                                <span className="nav-label">Logout</span>
-                            </Link>
-                        </nav>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Main Content Area */}
-            <main className="admin-main">
-                <header className="admin-header-rich">
-                    <div className="header-left-part">
-                        <div className="modern-search-bar">
-                            <span className="material-symbols-outlined">search</span>
-                            <input type="text" placeholder="Search anything..." />
-                            <span className="search-shortcut">⌘K</span>
-                        </div>
-                    </div>
-                    <div className="header-actions-right">
-                        <div className="user-avatar-circle">AS</div>
-                    </div>
-                </header>
-
-                <div className="admin-content-scroll">
-                    <div className="page-header-content">
-                        <h1>Dashboard</h1>
-                        <p>Welcome back, Admin. Real-time insights for your business.</p>
-                    </div>
+        <AdminFrame
+            sidebarItems={ADMIN_NAV_ITEMS}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={onToggleSidebar}
+        >
+            <div className="page-header-content">
+                <h1>Dashboard</h1>
+                <p>Welcome back, Admin. Real-time insights for your business.</p>
+            </div>
 
                     {/* Stat Cards Grid */}
                     <div className="modern-stats-grid">
@@ -309,10 +245,8 @@ export default function AdminDashboardView({
                                     ))}
                                 </div>
                             </div>
-                        </div>
                     </div>
                 </div>
-            </main>
-        </div>
+        </AdminFrame>
     )
 }

@@ -46,15 +46,15 @@ const CategoryManagement: React.FC = () => {
         try {
             const filter = {
                 search: searchQuery,
+                status: statusFilter,
                 page: page,
                 size: 10,
                 sort: sortConfig.key ? `${sortConfig.key},${sortConfig.direction}` : undefined,
-                // Status mapping if needed, or backend handles it
             };
 
             const response = await getCategories(filter);
 
-            if (response.resultCd === 0 && response.data) {
+            if ((response.resultCd === 0 || (response as any).status === 'success') && response.data) {
                 const mappedCategories: Category[] = response.data.content.map((dto: CategoryDto) => ({
                     id: dto.categoryId,
                     name: dto.categoryName,
@@ -92,7 +92,7 @@ const CategoryManagement: React.FC = () => {
         setLoading(true);
         try {
             const response = await getCategoryById(id);
-            if (response.resultCd === 0 && response.data) {
+            if ((response.resultCd === 0 || (response as any).status === 'success') && response.data) {
                 const category: Category = {
                     id: response.data.categoryId,
                     name: response.data.categoryName,
@@ -123,7 +123,7 @@ const CategoryManagement: React.FC = () => {
                 status: values.status.toUpperCase() as any
             });
 
-            if (response.resultCd === 0) {
+            if (response.resultCd === 0 || (response as any).status === 'success') {
                 showNotice('Cập nhật danh mục thành công!');
                 setViewMode('LIST');
                 loadCategories();
@@ -148,7 +148,7 @@ const CategoryManagement: React.FC = () => {
                 status: values.status.toUpperCase() as any
             });
 
-            if (response.resultCd === 0) {
+            if (response.resultCd === 0 || (response as any).status === 'success') {
                 showNotice('Thêm danh mục mới thành công!');
                 setViewMode('LIST');
                 loadCategories();
@@ -171,7 +171,7 @@ const CategoryManagement: React.FC = () => {
                 setLoading(true);
                 try {
                     const response = await deleteCategory(id);
-                    if (response.resultCd === 0) {
+                    if (response.resultCd === 0 || (response as any).status === 'success') {
                         showNotice('Xóa danh mục thành công!');
                         loadCategories();
                     } else {
