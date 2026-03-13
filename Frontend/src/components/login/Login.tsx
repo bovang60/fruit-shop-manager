@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginView from './LoginView'
 import { login, saveUserToStorage, getDisplayMessage } from '../../services/authService'
+import { usePopup } from '../common/popup'
 
 type LoginProps = {
   onSuccess?: () => void
@@ -10,6 +11,7 @@ type LoginProps = {
 
 export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
   const navigate = useNavigate()
+  const { showError } = usePopup()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -57,11 +59,11 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
       } else {
         // Business logic error
         const displayMessage = getDisplayMessage(result.message || 'Đăng nhập thất bại')
-        setErrors({ general: displayMessage })
+        showError(displayMessage, 'Lỗi đăng nhập')
       }
     } catch (error) {
       console.error('Login error:', error)
-      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại!' })
+      showError('Có lỗi xảy ra. Vui lòng thử lại!', 'Lỗi')
     } finally {
       setLoading(false)
     }

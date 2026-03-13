@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import RegisterView, { type RegisterValues } from './RegisterView'
 import OtpVerificationView from './OtpVerificationView'
 import { requestRegister, verifyOtp, getDisplayMessage } from '../../services/authService'
+import { usePopup } from '../common/popup'
 
 const initial: RegisterValues = { fullName: '', email: '', password: '', confirmPassword: '', phone: '', acceptTerms: false }
 
@@ -10,6 +11,7 @@ type RegisterStep = 'register' | 'verify-otp'
 
 export default function Register() {
   const navigate = useNavigate()
+  const { showNotice, showError } = usePopup()
   const [step, setStep] = useState<RegisterStep>('register')
   const [values, setValues] = useState<RegisterValues>(initial)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -80,11 +82,11 @@ export default function Register() {
       } else {
         // Business logic error
         const displayMessage = getDisplayMessage(result.message || 'Đăng ký thất bại')
-        setErrors({ general: displayMessage })
+        showError(displayMessage, 'Lỗi đăng ký')
       }
     } catch (error) {
       console.error('Request register error:', error)
-      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại!' })
+      showError('Có lỗi xảy ra. Vui lòng thử lại!', 'Lỗi')
     } finally {
       setLoading(false)
     }
@@ -103,6 +105,7 @@ export default function Register() {
 
       if (result.resultCd === 0) {
         // Registration completed successfully
+        showNotice('Đăng ký tài khoản thành công! Vui lòng đăng nhập.', 'Thành công')
         // Reset form and redirect to login
         setValues(initial)
         setStep('register')
@@ -110,11 +113,11 @@ export default function Register() {
       } else {
         // Business logic error
         const displayMessage = getDisplayMessage(result.message || 'Xác thực OTP thất bại')
-        setOtpError(displayMessage)
+        showError(displayMessage, 'Lỗi xác thực')
       }
     } catch (error) {
       console.error('Verify OTP error:', error)
-      setOtpError('Có lỗi xảy ra. Vui lòng thử lại!')
+      showError('Có lỗi xảy ra. Vui lòng thử lại!', 'Lỗi')
     } finally {
       setLoading(false)
     }
@@ -134,14 +137,14 @@ export default function Register() {
       })
 
       if (result.resultCd === 0) {
-        alert('Mã OTP mới đã được gửi đến email của bạn')
+        showNotice('Mã OTP mới đã được gửi đến email của bạn', 'Gửi lại OTP')
       } else {
         const displayMessage = getDisplayMessage(result.message || 'Gửi lại OTP thất bại')
-        setOtpError(displayMessage)
+        showError(displayMessage, 'Lỗi gửi OTP')
       }
     } catch (error) {
       console.error('Resend OTP error:', error)
-      setOtpError('Có lỗi xảy ra. Vui lòng thử lại!')
+      showError('Có lỗi xảy ra. Vui lòng thử lại!', 'Lỗi')
     } finally {
       setLoading(false)
     }

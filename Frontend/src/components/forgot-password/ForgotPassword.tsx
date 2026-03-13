@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ForgotPasswordView from './ForgotPasswordView'
 import { requestPasswordReset, resetPasswordWithOtp, getDisplayMessage } from '../../services/authService'
+import { usePopup } from '../common/popup'
 
 type Step = 'request' | 'reset'
 
 export default function ForgotPassword() {
   const navigate = useNavigate()
+  const { showNotice, showError } = usePopup()
   
   const [step, setStep] = useState<Step>('request')
   const [email, setEmail] = useState('')
@@ -82,15 +84,12 @@ export default function ForgotPassword() {
         setStep('reset')
       } else {
         // Business error from backend
-        setErrors({ 
-          general: getDisplayMessage(result.message || '') || 'Failed to send OTP. Please try again.' 
-        })
+        const displayMessage = getDisplayMessage(result.message || '')
+        showError(displayMessage || 'Failed to send OTP. Please try again.', 'Lỗi gửi OTP')
       }
     } catch (error: any) {
       console.error('Error requesting password reset:', error)
-      setErrors({ 
-        general: 'Network error. Please try again.' 
-      })
+      showError('Network error. Please try again.', 'Lỗi')
     } finally {
       setLoading(false)
     }
@@ -116,21 +115,19 @@ export default function ForgotPassword() {
       if (result.resultCd === 0) {
         // Success - password reset
         setSuccess(true)
+        showNotice('Đặt lại mật khẩu thành công! Đang chuyển đến trang đăng nhập...', 'Thành công')
         // Redirect to login after 3 seconds
         setTimeout(() => {
           navigate('/login')
         }, 3000)
       } else {
         // Business error from backend
-        setErrors({ 
-          general: getDisplayMessage(result.message || '') || 'Failed to reset password. Please try again.' 
-        })
+        const displayMessage = getDisplayMessage(result.message || '')
+        showError(displayMessage || 'Failed to reset password. Please try again.', 'Lỗi đặt lại mật khẩu')
       }
     } catch (error: any) {
       console.error('Error resetting password:', error)
-      setErrors({ 
-        general: 'Network error. Please try again.' 
-      })
+      showError('Network error. Please try again.', 'Lỗi')
     } finally {
       setLoading(false)
     }
@@ -188,17 +185,15 @@ export default function ForgotPassword() {
       if (result.resultCd === 0) {
         setOtpSent(true)
         // Show success notification
-        alert(getDisplayMessage(result.message || '') || 'OTP resent successfully!')
+        const displayMessage = getDisplayMessage(result.message || '')
+        showNotice(displayMessage || 'OTP resent successfully!', 'Gửi lại OTP')
       } else {
-        setErrors({ 
-          general: getDisplayMessage(result.message || '') || 'Failed to resend OTP. Please try again.' 
-        })
+        const displayMessage = getDisplayMessage(result.message || '')
+        showError(displayMessage || 'Failed to resend OTP. Please try again.', 'Lỗi gửi OTP')
       }
     } catch (error: any) {
       console.error('Error resending OTP:', error)
-      setErrors({ 
-        general: 'Network error. Please try again.' 
-      })
+      showError('Network error. Please try again.', 'Lỗi')
     } finally {
       setLoading(false)
     }
