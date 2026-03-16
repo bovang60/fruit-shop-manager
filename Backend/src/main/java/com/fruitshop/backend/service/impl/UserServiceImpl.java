@@ -38,16 +38,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse<Page<UserDto>> getUsers(String search, User.UserStatus status, User.Role role, Pageable pageable) {
         Page<User> users;
+        User.Role excludeRole = User.Role.ADMIN;
+
         if (search != null && !search.isEmpty()) {
-            users = userRepository.findByFullNameContainingIgnoreCase(search, pageable);
-        } else if (status != null && role != null) {
-            users = userRepository.findByStatusAndRole(status, role, pageable);
+            if (status != null) {
+                users = userRepository.findByFullNameContainingIgnoreCaseAndStatusAndRoleNot(search, status, excludeRole, pageable);
+            } else {
+                users = userRepository.findByFullNameContainingIgnoreCaseAndRoleNot(search, excludeRole, pageable);
+            }
         } else if (role != null) {
-            users = userRepository.findByRole(role, pageable);
+            if (role == User.Role.ADMIN) {
+                return ApiResponse.success(Page.empty(pageable));
+            }
+            if (status != null) {
+                users = userRepository.findByStatusAndRole(status, role, pageable);
+            } else {
+                users = userRepository.findByRole(role, pageable);
+            }
         } else if (status != null) {
-            users = userRepository.findByStatus(status, pageable);
+            users = userRepository.findByStatusAndRoleNot(status, excludeRole, pageable);
         } else {
-            users = userRepository.findAll(pageable);
+            users = userRepository.findByRoleNot(excludeRole, pageable);
         }
         return ApiResponse.success(users.map(this::convertToDto));
     }

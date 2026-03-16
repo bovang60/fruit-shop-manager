@@ -26,6 +26,9 @@ public class Category {
     @OneToMany(mappedBy = "category")
     private List<Fruit> fruits;
 
+    @Column(name = "created_at", updatable = false)
+    private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+
     public enum CategoryStatus {
         ACTIVE, INACTIVE;
 

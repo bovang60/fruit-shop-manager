@@ -18,12 +18,18 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryRepository categoryRepository;
 
     @Override
-    public ApiResponse<Page<CategoryDto>> getCategories(String search, Boolean sortByFruitCount, Pageable pageable) {
+    public ApiResponse<Page<CategoryDto>> getCategories(String search, Category.CategoryStatus status, Boolean sortByFruitCount, Pageable pageable) {
         Page<Category> categories;
         if (search != null && !search.isEmpty()) {
-            categories = categoryRepository.findByCategoryNameContainingIgnoreCase(search, pageable);
+            if (status != null) {
+                categories = categoryRepository.findByCategoryNameContainingIgnoreCaseAndStatus(search, status, pageable);
+            } else {
+                categories = categoryRepository.findByCategoryNameContainingIgnoreCase(search, pageable);
+            }
         } else if (Boolean.TRUE.equals(sortByFruitCount)) {
-            categories = categoryRepository.findAllOrderByFruitCountDesc(pageable);
+            categories = categoryRepository.findAllOrderByFruitCountDesc(status, pageable);
+        } else if (status != null) {
+            categories = categoryRepository.findByStatus(status, pageable);
         } else {
             categories = categoryRepository.findAll(pageable);
         }
@@ -56,6 +62,11 @@ public class CategoryServiceImpl implements CategoryService {
         // Validate description
         if (categoryDto.getDescription() != null && categoryDto.getDescription().length() > 255) {
             throw new IllegalArgumentException("Miêu tả nhiều hơn 255 ký tự");
+        }
+
+        // Check if category name already exists
+        if (categoryRepository.existsByCategoryNameIgnoreCase(categoryDto.getCategoryName())) {
+            return ApiResponse.error("Danh mục này đã tồn tại rồi!");
         }
 
         Category category = new Category();
@@ -119,6 +130,7 @@ public class CategoryServiceImpl implements CategoryService {
         dto.setDescription(category.getDescription());
         dto.setStatus(category.getStatus());
         dto.setFruitCount(category.getFruits() != null ? (long) category.getFruits().size() : 0L);
+        dto.setCreatedAt(category.getCreatedAt());
         return dto;
     }
 }

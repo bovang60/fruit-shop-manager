@@ -10,4 +10,5 @@ public class CategoryDto {
     private String description;
     private Category.CategoryStatus status;
     private Long fruitCount;
+    private java.time.LocalDateTime createdAt;
 }
