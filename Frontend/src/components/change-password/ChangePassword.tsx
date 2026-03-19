@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ChangePasswordView from './ChangePasswordView'
-import { callApi } from '../../utils/apiClient'
+import { callApiWithMethod } from '../../utils/apiClient'
+import { LoadingModal } from '../common/loading'
 
 export default function ChangePassword() {
   const navigate = useNavigate()
@@ -89,7 +90,7 @@ export default function ChangePassword() {
       }
 
       // API call to change password
-      const result = await callApi(`/api/users/${userId}/change-password`, 'PUT', {
+      const result = await callApiWithMethod('PUT', `/api/users/${userId}/change-password`, {
         currentPassword,
         newPassword,
         confirmPassword
@@ -129,25 +130,33 @@ export default function ChangePassword() {
   }
 
   return (
-    <ChangePasswordView
-      currentPassword={currentPassword}
-      newPassword={newPassword}
-      confirmPassword={confirmPassword}
-      showCurrentPassword={showCurrentPassword}
-      showNewPassword={showNewPassword}
-      showConfirmPassword={showConfirmPassword}
-      passwordStrength={passwordStrength}
-      strengthLabel={getStrengthLabel(passwordStrength)}
-      errors={errors}
-      loading={loading}
-      onCurrentPasswordChange={setCurrentPassword}
-      onNewPasswordChange={setNewPassword}
-      onConfirmPasswordChange={setConfirmPassword}
-      onToggleCurrentPassword={() => setShowCurrentPassword(!showCurrentPassword)}
-      onToggleNewPassword={() => setShowNewPassword(!showNewPassword)}
-      onToggleConfirmPassword={() => setShowConfirmPassword(!showConfirmPassword)}
-      onSubmit={handleSubmit}
-      onGoBack={handleGoBack}
-    />
+    <>
+      <ChangePasswordView
+        currentPassword={currentPassword}
+        newPassword={newPassword}
+        confirmPassword={confirmPassword}
+        showCurrentPassword={showCurrentPassword}
+        showNewPassword={showNewPassword}
+        showConfirmPassword={showConfirmPassword}
+        passwordStrength={passwordStrength}
+        strengthLabel={getStrengthLabel(passwordStrength)}
+        errors={errors}
+        loading={loading}
+        onCurrentPasswordChange={setCurrentPassword}
+        onNewPasswordChange={setNewPassword}
+        onConfirmPasswordChange={setConfirmPassword}
+        onToggleCurrentPassword={() => setShowCurrentPassword(!showCurrentPassword)}
+        onToggleNewPassword={() => setShowNewPassword(!showNewPassword)}
+        onToggleConfirmPassword={() => setShowConfirmPassword(!showConfirmPassword)}
+        onSubmit={handleSubmit}
+        onGoBack={handleGoBack}
+      />
+      <LoadingModal 
+        isOpen={loading} 
+        message="Updating Password..." 
+        subMessage="Please wait while we secure your account"
+        theme="green"
+      />
+    </>
   )
 }

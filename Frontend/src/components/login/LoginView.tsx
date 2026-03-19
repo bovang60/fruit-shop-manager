@@ -1,5 +1,6 @@
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 import './Login.css'
 
 export type Props = {
@@ -134,14 +135,14 @@ export default function LoginView({
             </div>
 
             {/* Social Login */}
-            <div className="social-login">
+            {/* <div className="social-login">
               <button type="button" className="social-btn" aria-label="Login with Google">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7c0hccFF0Q2ai4PEyNY0oGUKajtYEc04krya811d0VSpXKb74Y6c7aRpRL_0KUhax2Jm-cWang_w8spWDjfWk2rP3porlxzn7fskgeTm13wQ5bTPlLte43SA3-PfkscLUqW1YaZptO3s4P0AkbvuPtBoukYBjxtzID2pLTSudzQEPF7kWwH1xP-5mxBZ3qYy8Utd7R3QymVZc3UFR6JnB9ofhS4P9UbjH7N8SswCGgMcvUHNbgl2XsvN6oNWkbongOS__zCxPHvU" alt="Google" />
               </button>
               <button type="button" className="social-btn" aria-label="Login with Facebook">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuArhJrCRLkSbiRUDunubHsZ0zgAlQyf9edRhFpGXdUtmXvsAPE7xTPEjv6Bw3tNiasJlAK6l7K3fLo_eB44O97YwyKkhtl8EMK-Qv166111KaAzA40cfMI7UrsKuqHNAzKKHofJ6FNPtgRB4_aXOD0oBPEa-rDQPWXqCwGrnHFEAnbVoFrJN43V3aL5aNxdliWHVPcfmi4tyt1Un8IGkC5na1hAfDJM9gljEWY-B9r7v7bLVajj6pBUBGEGY6f1F6miTJuT--1ZeOI" alt="Facebook" />
               </button>
-            </div>
+            </div> */}
 
             {/* Footer Link */}
             <p className="signup-link">
@@ -158,6 +159,14 @@ export default function LoginView({
       <footer className="login-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={loading} 
+        message="Đang đăng nhập..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }
