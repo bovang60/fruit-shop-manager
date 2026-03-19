@@ -1,5 +1,6 @@
 import './ForgotPassword.css'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 
 export type Props = {
   step: 'request' | 'reset'
@@ -261,6 +262,14 @@ export default function ForgotPasswordView(props: Props) {
       <footer className="forgot-password-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={props.loading} 
+        message={props.step === 'request' ? 'Đang gửi mã OTP...' : 'Đang đặt lại mật khẩu...'}
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 import './Register.css'
 
 export type OtpVerificationProps = {
@@ -254,6 +255,14 @@ export default function OtpVerificationView({
       <footer className="register-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={loading} 
+        message="Đang xác thực..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }

@@ -224,22 +224,13 @@ export default function Profile() {
     navigate('/cart')
   }
 
-  // Show loading state while fetching data
-  if (loading && !profile) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <p>Loading profile...</p>
-      </div>
-    )
-  }
-
   // Show error state if failed to load and no profile data
-  if (!profile && error) {
+  if (!profile && error && !loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', gap: '1rem' }}>
         <p style={{ color: '#dc2626' }}>⚠️ {error}</p>
         <button onClick={loadUserProfile} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid #33f20d', background: '#33f20d', color: 'white', cursor: 'pointer' }}>
-          Retry
+          Thử lại
         </button>
       </div>
     )

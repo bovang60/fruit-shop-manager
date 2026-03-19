@@ -1,6 +1,7 @@
 import './Profile.css'
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 import type { UserProfile } from './Profile'
 
 export type Props = {
@@ -264,6 +265,14 @@ export default function ProfileView(props: Props) {
       <footer className="profile-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={props.loading} 
+        message="Đang xử lý..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import React from 'react'
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
 import Pagination from '../common/pagination/Pagination'
+import LoadingModal from '../common/loading/LoadingModal'
 import './Home.css'
 
 type Product = { id: number; name: string; price: string; img?: string; desc?: string; tag?: string }
@@ -232,13 +233,7 @@ export default function HomeView({
             </div>
           </div>
 
-          {/* Loading & Error States */}
-          {loading && (
-            <div className="loading-state">
-              <p>Đang tải sản phẩm...</p>
-            </div>
-          )}
-          
+          {/* Error State */}
           {error && (
             <div className="error-state">
               <p style={{color: 'red'}}>{error}</p>
@@ -246,7 +241,7 @@ export default function HomeView({
           )}
 
           {/* Products Grid */}
-          {!loading && !error && (
+          {!error && (
             <div className="modern-products-grid">
               {displayed.map((p) => (
                 <div key={p.id} className="modern-product-card">
@@ -338,6 +333,14 @@ export default function HomeView({
           <Footer />
         </div>
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={loading} 
+        message="Đang tải sản phẩm..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }

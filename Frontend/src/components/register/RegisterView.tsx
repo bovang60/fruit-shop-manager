@@ -1,5 +1,6 @@
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 import './Register.css'
 
 export type RegisterValues = {
@@ -213,6 +214,14 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
       <footer className="register-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={loading} 
+        message="Đang xử lý..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }
