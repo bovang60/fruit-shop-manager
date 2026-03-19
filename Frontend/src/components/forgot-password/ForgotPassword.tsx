@@ -24,9 +24,9 @@ export default function ForgotPassword() {
     const newErrors: Record<string, string> = {}
 
     if (!email.trim()) {
-      newErrors.email = 'Email address is required'
+      newErrors.email = 'Địa chỉ email là bắt buộc'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = 'Vui lòng nhập địa chỉ email hợp lệ'
     }
 
     setErrors(newErrors)
@@ -37,29 +37,29 @@ export default function ForgotPassword() {
     const newErrors: Record<string, string> = {}
 
     if (!email.trim()) {
-      newErrors.email = 'Email address is required'
+      newErrors.email = 'Địa chỉ email là bắt buộc'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = 'Vui lòng nhập địa chỉ email hợp lệ'
     }
 
     if (!otpCode.trim()) {
-      newErrors.otpCode = 'OTP code is required'
+      newErrors.otpCode = 'Mã OTP là bắt buộc'
     } else if (!/^\d{6}$/.test(otpCode)) {
-      newErrors.otpCode = 'OTP code must be 6 digits'
+      newErrors.otpCode = 'Mã OTP phải gồm 6 chữ số'
     }
 
     if (!newPassword) {
-      newErrors.newPassword = 'New password is required'
+      newErrors.newPassword = 'Mật khẩu mới là bắt buộc'
     } else if (newPassword.length < 6) {
-      newErrors.newPassword = 'Password must be at least 6 characters'
+      newErrors.newPassword = 'Mật khẩu phải có ít nhất 6 ký tự'
     } else if (newPassword.length > 50) {
-      newErrors.newPassword = 'Password must not exceed 50 characters'
+      newErrors.newPassword = 'Mật khẩu không được vượt quá 50 ký tự'
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu'
     } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = 'Mật khẩu không khớp'
     }
 
     setErrors(newErrors)
@@ -85,11 +85,11 @@ export default function ForgotPassword() {
       } else {
         // Business error from backend
         const displayMessage = getDisplayMessage(result.message || '')
-        showError(displayMessage || 'Failed to send OTP. Please try again.', 'Lỗi gửi OTP')
+        showError(displayMessage || 'Không thể gửi OTP. Vui lòng thử lại.', 'Lỗi gửi OTP')
       }
     } catch (error: any) {
       console.error('Error requesting password reset:', error)
-      showError('Network error. Please try again.', 'Lỗi')
+      showError('Lỗi kết nối. Vui lòng thử lại.', 'Lỗi')
     } finally {
       setLoading(false)
     }
@@ -123,11 +123,11 @@ export default function ForgotPassword() {
       } else {
         // Business error from backend
         const displayMessage = getDisplayMessage(result.message || '')
-        showError(displayMessage || 'Failed to reset password. Please try again.', 'Lỗi đặt lại mật khẩu')
+        showError(displayMessage || 'Không thể đặt lại mật khẩu. Vui lòng thử lại.', 'Lỗi đặt lại mật khẩu')
       }
     } catch (error: any) {
       console.error('Error resetting password:', error)
-      showError('Network error. Please try again.', 'Lỗi')
+      showError('Lỗi kết nối. Vui lòng thử lại.', 'Lỗi')
     } finally {
       setLoading(false)
     }
@@ -186,14 +186,14 @@ export default function ForgotPassword() {
         setOtpSent(true)
         // Show success notification
         const displayMessage = getDisplayMessage(result.message || '')
-        showNotice(displayMessage || 'OTP resent successfully!', 'Gửi lại OTP')
+        showNotice(displayMessage || 'Gửi lại OTP thành công!', 'Gửi lại OTP')
       } else {
         const displayMessage = getDisplayMessage(result.message || '')
-        showError(displayMessage || 'Failed to resend OTP. Please try again.', 'Lỗi gửi OTP')
+        showError(displayMessage || 'Không thể gửi lại OTP. Vui lòng thử lại.', 'Lỗi gửi OTP')
       }
     } catch (error: any) {
       console.error('Error resending OTP:', error)
-      showError('Network error. Please try again.', 'Lỗi')
+      showError('Lỗi kết nối. Vui lòng thử lại.', 'Lỗi')
     } finally {
       setLoading(false)
     }

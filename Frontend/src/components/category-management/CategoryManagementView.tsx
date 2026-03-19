@@ -357,7 +357,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                     onClick={() => currentCategory && onUpdate(currentCategory.id, { name: newName, status: newStatus, description: newDescription })}
                     disabled={loading}
                 >
-                    {loading ? 'Updating...' : 'Update Category'}
+                    {loading ? 'Đang cập nhật...' : 'Cập nhật danh mục'}
                 </button>
             </div>
         </div>

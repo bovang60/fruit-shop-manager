@@ -90,12 +90,12 @@ export default function Home() {
         setProducts(uiProducts)
         setTotalPages(response.data.pagination.totalPages)
       } else {
-        setError(getErrorMessage(response.message || 'Failed to load products'))
+        setError(getErrorMessage(response.message || 'Không thể tải sản phẩm'))
         setProducts([])
       }
     } catch (err) {
       console.error('Error loading products:', err)
-      setError('Network error. Please try again.')
+      setError('Lỗi kết nối. Vui lòng thử lại.')
       setProducts([])
     } finally {
       setLoading(false)
@@ -160,7 +160,7 @@ export default function Home() {
       if (response.resultCd === 0) {
         showNotice('Đã thêm vào giỏ hàng!', 'Thành công')
       } else {
-        showError(getErrorMessage(response.message || 'Failed to add to cart'))
+        showError(getErrorMessage(response.message || 'Không thể thêm vào giỏ hàng'))
       }
     } catch (err) {
       console.error('Error adding to cart:', err)

@@ -123,7 +123,7 @@ export default function LoginView({
 
               {/* Login Button */}
               <button type="submit" className="primary login-btn" disabled={loading}>
-                {loading ? 'Logging in...' : 'Login'}
+                {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </button>
             </form>
 

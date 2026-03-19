@@ -70,12 +70,12 @@ export default function Profile() {
         setProfile(uiProfile)
         setEditedProfile(uiProfile)
       } else {
-        setError(response.message || 'Failed to load profile')
+        setError(response.message || 'Không thể tải thông tin')
         setProfile(null)
       }
     } catch (error) {
       console.error('Error loading profile:', error)
-      setError('Failed to load profile. Please try again.')
+      setError('Không thể tải thông tin. Vui lòng thử lại.')
       setProfile(null)
     } finally {
       setLoading(false)
@@ -126,16 +126,16 @@ export default function Profile() {
         setProfile(updatedProfile)
         setEditedProfile(updatedProfile)
         setIsEditing(false)
-        setSuccessMessage('Profile updated successfully!')
+        setSuccessMessage('Cập nhật thông tin thành công!')
         
         // Clear success message after 3 seconds
         setTimeout(() => setSuccessMessage(''), 3000)
       } else {
-        setError(response.message || 'Failed to update profile')
+        setError(response.message || 'Không thể cập nhật thông tin')
       }
     } catch (error) {
       console.error('Error saving profile:', error)
-      setError('Failed to update profile. Please try again.')
+      setError('Không thể cập nhật thông tin. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }

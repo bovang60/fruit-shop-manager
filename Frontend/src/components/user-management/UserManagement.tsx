@@ -106,13 +106,13 @@ export default function UserManagement() {
             const apiStatus = status.toUpperCase() as UserStatus
             const response = await updateUserStatus(id, apiStatus)
             if (response.resultCd === 0) {
-                showSuccess('User status updated successfully!')
+                showSuccess('Cập nhật trạng thái người dùng thành công!')
                 fetchUsers() // Refresh list
             } else {
-                showError(response.message || 'Failed to update status')
+                showError(response.message || 'Không thể cập nhật trạng thái')
             }
         } catch (err) {
-            showError('Connection error when updating status')
+            showError('Lỗi kết nối khi cập nhật trạng thái')
         }
     }
 

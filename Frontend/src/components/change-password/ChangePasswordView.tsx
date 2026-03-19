@@ -201,7 +201,7 @@ export default function ChangePasswordView(props: Props) {
                   className="primary"
                   disabled={props.loading}
                 >
-                  {props.loading ? 'Updating...' : '🔄 Update Password'}
+                  {props.loading ? 'Đang cập nhật...' : '🔄 Cập nhật mật khẩu'}
                 </button>
 
                 <button

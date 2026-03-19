@@ -21,15 +21,15 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
     const newErrors: { email?: string; password?: string } = {}
     
     if (!email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = 'Email là bắt buộc'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Email is invalid'
+      newErrors.email = 'Email không hợp lệ'
     }
     
     if (!password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = 'Mật khẩu là bắt buộc'
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự'
     }
     
     setErrors(newErrors)

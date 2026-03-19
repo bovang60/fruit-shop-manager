@@ -9,8 +9,8 @@ export type LoadingModalProps = {
 
 export default function LoadingModal({
   isOpen,
-  message = 'Loading...',
-  subMessage = 'Please wait',
+  message = 'Đang tải...',
+  subMessage = 'Vui lòng chờ',
   theme = 'green'
 }: LoadingModalProps) {
   if (!isOpen) return null

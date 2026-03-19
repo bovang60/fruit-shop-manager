@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import ChangePasswordView from './ChangePasswordView'
 import { callApiWithMethod } from '../../utils/apiClient'
 import { LoadingModal } from '../common/loading'
+import { getUserFromStorage } from '../../services/authService'
+import { usePopup } from '../common/popup'
 
 export default function ChangePassword() {
   const navigate = useNavigate()
+  const { showSuccess, showError } = usePopup()
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -39,33 +42,33 @@ export default function ChangePassword() {
   const passwordStrength = calculatePasswordStrength(newPassword)
 
   const getStrengthLabel = (strength: number): string => {
-    const labels = ['Weak', 'Weak', 'Fair', 'Good', 'Strong']
-    return labels[strength] || 'Weak'
+    const labels = ['Yếu', 'Yếu', 'Trung bình', 'Tốt', 'Mạnh']
+    return labels[strength] || 'Yếu'
   }
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
 
     if (!currentPassword.trim()) {
-      newErrors.currentPassword = 'Current password is required'
+      newErrors.currentPassword = 'Mật khẩu hiện tại là bắt buộc'
     }
 
     if (!newPassword) {
-      newErrors.newPassword = 'New password is required'
+      newErrors.newPassword = 'Mật khẩu mới là bắt buộc'
     } else if (newPassword.length < 6) {
-      newErrors.newPassword = 'Password must be at least 6 characters'
+      newErrors.newPassword = 'Mật khẩu phải có ít nhất 6 ký tự'
     } else if (newPassword.length > 50) {
-      newErrors.newPassword = 'Password must not exceed 50 characters'
+      newErrors.newPassword = 'Mật khẩu không được vượt quá 50 ký tự'
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your new password'
+      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu mới'
     } else if (confirmPassword !== newPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = 'Mật khẩu không khớp'
     }
 
     if (currentPassword && newPassword && currentPassword === newPassword) {
-      newErrors.newPassword = 'New password must be different from current password'
+      newErrors.newPassword = 'Mật khẩu mới phải khác mật khẩu hiện tại'
     }
 
     setErrors(newErrors)
@@ -81,16 +84,16 @@ export default function ChangePassword() {
     setErrors({})
 
     try {
-      // Get userId from localStorage
-      const userId = localStorage.getItem('userId')
-      if (!userId) {
-        setErrors({ general: 'Please login first' })
+      // Get user from localStorage
+      const user = getUserFromStorage()
+      if (!user || !user.userId) {
+        setErrors({ general: 'Vui lòng đăng nhập trước' })
         navigate('/login')
         return
       }
 
       // API call to change password
-      const result = await callApiWithMethod('PUT', `/api/users/${userId}/change-password`, {
+      const result = await callApiWithMethod('PUT', `/api/users/${user.userId}/change-password`, {
         currentPassword,
         newPassword,
         confirmPassword
@@ -99,7 +102,10 @@ export default function ChangePassword() {
       if (result.resultCd === 0) {
         // Success - show success message and redirect
         setErrors({})
-        alert(result.message || 'Password changed successfully!')
+        showSuccess(
+          result.message || 'Mật khẩu đã được thay đổi thành công!',
+          'Thành công'
+        )
         
         // Clear form
         setCurrentPassword('')
@@ -111,15 +117,17 @@ export default function ChangePassword() {
           navigate('/profile')
         }, 2000)
       } else {
-        setErrors({
-          general: result.message || 'Failed to update password. Please check your current password.'
-        })
+        showError(
+          result.message || 'Không thể cập nhật mật khẩu. Vui lòng kiểm tra lại mật khẩu hiện tại.',
+          'Lỗi'
+        )
       }
     } catch (error: any) {
       console.error('Error changing password:', error)
-      setErrors({ 
-        general: error.response?.data?.message || 'Network error. Please try again.' 
-      })
+      showError(
+        error.response?.data?.message || 'Lỗi kết nối. Vui lòng thử lại.',
+        'Lỗi'
+      )
     } finally {
       setLoading(false)
     }
@@ -153,8 +161,8 @@ export default function ChangePassword() {
       />
       <LoadingModal 
         isOpen={loading} 
-        message="Updating Password..." 
-        subMessage="Please wait while we secure your account"
+        message="Đang cập nhật mật khẩu..." 
+        subMessage="Vui lòng chờ trong giây lát"
         theme="green"
       />
     </>
