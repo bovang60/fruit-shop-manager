@@ -37,10 +37,10 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
           </div>
           <div className="hero-content">
             <h1 className="hero-title">
-              Start Your<br/>Healthy Journey
+              Bắt Đầu<br/>Hành Trình Khỏe Mạnh
             </h1>
             <p className="hero-subtitle">
-              Join our community and get the freshest citrus fruits delivered straight to your doorstep.
+              Tham gia cộng đồng của chúng tôi và nhận trái cây có múi tươi ngon nhất giao tận nhà.
             </p>
           </div>
         </div>
@@ -49,8 +49,8 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
         <div className="register-form-section">
           <div className="register-form-container">
             <div className="register-header-text">
-              <h2>Create Your Account</h2>
-              <p className="muted">Join the fresh movement today.</p>
+              <h2>Tạo Tài Khoản Của Bạn</h2>
+              <p className="muted">Tham gia phong trào sống khỏe hôm nay.</p>
             </div>
 
             <form className="register-form" onSubmit={onSubmit} noValidate>
@@ -73,12 +73,12 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
 
               {/* Full Name */}
               <div className="field">
-                <label htmlFor="fullName">Full Name</label>
+                <label htmlFor="fullName">Họ và Tên</label>
                 <input
                   id="fullName"
                   name="fullName"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="Nguyễn Văn A"
                   value={values.fullName}
                   onChange={(e) => onChange('fullName', e.target.value)}
                   aria-invalid={errors.fullName ? 'true' : undefined}
@@ -96,7 +96,7 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="john@example.com"
+                  placeholder="nguyenvana@example.com"
                   value={values.email}
                   onChange={(e) => onChange('email', e.target.value)}
                   aria-invalid={errors.email ? 'true' : undefined}
@@ -109,12 +109,12 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
 
               {/* Phone Number */}
               <div className="field">
-                <label htmlFor="phone">Phone Number</label>
+                <label htmlFor="phone">Số Điện Thoại</label>
                 <input
                   id="phone"
                   name="phone"
                   type="tel"
-                  placeholder="+1 (555) 000-0000"
+                  placeholder="0912345678"
                   value={values.phone || ''}
                   onChange={(e) => onChange('phone', e.target.value)}
                   disabled={loading}
@@ -124,7 +124,7 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
               {/* Password Grid */}
               <div className="password-grid">
                 <div className="field">
-                  <label htmlFor="password">Password</label>
+                  <label htmlFor="password">Mật khẩu</label>
                   <input
                     id="password"
                     name="password"
@@ -141,7 +141,7 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
                 </div>
 
                 <div className="field">
-                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <label htmlFor="confirmPassword">Xác nhận Mật khẩu</label>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -168,29 +168,29 @@ export default function RegisterView({ values, errors, loading, onChange, onSubm
                   disabled={loading}
                 />
                 <label htmlFor="terms">
-                  I agree to the <a href="#" className="terms-link">Terms of Service</a> and <a href="#" className="terms-link">Privacy Policy</a>.
+                  Tôi đồng ý với <a href="#" className="terms-link">Điều khoản Dịch vụ</a> và <a href="#" className="terms-link">Chính sách Bảo mật</a>.
                 </label>
               </div>
               {errors.acceptTerms && <span className="error-message">{errors.acceptTerms}</span>}
 
               {/* Create Account Button */}
               <button type="submit" className="primary register-btn" disabled={loading}>
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
               </button>
             </form>
 
             {/* Login Link */}
             <div className="login-link">
-              <span>Already have an account?</span>
+              <span>Đã có tài khoản?</span>
               <button type="button" className="link-btn" onClick={onGoToLogin}>
-                Login
+                Đăng nhập
               </button>
             </div>
 
             {/* Divider */}
             <div className="divider">
               <div className="divider-line"></div>
-              <span className="divider-text">Or continue with</span>
+              <span className="divider-text">Hoặc tiếp tục với</span>
               <div className="divider-line"></div>
             </div>
 

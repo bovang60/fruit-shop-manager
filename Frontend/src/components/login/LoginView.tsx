@@ -41,9 +41,9 @@ export default function LoginView({
             <div className="hero-overlay"></div>
           </div>
           <div className="hero-content">
-            <h1 className="hero-title">Freshness Awaits</h1>
+            <h1 className="hero-title">Sự Tươi Ngon Đang Chờ Đón</h1>
             <p className="hero-subtitle">
-              Join our community of fruit lovers and get the season's best harvests delivered straight to your doorstep.
+              Tham gia cộng đồng yêu thích trái cây và nhận những trái cây tươi ngon nhất trong mùa giao tận tận nhà.
             </p>
           </div>
         </div>
@@ -52,8 +52,8 @@ export default function LoginView({
         <div className="login-form-section">
           <div className="login-form-container">
             <div className="login-header-text">
-              <h2>Welcome Back!</h2>
-              <p className="muted">Login to access your favorite harvests.</p>
+              <h2>Chào Mừng Trở Lại!</h2>
+              <p className="muted">Đăng nhập để truy cập mục yêu thích của bạn.</p>
             </div>
 
             <form className="login-form" onSubmit={onSubmit}>
@@ -66,7 +66,7 @@ export default function LoginView({
 
               {/* Email Field */}
               <div className="field">
-                <label htmlFor="email">Email or Username</label>
+                <label htmlFor="email">Email</label>
                 <div className="input-wrapper">
                   {/* <span className="input-icon">✉️</span> */}
                   <input
@@ -74,7 +74,7 @@ export default function LoginView({
                     type="email"
                     value={email}
                     onChange={(e) => onEmailChange(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder="Nhập email của bạn"
                     aria-invalid={!!errors.email}
                     aria-describedby={errors.email ? 'email-error' : undefined}
                     disabled={loading}
@@ -90,9 +90,9 @@ export default function LoginView({
               {/* Password Field */}
               <div className="field">
                 <div className="field-header">
-                  <label htmlFor="password">Password</label>
+                  <label htmlFor="password">Mật khẩu</label>
                   <button type="button" className="forgot-link" onClick={onGoToForgotPassword}>
-                    Forgot Password?
+                    Quên mật khẩu?
                   </button>
                 </div>
                 <div className="input-wrapper">
@@ -102,7 +102,7 @@ export default function LoginView({
                     type="password"
                     value={password}
                     onChange={(e) => onPasswordChange(e.target.value)}
-                    placeholder="Enter your password"
+                    placeholder="Nhập mật khẩu của bạn"
                     aria-invalid={!!errors.password}
                     aria-describedby={errors.password ? 'password-error' : undefined}
                     disabled={loading}
@@ -118,7 +118,7 @@ export default function LoginView({
               {/* Remember Me */}
               <div className="remember-me">
                 <input type="checkbox" id="remember" />
-                <label htmlFor="remember">Remember Me</label>
+                <label htmlFor="remember">Ghi nhớ đăng nhập</label>
               </div>
 
               {/* Login Button */}
@@ -128,11 +128,11 @@ export default function LoginView({
             </form>
 
             {/* Divider */}
-            <div className="divider">
+            {/* <div className="divider">
               <div className="divider-line"></div>
-              <span className="divider-text">Or continue with</span>
+              <span className="divider-text">Hoặc tiếp tục với</span>
               <div className="divider-line"></div>
-            </div>
+            </div> */}
 
             {/* Social Login */}
             {/* <div className="social-login">
@@ -146,9 +146,9 @@ export default function LoginView({
 
             {/* Footer Link */}
             <p className="signup-link">
-              Don't have an account?
+              Chưa có tài khoản?
               <button type="button" className="link-btn" onClick={onGoToRegister}>
-                Sign Up
+                Đăng ký
               </button>
             </p>
           </div>

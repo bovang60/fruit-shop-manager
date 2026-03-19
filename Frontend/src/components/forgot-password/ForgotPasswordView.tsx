@@ -39,12 +39,12 @@ export default function ForgotPasswordView(props: Props) {
           {/* Header Text */}
           <div className="forgot-password-header-text">
             <h1 className="forgot-password-title">
-              {isRequestStep ? 'Forgot Password?' : 'Reset Password'}
+              {isRequestStep ? 'Quên Mật Khẩu?' : 'Đặt Lại Mật Khẩu'}
             </h1>
             <p className="forgot-password-subtitle">
               {isRequestStep 
-                ? 'No worries! Enter your email address below and we\'ll send you an OTP code to reset your password.'
-                : 'Enter the OTP code sent to your email and create a new password.'
+                ? 'Đừng lo! Nhập địa chỉ email của bạn và chúng tôi sẽ gửi mã OTP để đặt lại mật khẩu.'
+                : 'Nhập mã OTP đã gửi đến email của bạn và tạo mật khẩu mới.'
               }
             </p>
           </div>
@@ -54,9 +54,9 @@ export default function ForgotPasswordView(props: Props) {
             <div className="info-message">
               <div className="info-icon">📧</div>
               <div>
-                <p className="info-title">OTP Sent!</p>
+                <p className="info-title">Đã Gửi OTP!</p>
                 <p className="info-text">
-                  We've sent a 6-digit OTP code to <strong>{props.email}</strong>. Please check your email and enter the code below.
+                  Chúng tôi đã gửi mã OTP 6 chữ số đến <strong>{props.email}</strong>. Vui lòng kiểm tra email và nhập mã bên dưới.
                 </p>
               </div>
             </div>
@@ -67,9 +67,9 @@ export default function ForgotPasswordView(props: Props) {
             <div className="success-message">
               <div className="success-icon">✅</div>
               <div>
-                <p className="success-title">Password Reset Successful!</p>
+                <p className="success-title">Đặt Lại Mật Khẩu Thành Công!</p>
                 <p className="success-text">
-                  Your password has been reset successfully. Redirecting to login page...
+                  Mật khẩu của bạn đã được đặt lại thành công. Đang chuyển hướng đến trang đăng nhập...
                 </p>
               </div>
             </div>
@@ -88,7 +88,7 @@ export default function ForgotPasswordView(props: Props) {
             {/* Email Field - Always visible */}
             <div className="field">
               <label htmlFor="email" className="field-label">
-                Email Address
+                Địa Chỉ Email
               </label>
               <div className="input-wrapper">
                 <span className="input-icon">📧</span>
@@ -97,7 +97,7 @@ export default function ForgotPasswordView(props: Props) {
                   type="email"
                   value={props.email}
                   onChange={(e) => props.onEmailChange(e.target.value)}
-                  placeholder="e.g. nature@fruitshop.com"
+                  placeholder="Ví dụ: nguyenvana@example.com"
                   disabled={props.loading || props.success || isResetStep}
                   aria-invalid={!!props.errors.email}
                   aria-describedby={props.errors.email ? 'email-error' : undefined}
@@ -115,7 +115,7 @@ export default function ForgotPasswordView(props: Props) {
             {isResetStep && (
               <div className="field">
                 <label htmlFor="otpCode" className="field-label">
-                  OTP Code
+                  Mã OTP
                 </label>
                 <div className="input-wrapper">
                   <span className="input-icon">🔢</span>
@@ -126,7 +126,7 @@ export default function ForgotPasswordView(props: Props) {
                     maxLength={6}
                     value={props.otpCode || ''}
                     onChange={(e) => props.onOtpChange?.(e.target.value)}
-                    placeholder="Enter 6-digit code"
+                    placeholder="Nhập mã 6 chữ số"
                     disabled={props.loading || props.success}
                     aria-invalid={!!props.errors.otpCode}
                     aria-describedby={props.errors.otpCode ? 'otp-error' : undefined}
@@ -146,7 +146,7 @@ export default function ForgotPasswordView(props: Props) {
                     onClick={props.onResendOtp}
                     disabled={props.loading || props.success}
                   >
-                    Resend OTP
+                    Gửi lại OTP
                   </button>
                 </div>
               </div>
@@ -156,7 +156,7 @@ export default function ForgotPasswordView(props: Props) {
             {isResetStep && (
               <div className="field">
                 <label htmlFor="newPassword" className="field-label">
-                  New Password
+                  Mật Khẩu Mới
                 </label>
                 <div className="input-wrapper">
                   <span className="input-icon">🔒</span>
@@ -165,7 +165,7 @@ export default function ForgotPasswordView(props: Props) {
                     type="password"
                     value={props.newPassword || ''}
                     onChange={(e) => props.onNewPasswordChange?.(e.target.value)}
-                    placeholder="Enter new password (6-50 characters)"
+                    placeholder="Nhập mật khẩu mới (6-50 ký tự)"
                     disabled={props.loading || props.success}
                     aria-invalid={!!props.errors.newPassword}
                     aria-describedby={props.errors.newPassword ? 'newPassword-error' : undefined}
@@ -184,7 +184,7 @@ export default function ForgotPasswordView(props: Props) {
             {isResetStep && (
               <div className="field">
                 <label htmlFor="confirmPassword" className="field-label">
-                  Confirm Password
+                  Xác Nhận Mật Khẩu
                 </label>
                 <div className="input-wrapper">
                   <span className="input-icon">🔒</span>
@@ -193,7 +193,7 @@ export default function ForgotPasswordView(props: Props) {
                     type="password"
                     value={props.confirmPassword || ''}
                     onChange={(e) => props.onConfirmPasswordChange?.(e.target.value)}
-                    placeholder="Re-enter your new password"
+                    placeholder="Nhập lại mật khẩu mới"
                     disabled={props.loading || props.success}
                     aria-invalid={!!props.errors.confirmPassword}
                     aria-describedby={props.errors.confirmPassword ? 'confirmPassword-error' : undefined}
@@ -217,11 +217,11 @@ export default function ForgotPasswordView(props: Props) {
               {props.loading ? (
                 <>
                   <span className="loading-spinner"></span>
-                  {isRequestStep ? 'Sending...' : 'Resetting...'}
+                  {isRequestStep ? 'Đang gửi...' : 'Đang đặt lại...'}
                 </>
               ) : (
                 <>
-                  {isRequestStep ? 'Send OTP Code' : 'Reset Password'}
+                  {isRequestStep ? 'Gửi mã OTP' : 'Đặt lại mật khẩu'}
                   <span className="button-arrow">→</span>
                 </>
               )}
@@ -237,7 +237,7 @@ export default function ForgotPasswordView(props: Props) {
               disabled={props.loading}
             >
               <span className="back-arrow">←</span>
-              Back to Login
+              Quay lại Đăng nhập
             </button>
           </div>
 
@@ -246,8 +246,8 @@ export default function ForgotPasswordView(props: Props) {
             <span className="security-icon">🔒</span>
             <p className="security-text">
               {isRequestStep 
-                ? 'Your security is our priority. The OTP code will expire in 5 minutes.'
-                : 'Make sure your new password is strong and unique.'
+                ? 'Bảo mật của bạn là ưu tiên hàng đầu. Mã OTP sẽ hết hạn trong 5 phút.'
+                : 'Đảm bảo mật khẩu mới của bạn mạnh và duy nhất.'
               }
             </p>
           </div>

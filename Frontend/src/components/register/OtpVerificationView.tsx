@@ -126,10 +126,10 @@ export default function OtpVerificationView({
           </div>
           <div className="hero-content">
             <h1 className="hero-title">
-              Almost There!
+              Gần Hoàn Thành!
             </h1>
             <p className="hero-subtitle">
-              Just one more step to join our fresh fruit community.
+              Chỉ còn một bước nữa để tham gia cộng đồng trái cây tươi của chúng tôi.
             </p>
           </div>
         </div>

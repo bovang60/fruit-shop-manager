@@ -61,7 +61,7 @@ export default function ProfileView(props: Props) {
 
               <div className="profile-info-brief">
                 <h1 className="profile-name">{profile.fullName}</h1>
-                <p className="profile-role">{profile.role || 'Member'}</p>
+                <p className="profile-role">{profile.role || 'Thành viên'}</p>
               </div>
 
               <div className="profile-actions">
@@ -71,19 +71,19 @@ export default function ProfileView(props: Props) {
                       className="btn-save-profile"
                       onClick={props.onSaveProfile}
                       disabled={props.loading}
-                      aria-label="Save profile changes"
+                      aria-label="Lưu thay đổi hồ sơ"
                     >
                       <span className="material-icon">💾</span>
-                      Save Changes
+                      Lưu thay đổi
                     </button>
                     <button 
                       className="btn-cancel-edit"
                       onClick={props.onCancelEdit}
                       disabled={props.loading}
-                      aria-label="Cancel editing"
+                      aria-label="Hủy chỉnh sửa"
                     >
                       <span className="material-icon">✖️</span>
-                      Cancel
+                      Hủy
                     </button>
                   </>
                 ) : (
@@ -92,19 +92,19 @@ export default function ProfileView(props: Props) {
                       className="btn-edit-profile"
                       onClick={props.onEditProfile}
                       disabled={props.loading}
-                      aria-label="Edit profile information"
+                      aria-label="Chỉnh sửa thông tin hồ sơ"
                     >
                       <span className="material-icon">✏️</span>
-                      Edit Profile
+                      Chỉnh sửa Hồ sơ
                     </button>
                     <button 
                       className="btn-change-password"
                       onClick={props.onChangePassword}
                       disabled={props.loading}
-                      aria-label="Change password"
+                      aria-label="Đổi mật khẩu"
                     >
                       <span className="material-icon">🔒</span>
-                      Change Password
+                      Đổi Mật Khẩu
                     </button>
                   </>
                 )}
@@ -113,14 +113,14 @@ export default function ProfileView(props: Props) {
 
             {/* Stats Card */}
             <div className="profile-card-stats">
-              <h3 className="stats-title">Account Stats</h3>
+              <h3 className="stats-title">Thống Kê Tài Khoản</h3>
               <div className="stats-grid">
                 <div className="stat-item">
-                  <p className="stat-label">Orders</p>
+                  <p className="stat-label">Đơn Hàng</p>
                   <p className="stat-value">{profile.stats.orders}</p>
                 </div>
                 <div className="stat-item">
-                  <p className="stat-label">Points</p>
+                  <p className="stat-label">Điểm</p>
                   <p className="stat-value">{profile.stats.points}</p>
                 </div>
               </div>
@@ -131,7 +131,7 @@ export default function ProfileView(props: Props) {
           <div className="profile-content">
             <section className="profile-card-details">
               <div className="details-header">
-                <h2 className="details-title">Personal Information</h2>
+                <h2 className="details-title">Thông Tin Cá Nhân</h2>
                 <span className="material-icon-large">👤</span>
               </div>
 
@@ -155,7 +155,7 @@ export default function ProfileView(props: Props) {
                 <div className="detail-item">
                   <div className="detail-label-group">
                     <span className="detail-icon">🏷️</span>
-                    <span className="detail-label">Full Name</span>
+                    <span className="detail-label">Họ và Tên</span>
                   </div>
                   {props.isEditing ? (
                     <input
@@ -163,7 +163,7 @@ export default function ProfileView(props: Props) {
                       className="detail-input"
                       value={props.editedProfile.fullName}
                       onChange={(e) => props.onFieldChange('fullName', e.target.value)}
-                      placeholder="Enter your full name"
+                      placeholder="Nhập họ và tên của bạn"
                     />
                   ) : (
                     <span className="detail-value">{profile.fullName}</span>
@@ -181,7 +181,7 @@ export default function ProfileView(props: Props) {
                 <div className="detail-item">
                   <div className="detail-label-group">
                     <span className="detail-icon">📞</span>
-                    <span className="detail-label">Phone Number</span>
+                    <span className="detail-label">Số Điện Thoại</span>
                   </div>
                   {props.isEditing ? (
                     <input
@@ -189,7 +189,7 @@ export default function ProfileView(props: Props) {
                       className="detail-input"
                       value={props.editedProfile.phoneNumber}
                       onChange={(e) => props.onFieldChange('phoneNumber', e.target.value)}
-                      placeholder="Enter your phone number"
+                      placeholder="Nhập số điện thoại của bạn"
                     />
                   ) : (
                     <span className="detail-value">{profile.phoneNumber}</span>
@@ -199,14 +199,14 @@ export default function ProfileView(props: Props) {
                 <div className="detail-item detail-item-address">
                   <div className="detail-label-group">
                     <span className="detail-icon">📍</span>
-                    <span className="detail-label">Address</span>
+                    <span className="detail-label">Địa Chỉ</span>
                   </div>
                   {props.isEditing ? (
                     <textarea
                       className="detail-textarea"
                       value={props.editedProfile.address}
                       onChange={(e) => props.onFieldChange('address', e.target.value)}
-                      placeholder="Enter your address"
+                      placeholder="Nhập địa chỉ của bạn"
                       rows={3}
                     />
                   ) : (
@@ -219,12 +219,12 @@ export default function ProfileView(props: Props) {
 
               {/* Security & Preferences */}
               <div className="security-section">
-                <h3 className="security-title">Security & Preferences</h3>
+                <h3 className="security-title">Bảo Mật & Tùy Chọn</h3>
                 <div className="security-grid">
                   <div className="security-item">
                     <div className="security-label-group">
                       <span className="security-icon">✓</span>
-                      <span className="security-label">Two-Factor Auth</span>
+                      <span className="security-label">Xác Thực 2 Yếu Tố</span>
                     </div>
                     <button
                       className={`toggle-switch ${profile.settings.twoFactorAuth ? 'active' : ''}`}
@@ -232,7 +232,7 @@ export default function ProfileView(props: Props) {
                       disabled={props.loading}
                       role="switch"
                       aria-checked={profile.settings.twoFactorAuth}
-                      aria-label="Toggle two-factor authentication"
+                      aria-label="Bật/tắt xác thực 2 yếu tố"
                     >
                       <div className="toggle-knob" />
                     </button>
@@ -241,7 +241,7 @@ export default function ProfileView(props: Props) {
                   <div className="security-item">
                     <div className="security-label-group">
                       <span className="security-icon">🔔</span>
-                      <span className="security-label">Order Updates</span>
+                      <span className="security-label">Thông Báo Đơn Hàng</span>
                     </div>
                     <button
                       className={`toggle-switch ${profile.settings.orderNotifications ? 'active' : ''}`}
@@ -249,7 +249,7 @@ export default function ProfileView(props: Props) {
                       disabled={props.loading}
                       role="switch"
                       aria-checked={profile.settings.orderNotifications}
-                      aria-label="Toggle order notifications"
+                      aria-label="Bật/tắt thông báo đơn hàng"
                     >
                       <div className="toggle-knob" />
                     </button>

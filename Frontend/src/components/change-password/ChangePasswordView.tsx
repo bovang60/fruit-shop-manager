@@ -57,10 +57,10 @@ export default function ChangePasswordView(props: Props) {
             <div className="form-header">
               <div className="form-badge">
                 <span className="badge-icon">🛡️</span>
-                Security Settings
+                Cài Đặt Bảo Mật
               </div>
-              <h2 className="form-title">Change Password</h2>
-              <p className="form-subtitle">Please enter your details to update your credentials.</p>
+              <h2 className="form-title">Đổi Mật Khẩu</h2>
+              <p className="form-subtitle">Vui lòng nhập thông tin để cập nhật mật khẩu của bạn.</p>
             </div>
 
             {/* Form */}
@@ -74,7 +74,7 @@ export default function ChangePasswordView(props: Props) {
 
               {/* Current Password */}
               <div className="field">
-                <label htmlFor="currentPassword">Current Password</label>
+                <label htmlFor="currentPassword">Mật Khẩu Hiện Tại</label>
                 <div className="input-wrapper">
                   <span className="input-icon">🔓</span>
                   <input
@@ -91,7 +91,7 @@ export default function ChangePasswordView(props: Props) {
                     type="button"
                     className="visibility-toggle"
                     onClick={props.onToggleCurrentPassword}
-                    aria-label={props.showCurrentPassword ? 'Hide password' : 'Show password'}
+                    aria-label={props.showCurrentPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   >
                     {props.showCurrentPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
@@ -105,7 +105,7 @@ export default function ChangePasswordView(props: Props) {
 
               {/* New Password */}
               <div className="field">
-                <label htmlFor="newPassword">New Password</label>
+                <label htmlFor="newPassword">Mật Khẩu Mới</label>
                 <div className="input-wrapper">
                   <span className="input-icon">🔑</span>
                   <input
@@ -122,7 +122,7 @@ export default function ChangePasswordView(props: Props) {
                     type="button"
                     className="visibility-toggle"
                     onClick={props.onToggleNewPassword}
-                    aria-label={props.showNewPassword ? 'Hide password' : 'Show password'}
+                    aria-label={props.showNewPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   >
                     {props.showNewPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
@@ -140,7 +140,7 @@ export default function ChangePasswordView(props: Props) {
                       ))}
                     </div>
                     <span className="strength-label">
-                      Password Strength: {props.strengthLabel}
+                      Độ mạnh mật khẩu: {props.strengthLabel}
                     </span>
                   </div>
                 )}
@@ -154,7 +154,7 @@ export default function ChangePasswordView(props: Props) {
 
               {/* Confirm New Password */}
               <div className="field">
-                <label htmlFor="confirmPassword">Confirm New Password</label>
+                <label htmlFor="confirmPassword">Xác Nhận Mật Khẩu Mới</label>
                 <div className="input-wrapper">
                   <span className="input-icon">✅</span>
                   <input
@@ -171,7 +171,7 @@ export default function ChangePasswordView(props: Props) {
                     type="button"
                     className="visibility-toggle"
                     onClick={props.onToggleConfirmPassword}
-                    aria-label={props.showConfirmPassword ? 'Hide password' : 'Show password'}
+                    aria-label={props.showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   >
                     {props.showConfirmPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
@@ -185,12 +185,12 @@ export default function ChangePasswordView(props: Props) {
 
               {/* Security Tips */}
               <div className="security-tips">
-                <p className="tips-title">💡 Password Tips:</p>
+                <p className="tips-title">💡 Gợi ý Mật khẩu:</p>
                 <ul className="tips-list">
-                  <li>Use at least 8 characters</li>
-                  <li>Mix uppercase and lowercase letters</li>
-                  <li>Include numbers and special characters</li>
-                  <li>Avoid common words or personal info</li>
+                  <li>Sử dụng ít nhất 8 ký tự</li>
+                  <li>Kết hợp chữ hoa và chữ thường</li>
+                  <li>Bao gồm số và ký tự đặc biệt</li>
+                  <li>Tránh sử dụng từ phổ biến hoặc thông tin cá nhân</li>
                 </ul>
               </div>
 
@@ -210,7 +210,7 @@ export default function ChangePasswordView(props: Props) {
                   onClick={props.onGoBack}
                   disabled={props.loading}
                 >
-                  ← Back to Dashboard
+                  ← Quay lại Trang chính
                 </button>
               </div>
             </form>
