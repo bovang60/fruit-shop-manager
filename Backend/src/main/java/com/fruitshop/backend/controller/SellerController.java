@@ -1,5 +1,6 @@
 package com.fruitshop.backend.controller;
 
+import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.SalesReportDto;
 import com.fruitshop.backend.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,12 @@ public class SellerController {
      * Lấy dữ liệu tổng quan về tình hình kinh doanh của Shop
      */
     @GetMapping("/reports/{shopId}")
-    public ResponseEntity<SalesReportDto> getSalesReport(@PathVariable Integer shopId) {
-        return ResponseEntity.ok(orderService.getShopSalesReport(shopId));
+    public ResponseEntity<ApiResponse<SalesReportDto>> getSalesReport(@PathVariable Integer shopId) {
+        try {
+            SalesReportDto report = orderService.getShopSalesReport(shopId);
+            return ResponseEntity.ok(ApiResponse.success(report));
+        } catch (Exception ex) {
+            return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
+        }
     }
 }
