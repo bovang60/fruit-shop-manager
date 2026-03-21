@@ -15,6 +15,8 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByShop_ShopIdOrderByCreatedAtDesc(Integer shopId);
 
+    long countByShop_ShopId(Integer shopId);
+
     @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = :status")
     Integer countByShopIdAndStatus(@Param("shopId") Integer shopId, @Param("status") Order.OrderStatus status);
 
