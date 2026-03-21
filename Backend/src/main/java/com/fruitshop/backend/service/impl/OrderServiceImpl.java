@@ -42,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
     }
     @Override
     public SalesReportDto getShopSalesReport(Integer shopId) {
-        Integer totalOrders = (int) orderRepository.count(); // Có thể lọc thêm theo shopId
+        Integer totalOrders = (int) orderRepository.countByShop_ShopId(shopId);
         Integer successfulOrders = orderRepository.countByShopIdAndStatus(shopId, Order.OrderStatus.COMPLETED);
         java.math.BigDecimal revenue = orderRepository.sumRevenueByShopId(shopId);
         Integer quantitySold = orderRepository.sumQuantitySoldByShopId(shopId);

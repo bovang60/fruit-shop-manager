@@ -46,6 +46,15 @@ public class FruitServiceImpl implements FruitService {
 
     @Override
     @Transactional
+    public Fruit updateFruitStatus(Integer fruitId, Fruit.FruitStatus status) {
+        Fruit existingFruit = fruitRepository.findById(fruitId)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay san pham!"));
+        existingFruit.setStatus(status);
+        return fruitRepository.save(existingFruit);
+    }
+
+    @Override
+    @Transactional
     public void deleteFruit(Integer fruitId) {
         if (!fruitRepository.existsById(fruitId)) {
             throw new RuntimeException("San pham khong ton tai!");
@@ -56,5 +65,11 @@ public class FruitServiceImpl implements FruitService {
     @Override
     public List<Fruit> getFruitsByShop(Integer shopId) {
         return fruitRepository.findByShop_ShopId(shopId);
+    }
+
+    @Override
+    public Fruit getFruitById(Integer fruitId) {
+        return fruitRepository.findById(fruitId)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay san pham!"));
     }
 }
