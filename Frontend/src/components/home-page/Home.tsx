@@ -9,9 +9,7 @@ import {
 } from '../../services/productService'
 import type { 
   Product, 
-  FilterState,
-  mapProductToUI,
-  mapProductSummaryToUI 
+  FilterState
 } from './Home.types'
 
 // Import mapper functions
