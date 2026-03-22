@@ -23,6 +23,11 @@ export interface ShopDto {
     status: ShopStatus;
     rejectReason?: string;
     createdAt: string;
+    regDate?: string;
+    taxCode?: string;
+    shopType?: string;
+    businessName?: string;
+    pickupAddress?: string;
     documentUrls: string[];
 }
 
@@ -133,6 +138,56 @@ export async function checkShopNameExists(name: string): Promise<ApiResponse<boo
     }
 }
 
+/**
+ * Check if a tax code already exists in the system
+ * Returns true if the tax code is taken, false if it's available
+ */
+export async function checkTaxCodeExists(taxCode: string): Promise<ApiResponse<boolean>> {
+    const trimmed = taxCode.trim();
+    if (!trimmed) return { resultCd: 1, message: 'Mã số thuế không hợp lệ', data: null };
+    try {
+        return await callApiWithMethod<undefined, ApiResponse<boolean>>(
+            'GET',
+            `/api/shops/check-tax?taxCode=${encodeURIComponent(trimmed)}`
+        );
+    } catch (error) {
+        console.error('Lỗi khi kiểm tra mã số thuế:', error);
+        return { resultCd: 1, message: 'Lỗi kết nối khi kiểm tra mã số thuế', data: null };
+    }
+}
+
+
+/**
+ * Check if the user is allowed to register a shop
+ * Returns true if can register, false if already has a shop/pending application
+ */
+export async function checkCanRegisterShop(ownerId: number): Promise<ApiResponse<boolean>> {
+    try {
+        return await callApiWithMethod<undefined, ApiResponse<boolean>>(
+            'GET', 
+            `/api/shops/can-register/${ownerId}`
+        );
+    } catch (error) {
+        console.error('Lỗi khi kiểm tra quyền đăng ký:', error);
+        return { resultCd: 1, message: 'Lỗi kết nối khi kiểm tra quyền đăng ký', data: false };
+    }
+}
+
+/**
+ * Get detailed shop status for a user
+ */
+export async function checkShopStatus(ownerId: number): Promise<ApiResponse<ShopDto>> {
+    try {
+        return await callApiWithMethod<undefined, ApiResponse<ShopDto>>(
+            'GET',
+            `/api/shops/check-status/${ownerId}`
+        );
+    } catch (error) {
+        console.error('Lỗi khi lấy trạng thái shop:', error);
+        return { resultCd: 1, message: 'Lỗi kết nối khi lấy trạng thái cửa hàng', data: null };
+    }
+}
+
 
 /**
  * Register a new shop (user becomes seller)
@@ -161,6 +216,11 @@ export function getShopErrorMessage(message: string): string {
         'Shop not found': 'Không tìm thấy cửa hàng',
         'Permission denied': 'Bạn không có quyền thực hiện hành động này',
         'User already has a registered shop application': 'Bạn đã có yêu cầu mở cửa hàng đang chờ duyệt. Vui lòng đợi kết quả xét duyệt.',
+        'Đơn đăng ký của bạn đang chờ phê duyệt': 'Bạn đã có đơn đăng ký đang trong quá trình xét duyệt.',
+        'Bạn đã mở shop thành công rồi': 'Bạn đã là người bán trên hệ thống.',
+        'Shop của bạn đang bị đình chỉ': 'Cửa hàng của bạn đang bị tạm khóa. Vui lòng liên hệ hỗ trợ.',
+        'Tên cửa hàng đã tồn tại, vui lòng chọn tên khác': 'Tên cửa hàng này đã tồn tại, vui lòng chọn tên khác.',
+        'Mã số thuế đã được sử dụng, vui lòng kiểm tra lại': 'Mã số thuế này đã được sử dụng, vui lòng kiểm tra lại.'
     };
     return ERROR_MESSAGES[message] || message;
 }
