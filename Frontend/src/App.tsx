@@ -25,7 +25,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Private Routes - Required Login */}
-          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
