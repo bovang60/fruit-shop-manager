@@ -347,7 +347,7 @@ class UserControllerIntegrationTest {
         @Test
         void getUsers_Success() throws Exception {
                 // When & Then
-                mockMvc.perform(get("/api/users")
+                mockMvc.perform(get("/api/users/list")
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isOk());
 

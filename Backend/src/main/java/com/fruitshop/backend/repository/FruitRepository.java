@@ -11,4 +11,6 @@ public interface FruitRepository extends JpaRepository<Fruit, Integer> {
     Page<Fruit> findByFruitNameContainingIgnoreCase(String name, Pageable pageable);
     Page<Fruit> findByShopShopId(Integer shopId, Pageable pageable);
     Page<Fruit> findByCategoryCategoryId(Integer categoryId, Pageable pageable);
+    
+    java.util.List<Fruit> findByShopShopId(Integer shopId);
 }
