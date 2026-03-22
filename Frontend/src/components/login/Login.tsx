@@ -54,7 +54,11 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
         if (onSuccess) {
           onSuccess()
         } else {
-          navigate('/home')
+          if (result.data.role === 'ADMIN') {
+            navigate('/admin-dashboard')
+          } else {
+            navigate('/home')
+          }
         }
       } else {
         // Business logic error

@@ -110,8 +110,8 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
 
                     <div className="custom-dropdown-filters">
                         <div className="filter-select-wrap">
-                            <select 
-                                value={statusFilter} 
+                            <select
+                                value={statusFilter}
                                 onChange={(e) => onStatusFilterChange(e.target.value)}
                                 className="modern-filter-select"
                             >
@@ -159,7 +159,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                             </tr>
                         ) : (
                             categories.map((cat) => (
-                                <tr key={cat.id}>
+                                <tr key={cat.id} style={{ opacity: cat.status === 'Inactive' ? 0.5 : 1 }}>
                                     <td><span style={{ fontWeight: 700 }}>{cat.name}</span></td>
                                     <td>{cat.productCount} Items</td>
                                     <td>
@@ -226,28 +226,16 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
     );
 
     const renderCreateView = () => (
-        <div className="user-detail-container">
-            <div className="detail-top-bar" style={{ marginBottom: '1.5rem' }}>
-                <button className="btn-back-circle" onClick={() => setViewMode('LIST')} title="Back to List">
-                    <span className="material-symbols-outlined">arrow_back</span>
-                </button>
-            </div>
+        <div className="admin-modal-overlay" onClick={() => setViewMode('LIST')}>
+            <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="admin-modal-header">
+                    <h2>Create New Category</h2>
+                    <button className="admin-modal-close-btn" onClick={() => setViewMode('LIST')} title="Close">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
 
-            <div className="page-header-content" style={{ marginBottom: '2rem' }}>
-                <nav className="breadcrumbs-modern">
-                    <Link to="/admin-dashboard">Dashboard</Link>
-                    <span className="material-symbols-outlined">chevron_right</span>
-                    <span onClick={() => setViewMode('LIST')} style={{ cursor: 'pointer' }}>Category Management</span>
-                    <span className="material-symbols-outlined">chevron_right</span>
-                    <span className="current">Create Category</span>
-                </nav>
-                <h1>Create New Category</h1>
-                <p>Define a new segment for the product marketplace.</p>
-            </div>
-
-            <div className="detail-section-card">
-                <h3 className="section-title-label" style={{ marginBottom: '1.5rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Category Details</h3>
-                <div className="section-content-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '600px' }}>
+                <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     <div className="info-group">
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>CATEGORY NAME</label>
                         <input
@@ -282,38 +270,26 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                         </select>
                     </div>
                 </div>
-            </div>
 
-            <div className="detail-action-footer">
-                <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Cancel</button>
-                <button className="btn-status-toggle is-activate" onClick={() => onSave({ name: newName, status: newStatus, description: newDescription })}>Save Category</button>
+                <div className="admin-modal-footer">
+                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Cancel</button>
+                    <button className="btn-status-toggle is-activate" onClick={() => onSave({ name: newName, status: newStatus, description: newDescription })}>Save Category</button>
+                </div>
             </div>
         </div>
     );
 
     const renderEditView = () => (
-        <div className="user-detail-container">
-            <div className="detail-top-bar" style={{ marginBottom: '1.5rem' }}>
-                <button className="btn-back-circle" onClick={() => setViewMode('LIST')} title="Back to List">
-                    <span className="material-symbols-outlined">arrow_back</span>
-                </button>
-            </div>
+        <div className="admin-modal-overlay" onClick={() => setViewMode('LIST')}>
+            <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="admin-modal-header">
+                    <h2>Edit Category</h2>
+                    <button className="admin-modal-close-btn" onClick={() => setViewMode('LIST')} title="Close">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
 
-            <div className="page-header-content" style={{ marginBottom: '2rem' }}>
-                <nav className="breadcrumbs-modern">
-                    <Link to="/admin-dashboard">Dashboard</Link>
-                    <span className="material-symbols-outlined">chevron_right</span>
-                    <span onClick={() => setViewMode('LIST')} style={{ cursor: 'pointer' }}>Category Management</span>
-                    <span className="material-symbols-outlined">chevron_right</span>
-                    <span className="current">Edit Category</span>
-                </nav>
-                <h1>Edit Category</h1>
-                <p>Modify existing segment details.</p>
-            </div>
-
-            <div className="detail-section-card">
-                <h3 className="section-title-label" style={{ marginBottom: '1.5rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Category Details</h3>
-                <div className="section-content-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '600px' }}>
+                <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     <div className="info-group">
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>CATEGORY NAME</label>
                         <input
@@ -348,17 +324,17 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                         </select>
                     </div>
                 </div>
-            </div>
 
-            <div className="detail-action-footer">
-                <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Cancel</button>
-                <button
-                    className="btn-status-toggle is-activate"
-                    onClick={() => currentCategory && onUpdate(currentCategory.id, { name: newName, status: newStatus, description: newDescription })}
-                    disabled={loading}
-                >
-                    {loading ? 'Đang cập nhật...' : 'Cập nhật danh mục'}
-                </button>
+                <div className="detail-action-footer">
+                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Cancel</button>
+                    <button
+                        className="btn-status-toggle is-activate"
+                        onClick={() => currentCategory && onUpdate(currentCategory.id, { name: newName, status: newStatus, description: newDescription })}
+                        disabled={loading}
+                    >
+                        {loading ? 'Đang cập nhật...' : 'Cập nhật danh mục'}
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -368,10 +344,9 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
             sidebarItems={ADMIN_NAV_ITEMS}
             isSidebarCollapsed={isSidebarCollapsed}
             onToggleSidebar={onToggleSidebar}
+            modalContent={viewMode === 'CREATE' ? renderCreateView() : viewMode === 'EDIT' ? renderEditView() : null}
         >
-            {viewMode === 'CREATE' ? renderCreateView() :
-                viewMode === 'EDIT' ? renderEditView() :
-                    renderListView()}
+            {renderListView()}
         </AdminFrame>
     );
 };

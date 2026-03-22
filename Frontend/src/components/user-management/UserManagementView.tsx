@@ -115,8 +115,8 @@ export default function UserManagementView({
 
                     <div className="custom-dropdown-filters">
                         <div className="filter-select-wrap">
-                            <select 
-                                value={roleFilter} 
+                            <select
+                                value={roleFilter}
                                 onChange={(e) => onRoleFilterChange(e.target.value)}
                                 className="modern-filter-select"
                             >
@@ -128,8 +128,8 @@ export default function UserManagementView({
                         </div>
 
                         <div className="filter-select-wrap">
-                            <select 
-                                value={statusFilter} 
+                            <select
+                                value={statusFilter}
                                 onChange={(e) => onStatusFilterChange(e.target.value)}
                                 className="modern-filter-select"
                             >
@@ -333,72 +333,77 @@ export default function UserManagementView({
     )
 
     const renderDetailView = (user: UserData) => (
-        <div className="user-detail-container">
-            <div className="detail-top-bar">
-                <button className="btn-back-circle" onClick={onBackToList} title="Back to User List">
-                    <span className="material-symbols-outlined">arrow_back</span>
-                </button>
-            </div>
+        <div className="admin-modal-overlay" onClick={onBackToList}>
+            <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="admin-modal-header">
+                    <h2>User Details</h2>
+                    <button className="admin-modal-close-btn" onClick={onBackToList} title="Close">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
 
-            <div className="user-identity-card">
-                <div className="user-avatar-large" style={{ backgroundImage: `url(${user.avatar})` }}></div>
-                <div className="user-identity-info">
-                    <div className="identity-title-row">
-                        <h2 className="user-name-title">{user.fullname}</h2>
-                        <span className={`status-chip status-${user.status.toLowerCase()}`}>
-                            {user.status}
-                        </span>
+                <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div className="user-identity-card" style={{ marginBottom: 0, padding: '1rem', gap: '1.5rem', boxShadow: 'none' }}>
+                        <div className="user-avatar-large" style={{ backgroundImage: `url(${user.avatar})`, width: '80px', height: '80px', borderRadius: '16px' }}></div>
+                        <div className="user-identity-info">
+                            <div className="identity-title-row">
+                                <h2 className="user-name-title">{user.fullname}</h2>
+                                <span className={`status-chip status-${user.status.toLowerCase()}`}>
+                                    {user.status}
+                                </span>
+                            </div>
+                            <div className="user-role-meta">
+                                <span className="material-symbols-outlined">verified_user</span>
+                                <span>{user.role}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="user-role-meta">
-                        <span className="material-symbols-outlined">verified_user</span>
-                        <span>{user.role}</span>
+
+                    <div className="detail-section-card" style={{ marginBottom: 0, padding: '1rem', boxShadow: 'none' }}>
+                        <div className="section-header-row" style={{ marginBottom: '1.25rem', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>
+                            <h3 className="section-title-label" style={{ margin: 0, fontSize: '0.875rem', color: '#637381' }}>User Information</h3>
+                        </div>
+                        <div className="section-content-body grid-info">
+                            <div className="info-group">
+                                <label>Username</label>
+                                <p>{user.username}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Full Name</label>
+                                <p>{user.fullname}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Email Address</label>
+                                <p>{user.email}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Phone Number</label>
+                                <p>{user.phone}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Account Role</label>
+                                <p>{user.role}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Account Status</label>
+                                <p>{user.status}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="detail-section-card">
-                <div className="section-header-row">
-                    <h3 className="section-title-label">User Information</h3>
+                <div className="admin-modal-footer">
+                    <button className="btn-cancel-action" onClick={onBackToList}>Close</button>
+                    <button
+                        className={`btn-status-toggle ${user.status === 'ACTIVE' ? 'is-deactivate' : 'is-activate'}`}
+                        onClick={() => {
+                            onStatusChange(user.id, user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')
+                            onBackToList();
+                        }}
+                    >
+                        {user.status === 'ACTIVE' ? 'Deactivate Account' : 'Activate Account'}
+                    </button>
                 </div>
-                <div className="section-content-body grid-info">
-                    <div className="info-group">
-                        <label>Username</label>
-                        <p>{user.username}</p>
-                    </div>
-                    <div className="info-group">
-                        <label>Full Name</label>
-                        <p>{user.fullname}</p>
-                    </div>
-                    <div className="info-group">
-                        <label>Email Address</label>
-                        <p>{user.email}</p>
-                    </div>
-                    <div className="info-group">
-                        <label>Phone Number</label>
-                        <p>{user.phone}</p>
-                    </div>
-                    <div className="info-group">
-                        <label>Account Role</label>
-                        <p>{user.role}</p>
-                    </div>
-                    <div className="info-group">
-                        <label>Account Status</label>
-                        <p>{user.status}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="detail-action-footer">
-                <button className="btn-cancel-action" onClick={onBackToList}>Close</button>
-                <button
-                    className={`btn-status-toggle ${user.status === 'ACTIVE' ? 'is-deactivate' : 'is-activate'}`}
-                    onClick={() => {
-                        onStatusChange(user.id, user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')
-                        onBackToList();
-                    }}
-                >
-                    {user.status === 'ACTIVE' ? 'Deactivate Account' : 'Activate Account'}
-                </button>
             </div>
         </div>
     )
@@ -408,11 +413,9 @@ export default function UserManagementView({
             sidebarItems={ADMIN_NAV_ITEMS}
             isSidebarCollapsed={isSidebarCollapsed}
             onToggleSidebar={onToggleSidebar}
+            modalContent={viewMode === 'DETAIL' && selectedUser ? renderDetailView(selectedUser) : null}
         >
-            {viewMode === 'DETAIL' && selectedUser
-                ? renderDetailView(selectedUser)
-                : renderListView()
-            }
+            {renderListView()}
         </AdminFrame>
     )
 }

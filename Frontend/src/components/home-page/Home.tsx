@@ -1,23 +1,23 @@
 import HomeView from './HomeView'
 import { useMemo, useState, useEffect } from 'react'
-import { 
-  getProducts, 
-  getNewArrivals, 
+import {
+  getProducts,
+  getNewArrivals,
   getTrendingProducts,
   addToCart,
-  getErrorMessage 
+  getErrorMessage
 } from '../../services/productService'
-import type { 
-  Product, 
+import type {
+  Product,
   FilterState,
   mapProductToUI,
-  mapProductSummaryToUI 
+  mapProductSummaryToUI
 } from './Home.types'
 
 // Import mapper functions
-import { 
-  mapProductToUI as mapProduct, 
-  mapProductSummaryToUI as mapSummary 
+import {
+  mapProductToUI as mapProduct,
+  mapProductSummaryToUI as mapSummary
 } from './Home.types'
 
 import { usePopup } from '../common/popup'
@@ -30,12 +30,12 @@ export default function Home() {
   const [trending, setTrending] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  
+
   // Pagination state
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const pageSize = 25
-  
+
   // Filter state (applied filters that trigger API calls)
   const [filters, setFilters] = useState<FilterState>({
     search: '',
@@ -69,7 +69,7 @@ export default function Home() {
   const loadProducts = async () => {
     setLoading(true)
     setError('')
-    
+
     try {
       const response = await getProducts({
         page,
@@ -83,7 +83,7 @@ export default function Home() {
         sortBy: filters.sortBy,
         sortOrder: filters.sortOrder
       })
-      
+
       if (response.resultCd === 0 && response.data) {
         // Map API products to UI format
         const uiProducts = response.data.products.map(mapProduct)
@@ -108,7 +108,7 @@ export default function Home() {
   const loadNewArrivals = async () => {
     try {
       const response = await getNewArrivals(10)
-      
+
       if (response.resultCd === 0 && response.data) {
         const uiProducts = response.data.map(mapSummary)
         setNewArrivals(uiProducts)
@@ -124,7 +124,7 @@ export default function Home() {
   const loadTrending = async () => {
     try {
       const response = await getTrendingProducts(10)
-      
+
       if (response.resultCd === 0 && response.data) {
         const uiProducts = response.data.map(mapSummary)
         setTrending(uiProducts)
@@ -156,7 +156,7 @@ export default function Home() {
   const handleAddToCart = async (productId: number) => {
     try {
       const response = await addToCart({ productId, quantity: 1 })
-      
+
       if (response.resultCd === 0) {
         showNotice('Đã thêm vào giỏ hàng!', 'Thành công')
       } else {

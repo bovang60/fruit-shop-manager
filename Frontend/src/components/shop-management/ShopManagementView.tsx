@@ -91,11 +91,12 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
 
                     <div className="custom-dropdown-filters">
                         <div className="filter-select-wrap">
-                            <select 
-                                value={activeTab} 
+                            <select
+                                value={activeTab}
                                 onChange={(e) => onTabChange(e.target.value)}
                                 className="modern-filter-select"
                             >
+                                <option value="ALL">All Statuses</option>
                                 <option value="PENDING">Status: Pending</option>
                                 <option value="APPROVED">Status: Approval</option>
                                 <option value="REJECTED">Status: Rejected</option>
@@ -148,22 +149,26 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                                             >
                                                 <span className="material-symbols-outlined">visibility</span>
                                             </button>
-                                            <div className="action-divider-vertical"></div>
-                                            {activeTab === 'APPROVED' && (
-                                                <button
-                                                    className={`action-status-btn ${s.status === 'SUSPENDED' ? 'activate' : 'deactivate'}`}
-                                                    onClick={() => onSuspend(s.id)}
-                                                >
-                                                    {s.status === 'SUSPENDED' ? 'Re-activate' : 'Suspend'}
-                                                </button>
-                                            )}
-                                            {activeTab === 'PENDING' && (
-                                                <button
-                                                    className="action-status-btn activate"
-                                                    onClick={() => onApprove(s.id)}
-                                                >
-                                                    Approve
-                                                </button>
+                                            {s.status !== 'REJECTED' && (
+                                                <>
+                                                    <div className="action-divider-vertical"></div>
+                                                    {(s.status === 'APPROVED' || s.status === 'SUSPENDED') && (
+                                                        <button
+                                                            className={`action-status-btn ${s.status === 'SUSPENDED' ? 'activate' : 'deactivate'}`}
+                                                            onClick={() => onSuspend(s.id)}
+                                                        >
+                                                            {s.status === 'SUSPENDED' ? 'Re-activate' : 'Suspend'}
+                                                        </button>
+                                                    )}
+                                                    {s.status === 'PENDING' && (
+                                                        <button
+                                                            className="action-status-btn activate"
+                                                            onClick={() => onApprove(s.id)}
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                    )}
+                                                </>
                                             )}
                                         </div>
                                     </td>
@@ -210,73 +215,77 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
     );
 
     const renderDetailView = (shop: Shop) => (
-        <div className="user-detail-container">
-            <div className="detail-top-bar" style={{ marginBottom: '1.5rem' }}>
-                <button className="btn-back-circle" onClick={() => setViewMode('LIST')} title="Back to List">
-                    <span className="material-symbols-outlined">arrow_back</span>
-                </button>
-            </div>
-
-            <div className="user-identity-card" style={{ gap: '1.5rem', padding: '1.5rem' }}>
-                <div className="brand-icon" style={{ width: '64px', height: '64px', borderRadius: '12px' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>storefront</span>
+        <div className="admin-modal-overlay" onClick={() => setViewMode('LIST')}>
+            <div className="admin-modal-content large" onClick={(e) => e.stopPropagation()}>
+                <div className="admin-modal-header">
+                    <h2>Shop Details</h2>
+                    <button className="admin-modal-close-btn" onClick={() => setViewMode('LIST')} title="Close">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
                 </div>
-                <div className="user-identity-info">
-                    <div className="identity-title-row">
-                        <h2 className="user-name-title">{shop.shopName}</h2>
-                        <span className={`status-chip status-${shop.status.toLowerCase()}`}>
-                            {shop.status}
-                        </span>
+
+                <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div className="user-identity-card" style={{ gap: '1.5rem', padding: '1rem', marginBottom: 0, boxShadow: 'none' }}>
+                        <div className="brand-icon" style={{ width: '64px', height: '64px', borderRadius: '12px' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>storefront</span>
+                        </div>
+                        <div className="user-identity-info">
+                            <div className="identity-title-row">
+                                <h2 className="user-name-title">{shop.shopName}</h2>
+                                <span className={`status-chip status-${shop.status.toLowerCase()}`}>
+                                    {shop.status}
+                                </span>
+                            </div>
+                            <div className="user-role-meta">
+                                <span className="material-symbols-outlined">person</span>
+                                <span>{shop.ownerName}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="user-role-meta">
-                        <span className="material-symbols-outlined">person</span>
-                        <span>{shop.ownerName}</span>
+
+                    <div className="detail-section-card" style={{ marginBottom: 0, padding: '1rem', boxShadow: 'none' }}>
+                        <h3 className="section-title-label" style={{ marginBottom: '1.25rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Shop & Owner Information</h3>
+                        <div className="section-content-body grid-info">
+                            <div className="info-group">
+                                <label>Owner Name</label>
+                                <p>{shop.ownerName}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Phone Number</label>
+                                <p>{shop.ownerPhone || 'N/A'}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Email Address</label>
+                                <p>{shop.ownerEmail || 'N/A'}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Registration Date</label>
+                                <p>{shop.regDate}</p>
+                            </div>
+                            <div className="info-group" style={{ gridColumn: 'span 2' }}>
+                                <label>Business Address</label>
+                                <p>{shop.businessAddress || 'N/A'}</p>
+                            </div>
+                        </div>
                     </div>
+
+                    {shop.description && (
+                        <div className="detail-section-card" style={{ marginBottom: 0, padding: '1rem', boxShadow: 'none' }}>
+                            <h3 className="section-title-label" style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#637381' }}>Business Description</h3>
+                            <p style={{ fontSize: '0.875rem', color: '#212b36', lineHeight: 1.6 }}>{shop.description}</p>
+                        </div>
+                    )}
                 </div>
-            </div>
 
-            <div className="detail-section-card">
-                <h3 className="section-title-label" style={{ marginBottom: '1.25rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Shop & Owner Information</h3>
-                <div className="section-content-body grid-info">
-                    <div className="info-group">
-                        <label>Owner Name</label>
-                        <p>{shop.ownerName}</p>
-                    </div>
-                    <div className="info-group">
-                        <label>Phone Number</label>
-                        <p>{shop.ownerPhone || 'N/A'}</p>
-                    </div>
-                    <div className="info-group">
-                        <label>Email Address</label>
-                        <p>{shop.ownerEmail || 'N/A'}</p>
-                    </div>
-                    <div className="info-group">
-                        <label>Registration Date</label>
-                        <p>{shop.regDate}</p>
-                    </div>
-                    <div className="info-group" style={{ gridColumn: 'span 2' }}>
-                        <label>Business Address</label>
-                        <p>{shop.businessAddress || 'N/A'}</p>
-                    </div>
+                <div className="admin-modal-footer">
+                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Close</button>
+                    {shop.status === 'PENDING' && (
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button className="btn-status-toggle is-deactivate" onClick={() => onReject(shop.id)}>Reject Shop</button>
+                            <button className="btn-status-toggle is-activate" onClick={() => onApprove(shop.id)}>Approve Shop</button>
+                        </div>
+                    )}
                 </div>
-            </div>
-
-            {shop.description && (
-                <div className="detail-section-card">
-                    <h3 className="section-title-label" style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#637381' }}>Business Description</h3>
-                    <p style={{ fontSize: '0.875rem', color: '#212b36', lineHeight: 1.6 }}>{shop.description}</p>
-                </div>
-            )}
-
-            <div className="detail-action-footer">
-                <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Close</button>
-                {shop.status === 'PENDING' && (
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <button className="btn-status-toggle is-deactivate" onClick={() => onReject(shop.id)}>Reject Shop</button>
-                        <button className="btn-status-toggle is-activate" onClick={() => onApprove(shop.id)}>Approve Shop</button>
-                    </div>
-                )}
-
             </div>
         </div>
     );
@@ -286,11 +295,9 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
             sidebarItems={ADMIN_NAV_ITEMS}
             isSidebarCollapsed={isSidebarCollapsed}
             onToggleSidebar={onToggleSidebar}
+            modalContent={viewMode === 'DETAIL' && selectedShop ? renderDetailView(selectedShop) : null}
         >
-            {viewMode === 'DETAIL' && selectedShop
-                ? renderDetailView(selectedShop)
-                : renderListView()
-            }
+            {renderListView()}
         </AdminFrame>
     );
 };

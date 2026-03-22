@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ShopManagementView, { type Shop } from './ShopManagementView';
 import { usePopup } from '../common/popup';
-import { getShops, approveShop, rejectShop, type ShopDto } from '../../services/shopService';
+import { getShops, approveShop, rejectShop, suspendShop, type ShopDto } from '../../services/shopService';
 
 const ShopManagement: React.FC = () => {
     const { showNotice, showConfirm, showError, showWarning, showPrompt } = usePopup();
@@ -24,8 +24,8 @@ const ShopManagement: React.FC = () => {
     const loadShops = useCallback(async () => {
         setLoading(true);
         try {
-            const filter = {
-                status: activeTab,
+            const filter: any = {
+                status: activeTab === 'ALL' ? undefined : activeTab,
                 page: page,
                 size: 10,
                 sort: 'createdAt,desc'
@@ -147,13 +147,27 @@ const ShopManagement: React.FC = () => {
 
     const handleSuspend = (id: number) => {
         showConfirm(
-            `Bạn có chắc chắn muốn thay đổi trạng thái shop ${id}?(Tính năng đang phát triển)`,
-            () => {
-                showNotice(`Tính năng tạm dừng shop sẽ sớm ra mắt của cửa hàng ${id} !`);
+            `Bạn có chắc chắn muốn đình chỉ toàn bộ hoạt động của shop này?`,
+            async () => {
+                setLoading(true);
+                try {
+                    const response = await suspendShop(id);
+                    if (response.resultCd === 0) {
+                        showNotice(`Shop đã bị đình chỉ thành công!`);
+                        setViewMode('LIST');
+                        loadShops();
+                    } else {
+                        showError(response.message || "Không thể đình chỉ cửa hàng");
+                    }
+                } catch (error) {
+                    showError("Lỗi kết nối khi đình chỉ cửa hàng");
+                } finally {
+                    setLoading(false);
+                }
             },
-            'Xác nhận thay đổi'
+            'Xác nhận đình chỉ'
         );
-    }
+    };
 
 
     // Local search filtering as backend doesn't seem to support search param in guide

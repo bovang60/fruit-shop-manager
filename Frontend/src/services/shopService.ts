@@ -44,6 +44,19 @@ export interface ShopFilter {
     sort?: string;
 }
 
+export interface RegisterShopRequest {
+    ownerId: number;
+    shopName: string;
+    description?: string;
+    address: string;
+    taxCode?: string;
+    shopType: string;
+    businessName: string;
+    businessAddress: string;
+    pickupAddress: string;
+    shippingMethodIds: number[];
+}
+
 // ============= API Functions =============
 
 /**
@@ -90,6 +103,53 @@ export async function rejectShop(shopId: number, reason: string): Promise<ApiRes
     }
 }
 
+/**
+ * Suspend a shop
+ */
+export async function suspendShop(shopId: number): Promise<ApiResponse<ShopDto>> {
+    try {
+        return await callApiWithMethod<undefined, ApiResponse<ShopDto>>("PUT", `/api/shops/${shopId}/suspend`);
+    } catch (error) {
+        console.error("Error suspending shop:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi đình chỉ cửa hàng", data: null };
+    }
+}
+
+
+/**
+ * Check if a shop name already exists in the system
+ * Returns true if the name is taken, false if it's available
+ */
+export async function checkShopNameExists(name: string): Promise<ApiResponse<boolean>> {
+    const trimmed = name.trim();
+    try {
+        return await callApiWithMethod<undefined, ApiResponse<boolean>>(
+            'GET',
+            `/api/shops/check-name?name=${encodeURIComponent(trimmed)}`
+        );
+    } catch (error) {
+        console.error('Lỗi khi kiểm tra tên shop:', error);
+        return { resultCd: 1, message: 'Lỗi kết nối khi kiểm tra tên cửa hàng', data: null };
+    }
+}
+
+
+/**
+ * Register a new shop (user becomes seller)
+ */
+export async function registerShop(payload: RegisterShopRequest): Promise<ApiResponse<ShopDto>> {
+    try {
+        return await callApiWithMethod<RegisterShopRequest, ApiResponse<ShopDto>>(
+            'POST',
+            '/api/shops/register',
+            payload
+        );
+    } catch (error) {
+        console.error('Lỗi khi đăng ký cửa hàng:', error);
+        return { resultCd: 1, message: 'Lỗi kết nối khi đăng ký cửa hàng', data: null };
+    }
+}
+
 
 // ============= Helper Functions =============
 
@@ -98,8 +158,9 @@ export async function rejectShop(shopId: number, reason: string): Promise<ApiRes
  */
 export function getShopErrorMessage(message: string): string {
     const ERROR_MESSAGES: Record<string, string> = {
-        "Shop not found": "Không tìm thấy cửa hàng",
-        "Permission denied": "Bạn không có quyền thực hiện hành động này",
+        'Shop not found': 'Không tìm thấy cửa hàng',
+        'Permission denied': 'Bạn không có quyền thực hiện hành động này',
+        'User already has a registered shop application': 'Bạn đã có yêu cầu mở cửa hàng đang chờ duyệt. Vui lòng đợi kết quả xét duyệt.',
     };
     return ERROR_MESSAGES[message] || message;
 }

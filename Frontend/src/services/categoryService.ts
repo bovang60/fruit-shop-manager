@@ -117,9 +117,9 @@ export async function updateCategory(id: number, data: UpdateCategoryPayload): P
 /**
  * Delete a category
  */
-export async function deleteCategory(id: number): Promise<ApiResponse<null>> {
+export async function deleteCategory(id: number): Promise<ApiResponse<CategoryDto | null>> {
     try {
-        return await callApiWithMethod<undefined, ApiResponse<null>>("DELETE", `/api/categories/${id}`);
+        return await callApiWithMethod<undefined, ApiResponse<CategoryDto | null>>("DELETE", `/api/categories/${id}`);
     } catch (error) {
         console.error("Error deleting category:", error);
         return { resultCd: 1, message: "Lỗi kết nối khi xóa danh mục", data: null };

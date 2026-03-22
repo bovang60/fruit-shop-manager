@@ -12,15 +12,20 @@ export default function Header() {
     // Clear auth data from localStorage
     localStorage.removeItem('user')
     localStorage.removeItem('token')
-    
+
     // Redirect to login page
     navigate('/login')
   }
 
+  const handleNavigateToSellerRegistration = () => {
+    navigate('/register-shop')
+  }
+
   return (
-    <HeaderView 
+    <HeaderView
       onNavigateToProfile={handleNavigateToProfile}
       onLogout={handleLogout}
+      onNavigateToSellerRegistration={handleNavigateToSellerRegistration}
     />
   )
 }

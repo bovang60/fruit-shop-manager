@@ -9,7 +9,9 @@ import AdminDashboard from './components/dashboard-admin/AdminDashboard'
 import ShopManagement from './components/shop-management/ShopManagement'
 import UserManagement from './components/user-management/UserManagement'
 import Profile from './components/profile/Profile'
+import ShopRegistration from './components/shop-registration/ShopRegistration'
 import { PopupProvider } from './components/common/popup'
+import ProtectedRoute from './components/common/protected-route/ProtectedRoute'
 import './App.css'
 
 function App() {
@@ -21,13 +23,18 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          {/* Private Routes - Required Login */}
           <Route path="/home" element={<Home />} />
-          <Route path="/change-password" element={<ChangePassword />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/category-management" element={<CategoryManagement />} />
-          <Route path="/shop-management" element={<ShopManagement />} />
-          <Route path="/user-management" element={<UserManagement />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
+
+          {/* Admin Routes - Required ADMIN role */}
+          <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/category-management" element={<ProtectedRoute requiredRole="ADMIN"><CategoryManagement /></ProtectedRoute>} />
+          <Route path="/shop-management" element={<ProtectedRoute requiredRole="ADMIN"><ShopManagement /></ProtectedRoute>} />
+          <Route path="/user-management" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
         </Routes>
       </PopupProvider>
     </BrowserRouter>
