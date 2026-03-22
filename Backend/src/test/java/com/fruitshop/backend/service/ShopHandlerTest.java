@@ -6,6 +6,7 @@ import com.fruitshop.backend.model.Shop;
 import com.fruitshop.backend.model.User;
 import com.fruitshop.backend.repository.ShopRepository;
 import com.fruitshop.backend.repository.UserRepository;
+import com.fruitshop.backend.repository.FruitRepository;
 import com.fruitshop.backend.service.impl.ShopServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,9 @@ class ShopHandlerTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private FruitRepository fruitRepository;
 
     @InjectMocks
     private ShopServiceImpl shopService;
@@ -150,6 +154,7 @@ class ShopHandlerTest {
 
         when(shopRepository.findById(id)).thenReturn(Optional.of(shop));
         when(shopRepository.save(any(Shop.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(fruitRepository.findByShopShopId(id)).thenReturn(java.util.Collections.emptyList());
 
         ShopDto result = shopService.suspendShop(id).getData();
 

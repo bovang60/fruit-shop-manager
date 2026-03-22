@@ -32,10 +32,30 @@ public class Shop {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "shop")
-    private java.util.List<ShopDocument> documents;
+    @Column(name = "reg_date")
+    private java.time.LocalDate regDate;
+
+    @Column(name = "address", length = 200)
+    private String address;
+
+
+    @Column(name = "tax_code", length = 20)
+    private String taxCode;
+
+    @Column(name = "shop_type", columnDefinition = "NVARCHAR(50)")
+    private String shopType;
+
+    @Column(name = "business_name", columnDefinition = "NVARCHAR(500)")
+    private String businessName;
+
+    @Column(name = "business_address", columnDefinition = "NVARCHAR(500)")
+    private String businessAddress;
+
+    @Column(name = "pickup_address", columnDefinition = "NVARCHAR(500)")
+    private String pickupAddress;
+
 
     public enum ShopStatus {
-        PENDING, APPROVED, REJECTED
+        PENDING, APPROVED, REJECTED, SUSPENDED
     }
 }

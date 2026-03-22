@@ -48,4 +48,9 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<CategoryDto>> toggleStatus(@PathVariable Integer id) {
         return ResponseEntity.ok(categoryService.toggleCategoryStatus(id));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<CategoryDto>> deleteCategory(@PathVariable Integer id) {
+        return ResponseEntity.ok(categoryService.deleteCategory(id));
+    }
 }

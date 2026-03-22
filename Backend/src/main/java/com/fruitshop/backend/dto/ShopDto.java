@@ -13,10 +13,15 @@ public class ShopDto {
     private String ownerName;
     private String ownerEmail;
     private String ownerPhone;
-    private String businessAddress;
+    private String address;
     private String description;
     private Shop.ShopStatus status;
     private String rejectReason;
     private LocalDateTime createdAt;
-    private List<String> documentUrls;
+    private java.time.LocalDate regDate;
+    private String taxCode;
+    private String shopType;
+    private String businessName;
+    private String businessAddress;
+    private String pickupAddress;
 }

@@ -123,13 +123,31 @@ public class CategoryServiceImpl implements CategoryService {
         return ApiResponse.success("Category status toggled successfully", convertToDto(updatedCategory));
     }
 
+    @Override
+    @Transactional
+    public ApiResponse<CategoryDto> deleteCategory(Integer id) {
+        Category category = categoryRepository.findById(id).orElse(null);
+        if (category == null) {
+            return ApiResponse.error("Category not found");
+        }
+        
+        if (category.getFruitCount() != null && category.getFruitCount() > 0) {
+            category.setStatus(Category.CategoryStatus.INACTIVE);
+            Category updatedCategory = categoryRepository.save(category);
+            return ApiResponse.success("Đổi trạng thái về Inactive vì danh mục này đang có sản phẩm", convertToDto(updatedCategory));
+        } else {
+            categoryRepository.delete(category);
+            return ApiResponse.success("Đã xóa danh mục thành công", null);
+        }
+    }
+
     private CategoryDto convertToDto(Category category) {
         CategoryDto dto = new CategoryDto();
         dto.setCategoryId(category.getCategoryId());
         dto.setCategoryName(category.getCategoryName());
         dto.setDescription(category.getDescription());
         dto.setStatus(category.getStatus());
-        dto.setFruitCount(category.getFruits() != null ? (long) category.getFruits().size() : 0L);
+        dto.setFruitCount(category.getFruitCount() != null ? category.getFruitCount() : 0L);
         dto.setCreatedAt(category.getCreatedAt());
         return dto;
     }
