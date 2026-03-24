@@ -33,7 +33,7 @@ export type Props = {
   onOriginChange: (origin: string | undefined) => void
   onOrganicChange: (organic: boolean | undefined) => void
   onSortChange: (sortBy: string, sortOrder: string) => void
-  onApplyFilters: () => void
+  onSearchSubmit: () => void
 }
 
 export default function HomeView({ 
@@ -62,7 +62,7 @@ export default function HomeView({
   onOriginChange,
   onOrganicChange,
   onSortChange,
-  onApplyFilters
+  onSearchSubmit
 }: Props) {
   return (
     <div className="home-root">
@@ -80,7 +80,7 @@ export default function HomeView({
           <div className="filters-sticky">
             {/* Category Filter */}
             <div className="filter-section">
-              <h3 className="filter-title">Category</h3>
+              <h3 className="filter-title">Danh mục</h3>
               <div className="filter-options">
                 <label className="filter-option">
                   <input 
@@ -89,7 +89,7 @@ export default function HomeView({
                     checked={!category} 
                     onChange={() => onCategoryChange('')}
                   />
-                  <span>All Fruits</span>
+                  <span>Tất cả</span>
                 </label>
                 <label className="filter-option">
                   <input 
@@ -98,7 +98,7 @@ export default function HomeView({
                     checked={category === 'berries'}
                     onChange={() => onCategoryChange('berries')}
                   />
-                  <span>Berries</span>
+                  <span>Trái cây rừng</span>
                 </label>
                 <label className="filter-option">
                   <input 
@@ -107,7 +107,7 @@ export default function HomeView({
                     checked={category === 'citrus'}
                     onChange={() => onCategoryChange('citrus')}
                   />
-                  <span>Citrus</span>
+                  <span>Họ cam quýt</span>
                 </label>
                 <label className="filter-option">
                   <input 
@@ -116,7 +116,7 @@ export default function HomeView({
                     checked={category === 'tropical'}
                     onChange={() => onCategoryChange('tropical')}
                   />
-                  <span>Tropical</span>
+                  <span>Nhiệt đới</span>
                 </label>
                 <label className="filter-option">
                   <input 
@@ -125,14 +125,14 @@ export default function HomeView({
                     checked={category === 'seasonal'}
                     onChange={() => onCategoryChange('seasonal')}
                   />
-                  <span>Seasonal</span>
+                  <span>Theo mùa</span>
                 </label>
               </div>
             </div>
 
             {/* Price Range */}
             <div className="filter-section">
-              <h3 className="filter-title">Price Range</h3>
+              <h3 className="filter-title">Khoảng giá</h3>
               <div className="price-range-wrap">
                 <input 
                   type="range" 
@@ -152,7 +152,7 @@ export default function HomeView({
 
             {/* Origin */}
             <div className="filter-section">
-              <h3 className="filter-title">Origin</h3>
+              <h3 className="filter-title">Xuất xứ</h3>
               <div className="filter-options">
                 <label className="filter-option">
                   <input 
@@ -161,7 +161,7 @@ export default function HomeView({
                     checked={!origin} 
                     onChange={() => onOriginChange(undefined)}
                   />
-                  <span>Any</span>
+                  <span>Tất cả</span>
                 </label>
                 <label className="filter-option">
                   <input 
@@ -170,7 +170,7 @@ export default function HomeView({
                     checked={origin === 'local'}
                     onChange={() => onOriginChange('local')}
                   />
-                  <span>Local Farms</span>
+                  <span>Nông sản trong nước</span>
                 </label>
                 <label className="filter-option">
                   <input 
@@ -179,25 +179,25 @@ export default function HomeView({
                     checked={origin === 'imported'}
                     onChange={() => onOriginChange('imported')}
                   />
-                  <span>Imported</span>
+                  <span>Hàng nhập khẩu</span>
                 </label>
               </div>
             </div>
 
             {/* Organic Status */}
             <div className="filter-section">
-              <h3 className="filter-title">Organic Status</h3>
+              <h3 className="filter-title">Chứng nhận hữu cơ</h3>
               <label className="filter-option-organic">
                 <input 
                   type="checkbox" 
                   checked={organic === true} 
                   onChange={(e) => onOrganicChange(e.target.checked ? true : undefined)}
                 />
-                <span>Certified Organic</span>
+                <span>Sản phẩm hữu cơ</span>
               </label>
             </div>
 
-            <button className="apply-filters-btn" onClick={onApplyFilters}>Apply Filters</button>
+
           </div>
         </aside>
 
@@ -206,16 +206,22 @@ export default function HomeView({
           {/* Title and Sort */}
           <div className="content-header">
             <div>
-              <h1 className="content-title">Fresh Produce</h1>
-              <p className="content-subtitle">Showing {displayed.length} results for "All Fruits"</p>
+              <h1 className="content-title">Trái cây tươi</h1>
+              <p className="content-subtitle">Hiển thị {displayed.length} sản phẩm</p>
             </div>
             <div className="content-actions">
-              <input
-                className="search-input"
-                placeholder="Search fruits..."
-                value={query}
-                onChange={(e) => onQueryChange(e.target.value)}
-              />
+              <div className="search-wrap">
+                <input
+                  className="search-input"
+                  placeholder="Tìm kiếm trái cây..."
+                  value={query}
+                  onChange={(e) => onQueryChange(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && onSearchSubmit()}
+                />
+                <button className="search-btn" onClick={onSearchSubmit} aria-label="Search">
+                  🔍
+                </button>
+              </div>
               <select 
                 className="sort-select"
                 value={`${sortBy}-${sortOrder}`}
@@ -224,10 +230,10 @@ export default function HomeView({
                   onSortChange(newSortBy, newSortOrder)
                 }}
               >
-                <option value="popularity-desc">Sort by: Popularity</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="createdAt-desc">Newest First</option>
+                <option value="popularity-desc">Sắp xếp: Phổ biến nhất</option>
+                <option value="price-asc">Giá: Thấp đến cao</option>
+                <option value="price-desc">Giá: Cao đến thấp</option>
+                <option value="createdAt-desc">Mới nhất</option>
               </select>
             </div>
           </div>
@@ -265,7 +271,7 @@ export default function HomeView({
                       className="add-to-cart-btn" 
                       onClick={() => onAddToCart(p.id)}
                     >
-                      🛒 Add to Cart
+                      🛒 Thêm vào giỏ
                     </button>
                   </div>
                 </div>
@@ -283,7 +289,7 @@ export default function HomeView({
             {/* Newest Arrivals */}
             <section className="section-arrivals">
               <div className="section-header">
-                <h2 className="section-title">Newest Arrivals</h2>
+                <h2 className="section-title">Hàng mới về</h2>
                 <div className="section-nav">
                   <button className="nav-btn">←</button>
                   <button className="nav-btn">→</button>
@@ -304,8 +310,8 @@ export default function HomeView({
             <section className="section-trending">
               <div className="section-header">
                 <div className="trending-header-left">
-                  <h2 className="section-title">Trending Now</h2>
-                  <span className="trending-badge">🔥 Hot Picks</span>
+                  <h2 className="section-title">Đang thịnh hành</h2>
+                  <span className="trending-badge">🔥 Nổi bật</span>
                 </div>
                 <div className="section-nav">
                   <button className="nav-btn">←</button>

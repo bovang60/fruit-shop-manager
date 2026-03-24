@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ProfileView from './ProfileView'
-import { getUserProfile, updateUserProfile } from '../../services/profileService'
+import { getUserProfile, updateUserProfile, uploadAvatar } from '../../services/profileService'
 import { getUserFromStorage } from '../../services/authService'
+import { usePopup } from '../common/popup'
 import type { UserProfile } from './Profile.types'
 import type { UpdateProfileDto } from './Profile.types'
 
@@ -10,6 +11,7 @@ export type { UserProfile }
 
 export default function Profile() {
   const navigate = useNavigate()
+  const { showSuccess, showError } = usePopup()
   
   // Get user ID from localStorage (from login session)
   const currentUser = getUserFromStorage()
@@ -29,6 +31,7 @@ export default function Profile() {
   // State for user profile data - Start with null, will be loaded from API
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true) // Start with loading=true
+  const [uploadingAvatar, setUploadingAvatar] = useState(false) // Separate loading state for avatar
   const [isEditing, setIsEditing] = useState(false)
   const [editedProfile, setEditedProfile] = useState<UserProfile | null>(null)
   const [error, setError] = useState<string>('')
@@ -55,7 +58,7 @@ export default function Profile() {
           email: apiProfile.email,
           phoneNumber: apiProfile.phoneNumber,
           address: apiProfile.address || '',
-          avatar: undefined,
+          avatar: apiProfile.image || undefined,
           role: apiProfile.role,
           stats: {
             orders: 0, // TODO: Get from separate API if needed
@@ -120,13 +123,14 @@ export default function Profile() {
           email: apiProfile.email,
           phoneNumber: apiProfile.phoneNumber,
           address: apiProfile.address || '',
+          avatar: apiProfile.image || editedProfile.avatar,
           role: apiProfile.role
         }
         
         setProfile(updatedProfile)
         setEditedProfile(updatedProfile)
         setIsEditing(false)
-        setSuccessMessage('Cập nhật thông tin thành công!')
+        showSuccess('Cập nhật thông tin thành công!', 'Thành công')
         
         // Clear success message after 3 seconds
         setTimeout(() => setSuccessMessage(''), 3000)
@@ -158,16 +162,61 @@ export default function Profile() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    // TODO: Implement avatar upload
-    console.log('Avatar file selected:', file)
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showError('Vui lòng chọn file ảnh hợp lệ (JPG, PNG, GIF)', 'Lỗi')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      showError('Kích thước ảnh không được vượt quá 5MB', 'Lỗi')
+      return
+    }
+
+    setUploadingAvatar(true)
+    setError('')
     
-    // Example:
-    // const formData = new FormData()
-    // formData.append('avatar', file)
-    // const result = await uploadAvatar(formData)
-    // if (result.resultCd === 0 && result.data) {
-    //   setProfile({ ...profile, avatar: result.data.avatarUrl })
-    // }
+    try {
+      const response = await uploadAvatar(userId, file)
+      
+      if (response.resultCd === 0 && response.data) {
+        // Update profile with new avatar URL from backend
+        const updatedProfile: UserProfile = {
+          ...profile!,
+          avatar: response.data.image || undefined,
+        }
+        
+        setProfile(updatedProfile)
+        if (editedProfile) {
+          setEditedProfile(updatedProfile)
+        }
+        
+        // Update user in localStorage for header to reflect changes
+        const storedUser = getUserFromStorage()
+        if (storedUser) {
+          const updatedUser = {
+            ...storedUser,
+            image: response.data.image
+          }
+          localStorage.setItem('user', JSON.stringify(updatedUser))
+          // Dispatch custom event to notify header of avatar change
+          window.dispatchEvent(new Event('userUpdated'))
+        }
+        
+        showSuccess('Cập nhật ảnh đại diện thành công!', 'Thành công')
+      } else {
+        showError(response.message || 'Không thể tải ảnh lên', 'Lỗi')
+      }
+    } catch (error) {
+      console.error('Error uploading avatar:', error)
+      showError('Lỗi kết nối. Vui lòng thử lại.', 'Lỗi')
+    } finally {
+      setUploadingAvatar(false)
+      // Reset input to allow re-uploading the same file
+      event.target.value = ''
+    }
   }
 
   const handleToggleTwoFactor = async () => {
@@ -243,6 +292,7 @@ export default function Profile() {
     <ProfileView
       profile={profile}
       loading={loading}
+      uploadingAvatar={uploadingAvatar}
       isEditing={isEditing}
       editedProfile={editedProfile || profile}
       error={error}

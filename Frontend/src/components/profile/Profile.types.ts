@@ -12,6 +12,7 @@ export interface UserDto {
   email: string;
   phoneNumber: string;
   address: string;
+  image?: string; // Avatar/profile image URL from backend
   role: "CUSTOMER" | "SELLER" | "ADMIN";
   status: "ACTIVE" | "INACTIVE" | "BANNED";
   createdAt: string; // ISO 8601 format

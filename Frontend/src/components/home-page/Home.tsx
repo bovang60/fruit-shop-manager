@@ -41,16 +41,9 @@ export default function Home() {
     sortOrder: 'desc'
   })
 
-  // Temporary filter state (for sidebar inputs before Apply)
-  const [tempFilters, setTempFilters] = useState<Omit<FilterState, 'search' | 'sortBy' | 'sortOrder'>>({
-    category: undefined,
-    minPrice: undefined,
-    maxPrice: undefined,
-    origin: undefined,
-    organic: undefined
-  })
+  // Temporary search input state (does NOT trigger API until submitted)
+  const [searchInput, setSearchInput] = useState('')
 
-  // Load products on mount and when filters/page change
   useEffect(() => {
     loadProducts()
   }, [page, filters])
@@ -133,11 +126,18 @@ export default function Home() {
   }
 
   /**
-   * Handle search query change
+   * Handle search query change - only updates input, does NOT call API
    */
   const handleSearchChange = (query: string) => {
-    setFilters(prev => ({ ...prev, search: query }))
-    setPage(1) // Reset to first page on new search
+    setSearchInput(query)
+  }
+
+  /**
+   * Submit search - applies the search query and calls API
+   */
+  const handleSearchSubmit = () => {
+    setFilters(prev => ({ ...prev, search: searchInput }))
+    setPage(1)
   }
 
   /**
@@ -167,31 +167,35 @@ export default function Home() {
   }
 
   /**
-   * Handle category filter change
+   * Handle category filter change - applies immediately
    */
   const handleCategoryChange = (category: string) => {
-    setTempFilters(prev => ({ ...prev, category }))
+    setFilters(prev => ({ ...prev, category: category || undefined }))
+    setPage(1)
   }
 
   /**
-   * Handle price range change
+   * Handle price range change - applies immediately
    */
   const handlePriceChange = (minPrice: number, maxPrice: number) => {
-    setTempFilters(prev => ({ ...prev, minPrice, maxPrice }))
+    setFilters(prev => ({ ...prev, minPrice, maxPrice }))
+    setPage(1)
   }
 
   /**
-   * Handle origin filter change
+   * Handle origin filter change - applies immediately
    */
   const handleOriginChange = (origin: string | undefined) => {
-    setTempFilters(prev => ({ ...prev, origin }))
+    setFilters(prev => ({ ...prev, origin }))
+    setPage(1)
   }
 
   /**
-   * Handle organic filter change
+   * Handle organic filter change - applies immediately
    */
   const handleOrganicChange = (organic: boolean | undefined) => {
-    setTempFilters(prev => ({ ...prev, organic }))
+    setFilters(prev => ({ ...prev, organic }))
+    setPage(1)
   }
 
   /**
@@ -202,28 +206,14 @@ export default function Home() {
     setPage(1)
   }
 
-  /**
-   * Apply filters - copy temp filters to actual filters
-   */
-  const handleApplyFilters = () => {
-    setFilters(prev => ({
-      ...prev,
-      category: tempFilters.category,
-      minPrice: tempFilters.minPrice,
-      maxPrice: tempFilters.maxPrice,
-      origin: tempFilters.origin,
-      organic: tempFilters.organic
-    }))
-    setPage(1) // Reset to first page
-  }
-
   // Memoized displayed products (already filtered by API, no need to filter again)
   const displayedProducts = useMemo(() => products, [products])
 
   return (
     <HomeView
-      query={filters.search}
+      query={searchInput}
       onQueryChange={handleSearchChange}
+      onSearchSubmit={handleSearchSubmit}
       products={products}
       displayed={displayedProducts}
       newArrivals={newArrivals}
@@ -235,11 +225,11 @@ export default function Home() {
       loading={loading}
       error={error}
       // Filter props
-      category={tempFilters.category}
-      minPrice={tempFilters.minPrice}
-      maxPrice={tempFilters.maxPrice}
-      origin={tempFilters.origin}
-      organic={tempFilters.organic}
+      category={filters.category}
+      minPrice={filters.minPrice}
+      maxPrice={filters.maxPrice}
+      origin={filters.origin}
+      organic={filters.organic}
       sortBy={filters.sortBy}
       sortOrder={filters.sortOrder}
       // Filter handlers
@@ -248,7 +238,6 @@ export default function Home() {
       onOriginChange={handleOriginChange}
       onOrganicChange={handleOrganicChange}
       onSortChange={handleSortChange}
-      onApplyFilters={handleApplyFilters}
     />
   )
 }

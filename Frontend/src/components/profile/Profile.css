@@ -94,6 +94,44 @@
   display: none;
 }
 
+/* Avatar Uploading Overlay */
+.avatar-uploading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(18, 24, 17, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-uploading-overlay .spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid rgba(51, 242, 13, 0.3);
+  border-top-color: #33f20d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.avatar-upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.avatar-upload-btn:disabled:hover {
+  transform: none;
+}
+
 .material-icon {
   font-size: 1rem;
   line-height: 1;

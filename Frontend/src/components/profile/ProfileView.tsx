@@ -7,6 +7,7 @@ import type { UserProfile } from './Profile'
 export type Props = {
   profile: UserProfile
   loading: boolean
+  uploadingAvatar: boolean
   isEditing: boolean
   editedProfile: UserProfile
   error?: string
@@ -43,12 +44,18 @@ export default function ProfileView(props: Props) {
               <div className="avatar-section">
                 <div 
                   className="avatar-image"
-                  style={{ backgroundImage: `url('${profile.avatar}')` }}
+                  style={{ backgroundImage: `url('${profile.avatar || 'https://via.placeholder.com/150/33f20d/ffffff?text=' + encodeURIComponent(profile.fullName.charAt(0))}')` }}
                   role="img"
                   aria-label={`${profile.fullName} profile picture`}
-                />
-                <label htmlFor="avatar-upload" className="avatar-upload-btn">
-                  <span className="material-icon">📷</span>
+                >
+                  {props.uploadingAvatar && (
+                    <div className="avatar-uploading-overlay">
+                      <div className="spinner"></div>
+                    </div>
+                  )}
+                </div>
+                <label htmlFor="avatar-upload" className="avatar-upload-btn" title="Tải ảnh đại diện mới">
+                  <span className="material-icon">{props.uploadingAvatar ? '⏳' : '📷'}</span>
                   <input
                     id="avatar-upload"
                     type="file"
@@ -56,6 +63,7 @@ export default function ProfileView(props: Props) {
                     onChange={props.onAvatarChange}
                     className="avatar-upload-input"
                     aria-label="Upload profile picture"
+                    disabled={props.uploadingAvatar}
                   />
                 </label>
               </div>
@@ -219,7 +227,7 @@ export default function ProfileView(props: Props) {
               </div>
 
               {/* Security & Preferences */}
-              <div className="security-section">
+              {/* <div className="security-section">
                 <h3 className="security-title">Bảo Mật & Tùy Chọn</h3>
                 <div className="security-grid">
                   <div className="security-item">
@@ -256,7 +264,7 @@ export default function ProfileView(props: Props) {
                     </button>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </section>
           </div>
         </div>

@@ -1,24 +1,63 @@
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { getUserFromStorage } from '../../../services/authService'
 import HeaderView from './HeaderView'
 
 export default function Header() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
+  const [userName, setUserName] = useState<string>('')
 
-  const handleNavigateToProfile = () => {
-    navigate('/profile')
-  }
+  // Load user info from localStorage
+  useEffect(() => {
+    const loadUserInfo = () => {
+      const user = getUserFromStorage()
+      if (user) {
+        setUserAvatar(user.image)
+        setUserName(user.fullName)
+      }
+    }
+
+    loadUserInfo()
+
+    // Listen for storage changes (when user updates avatar in another tab or after upload)
+    const handleStorageChange = () => {
+      loadUserInfo()
+    }
+
+    // Custom event for same-tab updates
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('userUpdated', handleStorageChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('userUpdated', handleStorageChange)
+    }
+  }, [])
+
+  const handleNavigateToProfile = () => navigate('/profile')
+  const handleNavigateToHome = () => navigate('/home')
+  const handleNavigateToProducts = () => navigate('/products')
+  const handleNavigateToOrders = () => navigate('/orders')
+  const handleNavigateToCustomers = () => navigate('/customers')
 
   const handleLogout = () => {
     // Clear auth data from localStorage
     localStorage.removeItem('user')
     localStorage.removeItem('token')
-    
-    // Redirect to login page
     navigate('/login')
   }
 
   return (
     <HeaderView 
+      userAvatar={userAvatar}
+      userName={userName}
+      currentPath={location.pathname}
+      onNavigateToHome={handleNavigateToHome}
+      onNavigateToProducts={handleNavigateToProducts}
+      onNavigateToOrders={handleNavigateToOrders}
+      onNavigateToCustomers={handleNavigateToCustomers}
       onNavigateToProfile={handleNavigateToProfile}
       onLogout={handleLogout}
     />

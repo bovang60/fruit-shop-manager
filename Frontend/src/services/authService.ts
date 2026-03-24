@@ -47,6 +47,7 @@ export interface UserDto {
   fullName: string;
   email: string;
   phoneNumber: string;
+  image?: string; // Avatar URL
   role: string;
   status: string;
   createdAt: string;
