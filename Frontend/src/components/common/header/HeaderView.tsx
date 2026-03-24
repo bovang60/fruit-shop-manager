@@ -12,9 +12,14 @@ export type Props = {
   onNavigateToProfile: () => void
   onLogout: () => void
   onNavigateToSellerRegistration: () => void
+  onNavigateToCart: () => void
 }
 
+<<<<<<< HEAD
 export default function HeaderView({ userAvatar, userName, currentPath, onNavigateToHome, onNavigateToProducts, onNavigateToOrders, onNavigateToCustomers, onNavigateToProfile, onLogout }: Props) {
+=======
+export default function HeaderView({ onNavigateToProfile, onLogout, onNavigateToSellerRegistration, onNavigateToCart }: Props) {
+>>>>>>> e420909 (Cart)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -50,6 +55,7 @@ export default function HeaderView({ userAvatar, userName, currentPath, onNaviga
     <header className="site-header">
       <div className="brand">Fruit Shop Manager</div>
       <nav className="nav-tabs">
+<<<<<<< HEAD
         <button
           className={`tab${currentPath === '/home' ? ' active' : ''}`}
           onClick={onNavigateToHome}
@@ -74,6 +80,12 @@ export default function HeaderView({ userAvatar, userName, currentPath, onNaviga
         >
           Khách hàng
         </button>
+=======
+        <button className="tab active">Trang chủ</button>
+        <button className="tab">Sản phẩm</button>
+        <button className="tab" onClick={onNavigateToCart}>Đơn hàng</button>
+        <button className="tab" onClick={onNavigateToSellerRegistration}>Trở thành người bán</button>
+>>>>>>> e420909 (Cart)
       </nav>
       <div className="header-actions">
         <div className="profile-dropdown-container" ref={dropdownRef}>

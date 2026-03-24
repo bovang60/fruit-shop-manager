@@ -55,6 +55,10 @@ export default function Header() {
     navigate('/register-shop')
   }
 
+  const handleNavigateToCart = () => {
+    navigate('/cart')
+  }
+
   return (
     <HeaderView 
       userAvatar={userAvatar}
@@ -67,6 +71,7 @@ export default function Header() {
       onNavigateToProfile={handleNavigateToProfile}
       onLogout={handleLogout}
       onNavigateToSellerRegistration={handleNavigateToSellerRegistration}
+      onNavigateToCart={handleNavigateToCart}
     />
   )
 }

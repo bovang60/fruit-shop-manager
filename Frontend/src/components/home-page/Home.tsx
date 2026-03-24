@@ -4,9 +4,9 @@ import {
   getProducts,
   getNewArrivals,
   getTrendingProducts,
-  addToCart,
   getErrorMessage
 } from '../../services/productService'
+import { addToCart } from '../../services/cartService'
 import type {
   Product,
   FilterState,
@@ -30,6 +30,10 @@ export default function Home() {
   const [trending, setTrending] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [addingToCartId, setAddingToCartId] = useState<number | null>(null)
+
+  // Mock userId (use auth context if available)
+  const userId = 3
 
   // Pagination state
   const [page, setPage] = useState(1)
@@ -154,8 +158,9 @@ export default function Home() {
    * Handle add to cart
    */
   const handleAddToCart = async (productId: number) => {
+    setAddingToCartId(productId)
     try {
-      const response = await addToCart({ productId, quantity: 1 })
+      const response = await addToCart(userId, productId, 1)
 
       if (response.resultCd === 0) {
         showNotice('Đã thêm vào giỏ hàng!', 'Thành công')
@@ -165,6 +170,8 @@ export default function Home() {
     } catch (err) {
       console.error('Error adding to cart:', err)
       showError('Có lỗi xảy ra. Vui lòng thử lại!')
+    } finally {
+      setAddingToCartId(null)
     }
   }
 
@@ -224,6 +231,7 @@ export default function Home() {
       totalPages={totalPages}
       onPageChange={handlePageChange}
       onAddToCart={handleAddToCart}
+      addingToCartId={addingToCartId}
       loading={loading}
       error={error}
       // Filter props

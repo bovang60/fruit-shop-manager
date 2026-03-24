@@ -17,6 +17,7 @@ export type Props = {
   totalPages: number
   onPageChange: (p: number) => void
   onAddToCart: (productId: number) => void
+  addingToCartId?: number | null
   loading: boolean
   error: string
   // Filter values
@@ -46,6 +47,7 @@ export default function HomeView({
   totalPages,
   onPageChange,
   onAddToCart,
+  addingToCartId,
   loading,
   error,
   // Filter values
@@ -270,8 +272,13 @@ export default function HomeView({
                     <button
                       className="add-to-cart-btn"
                       onClick={() => onAddToCart(p.id)}
+                      disabled={addingToCartId === p.id}
                     >
+<<<<<<< HEAD
                       🛒 Thêm vào giỏ
+=======
+                      {addingToCartId === p.id ? '✉️ Đang thêm...' : '🛒 Add to Cart'}
+>>>>>>> e420909 (Cart)
                     </button>
                   </div>
                 </div>

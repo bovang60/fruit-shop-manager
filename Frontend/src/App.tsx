@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './components/home-page/Home'
 import Login from './components/login/Login'
 import Register from './components/register/Register'
@@ -10,6 +10,7 @@ import ShopManagement from './components/shop-management/ShopManagement'
 import UserManagement from './components/user-management/UserManagement'
 import Profile from './components/profile/Profile'
 import ShopRegistration from './components/shop-registration/ShopRegistration'
+import Cart from './components/cart/Cart'
 import { PopupProvider } from './components/common/popup'
 import ProtectedRoute from './components/common/protected-route/ProtectedRoute'
 import './App.css'
@@ -19,12 +20,11 @@ function App() {
     <BrowserRouter>
       <PopupProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          {/* Public Routes */}
-          <Route path="/home" element={<Home />} />
+e420909 (Cart)
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/cart" element={<Cart />} />
 
           {/* Private Routes - Required Login */}
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
