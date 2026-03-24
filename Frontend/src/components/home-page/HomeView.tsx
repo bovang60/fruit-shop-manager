@@ -36,14 +36,14 @@ export type Props = {
   onSearchSubmit: () => void
 }
 
-export default function HomeView({ 
-  query, 
-  onQueryChange, 
-  displayed, 
+export default function HomeView({
+  query,
+  onQueryChange,
+  displayed,
   newArrivals,
   trending,
-  page, 
-  totalPages, 
+  page,
+  totalPages,
   onPageChange,
   onAddToCart,
   loading,
@@ -83,45 +83,45 @@ export default function HomeView({
               <h3 className="filter-title">Danh mục</h3>
               <div className="filter-options">
                 <label className="filter-option">
-                  <input 
-                    type="radio" 
-                    name="category" 
-                    checked={!category} 
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={!category}
                     onChange={() => onCategoryChange('')}
                   />
                   <span>Tất cả</span>
                 </label>
                 <label className="filter-option">
-                  <input 
-                    type="radio" 
-                    name="category" 
+                  <input
+                    type="radio"
+                    name="category"
                     checked={category === 'berries'}
                     onChange={() => onCategoryChange('berries')}
                   />
                   <span>Trái cây rừng</span>
                 </label>
                 <label className="filter-option">
-                  <input 
-                    type="radio" 
-                    name="category" 
+                  <input
+                    type="radio"
+                    name="category"
                     checked={category === 'citrus'}
                     onChange={() => onCategoryChange('citrus')}
                   />
                   <span>Họ cam quýt</span>
                 </label>
                 <label className="filter-option">
-                  <input 
-                    type="radio" 
-                    name="category" 
+                  <input
+                    type="radio"
+                    name="category"
                     checked={category === 'tropical'}
                     onChange={() => onCategoryChange('tropical')}
                   />
                   <span>Nhiệt đới</span>
                 </label>
                 <label className="filter-option">
-                  <input 
-                    type="radio" 
-                    name="category" 
+                  <input
+                    type="radio"
+                    name="category"
                     checked={category === 'seasonal'}
                     onChange={() => onCategoryChange('seasonal')}
                   />
@@ -134,14 +134,14 @@ export default function HomeView({
             <div className="filter-section">
               <h3 className="filter-title">Khoảng giá</h3>
               <div className="price-range-wrap">
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="500000" 
+                <input
+                  type="range"
+                  min="0"
+                  max="500000"
                   step="10000"
-                  value={maxPrice} 
+                  value={maxPrice}
                   onChange={(e) => onPriceChange(minPrice, Number(e.target.value))}
-                  className="price-slider" 
+                  className="price-slider"
                 />
                 <div className="price-labels">
                   <span>₫{minPrice.toLocaleString('vi-VN')}</span>
@@ -155,27 +155,27 @@ export default function HomeView({
               <h3 className="filter-title">Xuất xứ</h3>
               <div className="filter-options">
                 <label className="filter-option">
-                  <input 
-                    type="radio" 
-                    name="origin" 
-                    checked={!origin} 
+                  <input
+                    type="radio"
+                    name="origin"
+                    checked={!origin}
                     onChange={() => onOriginChange(undefined)}
                   />
                   <span>Tất cả</span>
                 </label>
                 <label className="filter-option">
-                  <input 
-                    type="radio" 
-                    name="origin" 
+                  <input
+                    type="radio"
+                    name="origin"
                     checked={origin === 'local'}
                     onChange={() => onOriginChange('local')}
                   />
                   <span>Nông sản trong nước</span>
                 </label>
                 <label className="filter-option">
-                  <input 
-                    type="radio" 
-                    name="origin" 
+                  <input
+                    type="radio"
+                    name="origin"
                     checked={origin === 'imported'}
                     onChange={() => onOriginChange('imported')}
                   />
@@ -188,9 +188,9 @@ export default function HomeView({
             <div className="filter-section">
               <h3 className="filter-title">Chứng nhận hữu cơ</h3>
               <label className="filter-option-organic">
-                <input 
-                  type="checkbox" 
-                  checked={organic === true} 
+                <input
+                  type="checkbox"
+                  checked={organic === true}
                   onChange={(e) => onOrganicChange(e.target.checked ? true : undefined)}
                 />
                 <span>Sản phẩm hữu cơ</span>
@@ -241,7 +241,7 @@ export default function HomeView({
           {/* Error State */}
           {error && (
             <div className="error-state">
-              <p style={{color: 'red'}}>{error}</p>
+              <p style={{ color: 'red' }}>{error}</p>
             </div>
           )}
 
@@ -267,8 +267,8 @@ export default function HomeView({
                       </div>
                       <p className="product-price-modern">{p.price}</p>
                     </div>
-                    <button 
-                      className="add-to-cart-btn" 
+                    <button
+                      className="add-to-cart-btn"
                       onClick={() => onAddToCart(p.id)}
                     >
                       🛒 Thêm vào giỏ
@@ -298,7 +298,7 @@ export default function HomeView({
               <div className="horizontal-scroll">
                 {newArrivals.map(p => (
                   <div key={p.id} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: p.img ? `url('${p.img}')` : 'none'}}></div>
+                    <div className="mini-card-img" style={{ backgroundImage: p.img ? `url('${p.img}')` : 'none' }}></div>
                     <p className="mini-card-name">{p.name}</p>
                     <p className="mini-card-price">{p.price}</p>
                   </div>
@@ -321,7 +321,7 @@ export default function HomeView({
               <div className="horizontal-scroll">
                 {trending.map(p => (
                   <div key={p.id} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: p.img ? `url('${p.img}')` : 'none'}}></div>
+                    <div className="mini-card-img" style={{ backgroundImage: p.img ? `url('${p.img}')` : 'none' }}></div>
                     <p className="mini-card-name">{p.name}</p>
                     <p className="mini-card-price">{p.price}</p>
                   </div>
@@ -340,8 +340,8 @@ export default function HomeView({
       </footer>
 
       {/* Loading Modal */}
-      <LoadingModal 
-        isOpen={loading} 
+      <LoadingModal
+        isOpen={loading}
         message="Đang tải sản phẩm..."
         subMessage="Vui lòng chờ trong giây lát"
         theme="green"

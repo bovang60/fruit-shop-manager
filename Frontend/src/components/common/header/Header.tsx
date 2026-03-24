@@ -46,7 +46,13 @@ export default function Header() {
     // Clear auth data from localStorage
     localStorage.removeItem('user')
     localStorage.removeItem('token')
+
+    // Redirect to login page
     navigate('/login')
+  }
+
+  const handleNavigateToSellerRegistration = () => {
+    navigate('/register-shop')
   }
 
   return (
@@ -60,6 +66,7 @@ export default function Header() {
       onNavigateToCustomers={handleNavigateToCustomers}
       onNavigateToProfile={handleNavigateToProfile}
       onLogout={handleLogout}
+      onNavigateToSellerRegistration={handleNavigateToSellerRegistration}
     />
   )
 }

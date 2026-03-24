@@ -44,17 +44,24 @@ const CategoryManagement: React.FC = () => {
     const loadCategories = async () => {
         setLoading(true);
         try {
-            const filter = {
-                search: searchQuery,
-                status: statusFilter,
+            const filter: any = {
+                search: searchQuery || undefined,
+                status: statusFilter || undefined,
                 page: page,
                 size: 10,
-                sort: sortConfig.key ? `${sortConfig.key},${sortConfig.direction}` : undefined,
             };
+
+            if (sortConfig.key) {
+                if (sortConfig.key === 'name') {
+                    filter.sort = `categoryName,${sortConfig.direction}`;
+                } else if (sortConfig.key === 'productCount') {
+                    filter.sortByFruitCount = true;
+                }
+            }
 
             const response = await getCategories(filter);
 
-            if ((response.resultCd === 0 || (response as any).status === 'success') && response.data) {
+            if (response.resultCd === 0 && response.data) {
                 const mappedCategories: Category[] = response.data.content.map((dto: CategoryDto) => ({
                     id: dto.categoryId,
                     name: dto.categoryName,
@@ -66,9 +73,12 @@ const CategoryManagement: React.FC = () => {
                 setAllCategories(mappedCategories);
                 setTotalElements(response.data.totalElements);
                 setTotalPages(response.data.totalPages);
+            } else {
+                showError(response.message || "Không thể tải danh sách danh mục");
             }
         } catch (error) {
             console.error("Failed to fetch categories:", error);
+            showError("Lỗi kết nối khi tải danh sách danh mục");
         } finally {
             setLoading(false);
         }
@@ -92,7 +102,7 @@ const CategoryManagement: React.FC = () => {
         setLoading(true);
         try {
             const response = await getCategoryById(id);
-            if ((response.resultCd === 0 || (response as any).status === 'success') && response.data) {
+            if (response.resultCd === 0 && response.data) {
                 const category: Category = {
                     id: response.data.categoryId,
                     name: response.data.categoryName,
@@ -123,7 +133,7 @@ const CategoryManagement: React.FC = () => {
                 status: values.status.toUpperCase() as any
             });
 
-            if (response.resultCd === 0 || (response as any).status === 'success') {
+            if (response.resultCd === 0) {
                 showNotice('Cập nhật danh mục thành công!');
                 setViewMode('LIST');
                 loadCategories();
@@ -148,7 +158,7 @@ const CategoryManagement: React.FC = () => {
                 status: values.status.toUpperCase() as any
             });
 
-            if (response.resultCd === 0 || (response as any).status === 'success') {
+            if (response.resultCd === 0) {
                 showNotice('Thêm danh mục mới thành công!');
                 setViewMode('LIST');
                 loadCategories();
@@ -171,9 +181,18 @@ const CategoryManagement: React.FC = () => {
                 setLoading(true);
                 try {
                     const response = await deleteCategory(id);
-                    if (response.resultCd === 0 || (response as any).status === 'success') {
-                        showNotice('Xóa danh mục thành công!');
-                        loadCategories();
+                    if (response.resultCd === 0) {
+                        showNotice(response.message || 'Đã xóa danh mục thành công');
+                        
+                        if (!response.data) {
+                            // Trường hợp trả về data là null -> Backend đã xóa thật.
+                            setAllCategories(allCategories => allCategories.filter(c => c.id !== id));
+                        } else {
+                            // Trường hợp trả về data là object -> Backend chỉ đổi INACTIVE.
+                            setAllCategories(allCategories => allCategories.map(c => 
+                                c.id === id ? { ...c, status: 'Inactive', productCount: response.data!.fruitCount } : c
+                            ));
+                        }
                     } else {
                         showError(response.message || "Không thể xóa danh mục");
                     }

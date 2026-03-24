@@ -68,12 +68,12 @@ export function PopupProvider({ children }: { children: React.ReactNode }) {
         title: title || 'Xác nhận',
         message,
         onConfirm: () => {
-          onConfirm()
           hidePopup()
+          onConfirm()
         },
         onCancel: () => {
-          onCancel?.()
           hidePopup()
+          onCancel?.()
         },
         confirmText: 'Xác nhận',
         cancelText: 'Hủy'
@@ -122,8 +122,8 @@ export function PopupProvider({ children }: { children: React.ReactNode }) {
 
         // Store the callback separately to be called by PopupView
         ; (window as any)._popup_prompt_callback = (val: string) => {
-          onConfirm(val)
           hidePopup()
+          onConfirm(val)
         }
     },
     [hidePopup]
