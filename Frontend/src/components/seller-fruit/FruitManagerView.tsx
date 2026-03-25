@@ -46,7 +46,7 @@ const FruitManagerView: React.FC<Props> = ({ fruits, isLoading, onSoftDelete, on
 
                             <div className="product-meta">
                                 <label>Giá:</label>
-                                <span className="price">{fruit.price.toLocaleString()}đ</span>
+                                <span className="price">{fruit.price.toLocaleString('vi-VN')}đ</span>
                             </div>
 
                             <div className="product-meta">

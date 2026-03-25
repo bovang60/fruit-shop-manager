@@ -18,6 +18,24 @@ export type Props = {
     onFilterChange: (status: string) => void;
 };
 
+const ORDER_STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Chờ xác nhận',
+    CONFIRMED: 'Đã xác nhận',
+    SHIPPING: 'Đang giao',
+    COMPLETED: 'Hoàn tất',
+    CANCELLED: 'Đã hủy',
+};
+
+const ORDER_FILTERS: Array<{ value: string; label: string }> = [
+    { value: 'ALL', label: 'Tất cả' },
+    { value: 'PENDING', label: 'Chờ xác nhận' },
+    { value: 'CONFIRMED', label: 'Đã xác nhận' },
+    { value: 'SHIPPING', label: 'Đang giao' },
+    { value: 'COMPLETED', label: 'Hoàn tất' },
+];
+
+const getOrderStatusLabel = (status: string) => ORDER_STATUS_LABELS[status] || status;
+
 const OrderManagerView: React.FC<Props> = ({ orders, isLoading, currentFilter, onUpdateStatus, onFilterChange }) => {
     return (
         <div className="home-root">
@@ -25,14 +43,14 @@ const OrderManagerView: React.FC<Props> = ({ orders, isLoading, currentFilter, o
                 <h2>Quản lý đơn hàng</h2>
                 {/* Sử dụng Nav Tabs contract */}
                 <div className="nav-tabs">
-                    {['ALL', 'PENDING', 'CONFIRMED', 'SHIPPING', 'COMPLETED'].map(status => (
+                    {ORDER_FILTERS.map((filter) => (
                         <button
-                            key={status}
+                            key={filter.value}
                             type="button"
-                            className={`tab ${currentFilter === status ? 'active' : ''}`}
-                            onClick={() => onFilterChange(status)}
+                            className={`tab ${currentFilter === filter.value ? 'active' : ''}`}
+                            onClick={() => onFilterChange(filter.value)}
                         >
-                            {status === 'ALL' ? 'Tất cả' : status}
+                            {filter.label}
                         </button>
                     ))}
                 </div>
@@ -62,11 +80,11 @@ const OrderManagerView: React.FC<Props> = ({ orders, isLoading, currentFilter, o
                                             <strong>{order.receiverName}</strong><br/>
                                             <small>{order.receiverPhone}</small>
                                         </td>
-                                        <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                        <td className="price">{order.totalAmount.toLocaleString()}đ</td>
+                                        <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
+                                        <td className="price">{order.totalAmount.toLocaleString('vi-VN')}đ</td>
                                         <td>
                                             <span className={`status-badge ${order.status.toLowerCase()}`}>
-                                                {order.status}
+                                                {getOrderStatusLabel(order.status)}
                                             </span>
                                         </td>
                                         <td className="form-actions">

@@ -22,7 +22,7 @@ public class FruitServiceImpl implements FruitService {
     @Transactional
     public Fruit createFruit(Fruit fruit, Integer shopId) {
         Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay cua hang!"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cửa hàng!"));
         fruit.setShop(shop);
         return fruitRepository.save(fruit);
     }
@@ -31,7 +31,7 @@ public class FruitServiceImpl implements FruitService {
     @Transactional
     public Fruit updateFruit(Integer fruitId, Fruit fruitDetails) {
         Fruit existingFruit = fruitRepository.findById(fruitId)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay san pham!"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
 
         existingFruit.setFruitName(fruitDetails.getFruitName());
         existingFruit.setPrice(fruitDetails.getPrice());
@@ -48,7 +48,7 @@ public class FruitServiceImpl implements FruitService {
     @Transactional
     public Fruit updateFruitStatus(Integer fruitId, Fruit.FruitStatus status) {
         Fruit existingFruit = fruitRepository.findById(fruitId)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay san pham!"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
         existingFruit.setStatus(status);
         return fruitRepository.save(existingFruit);
     }
@@ -57,7 +57,7 @@ public class FruitServiceImpl implements FruitService {
     @Transactional
     public void deleteFruit(Integer fruitId) {
         if (!fruitRepository.existsById(fruitId)) {
-            throw new RuntimeException("San pham khong ton tai!");
+            throw new RuntimeException("Sản phẩm không tồn tại!");
         }
         fruitRepository.deleteById(fruitId);
     }
@@ -70,6 +70,6 @@ public class FruitServiceImpl implements FruitService {
     @Override
     public Fruit getFruitById(Integer fruitId) {
         return fruitRepository.findById(fruitId)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay san pham!"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
     }
 }

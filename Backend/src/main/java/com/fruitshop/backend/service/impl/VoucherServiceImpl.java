@@ -26,11 +26,11 @@ public class VoucherServiceImpl implements VoucherService {
     @Transactional
     public Voucher createVoucher(Voucher voucher, Integer shopId) {
         if (voucherRepository.existsByCodeAndShop_ShopId(voucher.getCode(), shopId)) {
-            throw new RuntimeException("Mã voucher này đã tồn tại trong Shop của bạn!");
+            throw new RuntimeException("Mã giảm giá này đã tồn tại trong cửa hàng của bạn!");
         }
 
         Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Shop!"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cửa hàng!"));
 
         voucher.setShop(shop);
         return voucherRepository.save(voucher);
@@ -40,7 +40,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Transactional
     public Voucher updateVoucher(Integer voucherId, Voucher details) {
         Voucher voucher = voucherRepository.findById(voucherId)
-                .orElseThrow(() -> new RuntimeException("Voucher không tồn tại!"));
+                .orElseThrow(() -> new RuntimeException("Mã giảm giá không tồn tại!"));
 
         voucher.setCode(details.getCode());
         voucher.setDiscountValue(details.getDiscountValue());
@@ -56,7 +56,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Transactional
     public void deleteVoucher(Integer voucherId) {
         if (!voucherRepository.existsById(voucherId)) {
-            throw new RuntimeException("Voucher không tồn tại!");
+            throw new RuntimeException("Mã giảm giá không tồn tại!");
         }
         voucherRepository.deleteById(voucherId);
     }

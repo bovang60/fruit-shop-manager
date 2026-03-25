@@ -24,7 +24,7 @@ public class SellerVoucherController {
             List<SellerVoucherDto> voucherDtos = vouchers.stream()
                     .map(this::toDto)
                     .toList();
-            return ResponseEntity.ok(ApiResponse.success(voucherDtos));
+            return ResponseEntity.ok(ApiResponse.success("Tải danh sách mã giảm giá thành công", voucherDtos));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -37,7 +37,7 @@ public class SellerVoucherController {
             @RequestBody Voucher voucher) {
         try {
             Voucher createdVoucher = voucherService.createVoucher(voucher, shopId);
-            return ResponseEntity.ok(ApiResponse.success("Tạo voucher thành công!", toDto(createdVoucher)));
+            return ResponseEntity.ok(ApiResponse.success("Tạo mã giảm giá thành công!", toDto(createdVoucher)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -50,7 +50,7 @@ public class SellerVoucherController {
             @RequestBody Voucher voucher) {
         try {
             Voucher updatedVoucher = voucherService.updateVoucher(voucherId, voucher);
-            return ResponseEntity.ok(ApiResponse.success("Cập nhật voucher thành công!", toDto(updatedVoucher)));
+            return ResponseEntity.ok(ApiResponse.success("Cập nhật mã giảm giá thành công!", toDto(updatedVoucher)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -61,7 +61,7 @@ public class SellerVoucherController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer voucherId) {
         try {
             voucherService.deleteVoucher(voucherId);
-            return ResponseEntity.ok(ApiResponse.success("Xóa voucher thành công!", null));
+            return ResponseEntity.ok(ApiResponse.success("Xóa mã giảm giá thành công!", null));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }

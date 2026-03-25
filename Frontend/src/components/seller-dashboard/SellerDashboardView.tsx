@@ -21,6 +21,16 @@ export type Props = {
     isLoading: boolean;
 };
 
+const ORDER_STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Chờ xác nhận',
+    CONFIRMED: 'Đã xác nhận',
+    SHIPPING: 'Đang giao',
+    COMPLETED: 'Hoàn tất',
+    CANCELLED: 'Đã hủy',
+};
+
+const getOrderStatusLabel = (status: string) => ORDER_STATUS_LABELS[status] || status;
+
 const SellerDashboardView: React.FC<Props> = ({ stats, recentOrders, isLoading }) => {
     if (isLoading) return <div className="loading">Đang tải bảng điều khiển...</div>;
 
@@ -33,7 +43,7 @@ const SellerDashboardView: React.FC<Props> = ({ stats, recentOrders, isLoading }
             <section className="products-grid">
                 <article className="product-card">
                     <div className="product-name">Doanh thu</div>
-                    <div className="price">{stats.totalRevenue.toLocaleString()}đ</div>
+                    <div className="price">{stats.totalRevenue.toLocaleString('vi-VN')}đ</div>
                 </article>
 
                 <article className="product-card">
@@ -64,10 +74,10 @@ const SellerDashboardView: React.FC<Props> = ({ stats, recentOrders, isLoading }
                                 <tr key={order.orderId} style={{ borderBottom: '1px solid #f9f9f9' }}>
                                     <td style={{ padding: '10px' }}>#{order.orderId}</td>
                                     <td>{order.receiverName}</td>
-                                    <td className="price">{order.subTotal.toLocaleString()}đ</td>
+                                    <td className="price">{order.subTotal.toLocaleString('vi-VN')}đ</td>
                                     <td>
                                         <span className={`status-badge ${order.status.toLowerCase()}`}>
-                                            {order.status}
+                                            {getOrderStatusLabel(order.status)}
                                         </span>
                                     </td>
                                 </tr>

@@ -25,7 +25,7 @@ public class SellerOrderController {
             List<SellerOrderDto> orderDtos = orders.stream()
                     .map(this::toDto)
                     .toList();
-            return ResponseEntity.ok(ApiResponse.success(orderDtos));
+            return ResponseEntity.ok(ApiResponse.success("Tải danh sách đơn hàng thành công", orderDtos));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -36,7 +36,7 @@ public class SellerOrderController {
     public ResponseEntity<ApiResponse<SellerOrderDto>> getOrderById(@PathVariable Integer orderId) {
         try {
             Order order = orderService.getOrderDetail(orderId);
-            return ResponseEntity.ok(ApiResponse.success(toDto(order)));
+            return ResponseEntity.ok(ApiResponse.success("Tải chi tiết đơn hàng thành công", toDto(order)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }

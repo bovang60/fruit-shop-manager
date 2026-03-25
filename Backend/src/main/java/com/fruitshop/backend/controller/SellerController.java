@@ -25,7 +25,7 @@ public class SellerController {
     public ResponseEntity<ApiResponse<SalesReportDto>> getSalesReport(@PathVariable Integer shopId) {
         try {
             SalesReportDto report = orderService.getShopSalesReport(shopId);
-            return ResponseEntity.ok(ApiResponse.success(report));
+            return ResponseEntity.ok(ApiResponse.success("Tải báo cáo bán hàng thành công", report));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }

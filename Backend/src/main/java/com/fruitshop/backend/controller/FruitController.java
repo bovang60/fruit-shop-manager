@@ -25,7 +25,7 @@ public class FruitController {
             List<SellerFruitDto> fruitDtos = fruits.stream()
                     .map(this::toDto)
                     .toList();
-            return ResponseEntity.ok(ApiResponse.success(fruitDtos));
+            return ResponseEntity.ok(ApiResponse.success("Tải danh sách sản phẩm thành công", fruitDtos));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -36,7 +36,7 @@ public class FruitController {
     public ResponseEntity<ApiResponse<SellerFruitDto>> getFruitById(@PathVariable Integer fruitId) {
         try {
             Fruit fruit = fruitService.getFruitById(fruitId);
-            return ResponseEntity.ok(ApiResponse.success(toDto(fruit)));
+            return ResponseEntity.ok(ApiResponse.success("Tải thông tin sản phẩm thành công", toDto(fruit)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }

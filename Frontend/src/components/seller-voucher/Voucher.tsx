@@ -37,11 +37,11 @@ const Voucher = ({ shopId }: { shopId: number }) => {
                 { ...data, shopId }
             );
             if (response.resultCd === 0) {
-                alert("Lưu voucher thành công!");
+                alert("Lưu mã giảm giá thành công!");
                 loadVouchers();
             }
         } catch (error) {
-            alert("Lỗi khi lưu voucher.");
+            alert("Lỗi khi lưu mã giảm giá.");
         }
     };
 
