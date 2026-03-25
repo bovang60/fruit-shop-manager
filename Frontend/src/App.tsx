@@ -11,6 +11,10 @@ import UserManagement from './components/user-management/UserManagement'
 import Profile from './components/profile/Profile'
 import ShopRegistration from './components/shop-registration/ShopRegistration'
 import Cart from './components/cart/Cart'
+import Checkout from './components/checkout/Checkout'
+import OrderHistory from './components/order-history/OrderHistory'
+import OrderDetail from './components/order-detail/OrderDetail'
+import SellerDashboard from './components/seller-dashboard/SellerDashboard'
 import { PopupProvider } from './components/common/popup'
 import ProtectedRoute from './components/common/protected-route/ProtectedRoute'
 import './App.css'
@@ -25,6 +29,10 @@ e420909 (Cart)
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/order-detail/:orderId" element={<OrderDetail />} />
+          <Route path="/seller-dashboard" element={<SellerDashboard />} />
 
           {/* Private Routes - Required Login */}
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
