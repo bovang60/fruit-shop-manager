@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getUserFromStorage } from '../../../services/authService'
 import HeaderView from './HeaderView'
 
@@ -39,15 +39,12 @@ export default function Header() {
   const handleNavigateToProfile = () => navigate('/profile')
   const handleNavigateToHome = () => navigate('/home')
   const handleNavigateToProducts = () => navigate('/products')
-  const handleNavigateToOrders = () => navigate('/orders')
-  const handleNavigateToCustomers = () => navigate('/customers')
+  const handleNavigateToOrders = () => navigate('/order-history')
+  const handleNavigateToCustomers = () => navigate('/cart')
 
   const handleLogout = () => {
-    // Clear auth data from localStorage
     localStorage.removeItem('user')
     localStorage.removeItem('token')
-
-    // Redirect to login page
     navigate('/login')
   }
 

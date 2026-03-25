@@ -1,133 +1,171 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { usePopup } from '../common/popup';
-
-// Types (typically these would be imported from a central types file)
-interface CartItem {
-  cartItemId: number;
-  productId: number;
-  productName: string;
-  price: number;
-  quantity: number;
-  subtotal: number;
-  imageUrl: string;
-}
-
-interface CartData {
-  cartId: number;
-  userId: number;
-  totalItems: number;
-  totalPrice: number;
-  items: CartItem[];
-}
-
-import CartView from './CartView';
-// Assume these exist in your services
-import { getCart, updateCartItem, removeCartItem, clearCart } from '../../services/cartService';
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { usePopup } from '../common/popup'
+import CartView from './CartView'
+import {
+  addToCart,
+  clearCart,
+  getCart,
+  type CartDto,
+} from '../../services/cartService'
 
 export default function Cart() {
-  const navigate = useNavigate();
-  const { showNotice, showError, showConfirm } = usePopup();
+  const navigate = useNavigate()
+  const { showNotice, showError, showConfirm } = usePopup()
+  const [cart, setCart] = useState<CartDto | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
 
-  const [cart, setCart] = useState<CartData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
-
-  // Mocking userId for now. typically this would come from an auth context or store
-  const userId = 3; 
-
-  const fetchCart = async () => {
-    setLoading(true);
-    try {
-      const response = await getCart(userId);
-      if (response.resultCd === 0 && response.data) {
-        setCart(response.data);
-      } else {
-        showError(response.message || 'Could not load cart information');
-      }
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-      showError('Connection error while loading cart');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const userId = 3
 
   useEffect(() => {
-    fetchCart();
-  }, [userId]);
-
-  const handleUpdateQuantity = async (cartItemId: number, currentQuantity: number, change: number) => {
-    const newQuantity = currentQuantity + change;
-    if (newQuantity < 1) return;
-
-    setUpdatingItemId(cartItemId);
-    try {
-      const response = await updateCartItem(userId, cartItemId, newQuantity);
-      if (response.resultCd === 0 && response.data) {
-        setCart(response.data);
-      } else {
-        showError(response.message || 'Could not update quantity');
+    const fetchCart = async () => {
+      setLoading(true)
+      try {
+        const response = await getCart(userId)
+        if (response.resultCd === 0 && response.data) {
+          setCart(response.data)
+        } else {
+          setCart(null)
+          showError(response.message || 'Could not load cart information')
+        }
+      } catch (error) {
+        console.error('Error fetching cart:', error)
+        setCart(null)
+        showError('Connection error while loading cart')
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-      showError('Connection error while updating quantity');
-    } finally {
-      setUpdatingItemId(null);
     }
-  };
+
+    fetchCart()
+  }, [showError, userId])
+
+  const refreshCart = async () => {
+    const response = await getCart(userId)
+    if (response.resultCd === 0 && response.data) {
+      setCart(response.data)
+      return
+    }
+
+    setCart(null)
+  }
+
+  const syncCartItems = async (
+    nextItems: Array<{ productId: number; quantity: number }>
+  ) => {
+    const clearResponse = await clearCart(userId)
+    if (clearResponse.resultCd !== 0) {
+      throw new Error(clearResponse.message || 'Could not reset cart')
+    }
+
+    if (nextItems.length === 0) {
+      setCart({
+        cartId: cart?.cartId ?? 0,
+        userId,
+        totalItems: 0,
+        totalPrice: 0,
+        items: [],
+      })
+      return
+    }
+
+    for (const item of nextItems) {
+      const addResponse = await addToCart(userId, item.productId, item.quantity)
+      if (addResponse.resultCd !== 0) {
+        throw new Error(addResponse.message || 'Could not sync cart')
+      }
+    }
+
+    await refreshCart()
+  }
+
+  const handleUpdateQuantity = async (
+    cartItemId: number,
+    currentQuantity: number,
+    change: number
+  ) => {
+    const cartItems = cart?.items || []
+    const newQuantity = currentQuantity + change
+    if (newQuantity < 1 || updatingItemId !== null || loading || cartItems.length === 0) {
+      return
+    }
+
+    const nextItems = cartItems.map((item) =>
+      item.cartItemId === cartItemId ? { productId: item.productId, quantity: newQuantity } : { productId: item.productId, quantity: item.quantity }
+    )
+
+    setUpdatingItemId(cartItemId)
+    try {
+      await syncCartItems(nextItems)
+    } catch (error) {
+      console.error('Error updating quantity:', error)
+      showError('Connection error while updating quantity')
+    } finally {
+      setUpdatingItemId(null)
+    }
+  }
 
   const handleRemoveItem = (cartItemId: number) => {
     showConfirm('Are you sure you want to remove this product from the cart?', async () => {
-      setUpdatingItemId(cartItemId);
-      try {
-        const response = await removeCartItem(userId, cartItemId);
-        if (response.resultCd === 0) {
-          showNotice('Product removed from cart');
-          fetchCart(); // Refresh cart to get the latest state
-        } else {
-          showError(response.message || 'Could not remove product');
-        }
-      } catch (error) {
-        console.error('Error removing item:', error);
-        showError('Connection error while removing product');
-      } finally {
-        setUpdatingItemId(null);
+      const cartItems = cart?.items || []
+      if (cartItems.length === 0 || updatingItemId !== null || loading) {
+        return
       }
-    });
-  };
+
+      setUpdatingItemId(cartItemId)
+      try {
+        const nextItems = cartItems
+          .filter((item) => item.cartItemId !== cartItemId)
+          .map((item) => ({ productId: item.productId, quantity: item.quantity }))
+
+        await syncCartItems(nextItems)
+        showNotice('Product removed from cart')
+      } catch (error) {
+        console.error('Error removing item:', error)
+        showError('Connection error while removing product')
+      } finally {
+        setUpdatingItemId(null)
+      }
+    })
+  }
 
   const handleClearCart = () => {
     showConfirm('Are you sure you want to clear the entire cart?', async () => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const response = await clearCart(userId);
+        const response = await clearCart(userId)
         if (response.resultCd === 0) {
-          showNotice('Cart cleared successfully');
-          setCart(null);
+          showNotice('Cart cleared successfully')
+          setCart(null)
         } else {
-          showError(response.message || 'Could not clear cart');
+          showError(response.message || 'Could not clear cart')
         }
       } catch (error) {
-        console.error('Error clearing cart:', error);
-        showError('Connection error while clearing cart');
+        console.error('Error clearing cart:', error)
+        showError('Connection error while clearing cart')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    });
-  };
+    })
+  }
 
   const handleCheckout = () => {
-    if (!cart || !cart.items || cart.items.length === 0) {
-      showError('Your cart is empty');
-      return;
+    if (!cart?.items || cart.items.length === 0) {
+      showError('Your cart is empty')
+      return
     }
-    navigate('/checkout');
-  };
+
+    navigate('/checkout')
+  }
 
   const handleContinueShopping = () => {
-    navigate('/products');
-  };
+    navigate('/products')
+  }
+
+  const handleViewOrderHistory = () => {
+    navigate('/order-history')
+  }
 
   return (
     <CartView
@@ -139,6 +177,7 @@ export default function Cart() {
       onClearCart={handleClearCart}
       onCheckout={handleCheckout}
       onContinueShopping={handleContinueShopping}
+      onViewOrderHistory={handleViewOrderHistory}
     />
-  );
+  )
 }

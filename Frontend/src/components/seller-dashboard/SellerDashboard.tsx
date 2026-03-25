@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePopup } from '../common/popup';
 import { getUserOrders, confirmOrder, updateOrderStatus, type OrderDto } from '../../services/orderService';
@@ -14,7 +14,7 @@ export default function SellerDashboard() {
 
   const userId = 3;
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const response = await getUserOrders(userId);
@@ -29,20 +29,20 @@ export default function SellerDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError, userId]);
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    void fetchOrders();
+  }, [fetchOrders]);
 
   const handleConfirmOrder = (orderId: number) => {
     showConfirm('Confirm this order?', async () => {
       setActionLoading(true);
       try {
-        const response = await confirmOrder(orderId);
+        const response = await confirmOrder(orderId, userId);
         if (response.resultCd === 0) {
           showNotice('Order confirmed successfully');
-          fetchOrders();
+          void fetchOrders();
         } else {
           showError(response.message || 'Could not confirm order');
         }
@@ -59,10 +59,10 @@ export default function SellerDashboard() {
     showConfirm(`Update order status to ${status}?`, async () => {
       setActionLoading(true);
       try {
-        const response = await updateOrderStatus(orderId, status);
+        const response = await updateOrderStatus(orderId, status, userId);
         if (response.resultCd === 0) {
           showNotice('Order status updated successfully');
-          fetchOrders();
+          void fetchOrders();
         } else {
           showError(response.message || 'Could not update order status');
         }

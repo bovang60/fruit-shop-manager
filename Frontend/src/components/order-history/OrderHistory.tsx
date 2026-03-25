@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePopup } from '../common/popup';
 import { getUserOrders, type OrderDto } from '../../services/orderService';
@@ -14,8 +14,7 @@ export default function OrderHistory() {
   // Match the mock userId pattern used in Cart and Checkout
   const userId = 3;
 
-  useEffect(() => {
-    const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
       setLoading(true);
       try {
         const response = await getUserOrders(userId);
@@ -30,10 +29,11 @@ export default function OrderHistory() {
       } finally {
         setLoading(false);
       }
-    };
+    }, [showError, userId]);
 
-    fetchOrders();
-  }, [userId]);
+  useEffect(() => {
+    void fetchOrders();
+  }, [fetchOrders]);
 
   const handleOrderClick = (orderId: number) => {
     navigate(`/order-detail/${orderId}`);

@@ -359,6 +359,18 @@
   background: #f6f8f5;
 }
 
+.cart-btn-order-history {
+  margin-top: 0.75rem;
+  border-color: #121811;
+  color: #121811;
+}
+
+.cart-btn-order-history:hover:not(:disabled) {
+  background: #eef3ec;
+  border-color: #678a60;
+  color: #678a60;
+}
+
 /* Base Responsive Mobile Adjustments */
 @media (max-width: 640px) {
   .cart-item-card {

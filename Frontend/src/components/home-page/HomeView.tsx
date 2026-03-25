@@ -274,11 +274,7 @@ export default function HomeView({
                       onClick={() => onAddToCart(p.id)}
                       disabled={addingToCartId === p.id}
                     >
-<<<<<<< HEAD
-                      🛒 Thêm vào giỏ
-=======
-                      {addingToCartId === p.id ? '✉️ Đang thêm...' : '🛒 Add to Cart'}
->>>>>>> e420909 (Cart)
+                      {addingToCartId === p.id ? '✉️ Đang thêm...' : '🛒 Thêm vào giỏ'}
                     </button>
                   </div>
                 </div>

@@ -75,19 +75,12 @@ export default function Checkout() {
   }, [showError, userId]);
 
   const cartItems = cart?.items || [];
-  const orderItems = cartItems
-    .filter((item) => (item?.productId ?? 0) > 0 && (item?.quantity ?? 0) > 0)
-    .map((item) => ({
-      productId: item?.productId as number,
-      quantity: item?.quantity as number,
-    }));
-
   const isFormValid =
     fullName.trim() !== '' &&
     address.trim() !== '' &&
     phone.trim() !== '' &&
     selectedMethodId !== null &&
-    orderItems.length > 0;
+    cartItems.length > 0;
 
   const handleSubmit = async () => {
     if (submitting) {
@@ -111,20 +104,20 @@ export default function Checkout() {
       showError('Please select a shipping method');
       return;
     }
-    if (orderItems.length === 0) {
+    if (cartItems.length === 0) {
       showError('Cart is empty');
       return;
     }
 
     setSubmitting(true);
     try {
-      const response = await createOrder({
-        userId,
-        fullName: fullName.trim(),
+      const response = await createOrder(userId, {
+        customerName: fullName.trim(),
         address: address.trim(),
         phone: phone.trim(),
+        note: '',
+        paymentMethod: 'COD',
         shippingMethodId: selectedMethodId,
-        items: orderItems,
       });
 
       if (response.resultCd === 0) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { usePopup } from '../common/popup';
 import { getOrderDetail, cancelOrder, completeOrder, type OrderDto } from '../../services/orderService';
@@ -14,7 +14,7 @@ export default function OrderDetail() {
 
   const userId = 3;
 
-  const fetchOrderDetail = async () => {
+  const fetchOrderDetail = useCallback(async () => {
     if (!orderId) return;
     setLoading(true);
     try {
@@ -30,25 +30,21 @@ export default function OrderDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId, showError, userId]);
 
   useEffect(() => {
-    fetchOrderDetail();
-  }, [orderId]);
+    void fetchOrderDetail();
+  }, [fetchOrderDetail]);
 
   const handleCancelOrder = () => {
     if (!order) return;
     showConfirm('Are you sure you want to cancel this order?', async () => {
       setActionLoading(true);
       try {
-        const response = await cancelOrder(order.orderId);
+        const response = await cancelOrder(order.orderId, userId);
         if (response.resultCd === 0) {
           showNotice('Order cancelled successfully');
-          if (response.data) {
-            setOrder(response.data);
-          } else {
-            fetchOrderDetail();
-          }
+          fetchOrderDetail();
         } else {
           showError(response.message || 'Could not cancel order');
         }
@@ -66,14 +62,10 @@ export default function OrderDetail() {
     showConfirm('Confirm order completion?', async () => {
       setActionLoading(true);
       try {
-        const response = await completeOrder(order.orderId);
+        const response = await completeOrder(order.orderId, userId);
         if (response.resultCd === 0) {
           showNotice('Order marked as completed');
-          if (response.data) {
-            setOrder(response.data);
-          } else {
-            fetchOrderDetail();
-          }
+          fetchOrderDetail();
         } else {
           showError(response.message || 'Could not complete order');
         }

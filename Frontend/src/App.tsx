@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Home from './components/home-page/Home'
 import Login from './components/login/Login'
 import Register from './components/register/Register'
@@ -10,40 +10,42 @@ import ShopManagement from './components/shop-management/ShopManagement'
 import UserManagement from './components/user-management/UserManagement'
 import Profile from './components/profile/Profile'
 import ShopRegistration from './components/shop-registration/ShopRegistration'
+import { PopupProvider } from './components/common/popup'
+import ProtectedRoute from './components/common/protected-route/ProtectedRoute'
+import './App.css'
 import Cart from './components/cart/Cart'
 import Checkout from './components/checkout/Checkout'
 import OrderHistory from './components/order-history/OrderHistory'
 import OrderDetail from './components/order-detail/OrderDetail'
 import SellerDashboard from './components/seller-dashboard/SellerDashboard'
-import { PopupProvider } from './components/common/popup'
-import ProtectedRoute from './components/common/protected-route/ProtectedRoute'
-import './App.css'
-
 function App() {
   return (
     <BrowserRouter>
       <PopupProvider>
         <Routes>
-e420909 (Cart)
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Public Routes */}
+          <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-history" element={<OrderHistory />} />
-          <Route path="/order-detail/:orderId" element={<OrderDetail />} />
-          <Route path="/seller-dashboard" element={<SellerDashboard />} />
 
           {/* Private Routes - Required Login */}
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
-
+            
           {/* Admin Routes - Required ADMIN role */}
           <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/category-management" element={<ProtectedRoute requiredRole="ADMIN"><CategoryManagement /></ProtectedRoute>} />
           <Route path="/shop-management" element={<ProtectedRoute requiredRole="ADMIN"><ShopManagement /></ProtectedRoute>} />
           <Route path="/user-management" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
+          {/*Cart Routes*/}
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/order-detail/:orderId" element={<OrderDetail />} />
+          <Route path="/seller-dashboard" element={<SellerDashboard />} />
         </Routes>
       </PopupProvider>
     </BrowserRouter>

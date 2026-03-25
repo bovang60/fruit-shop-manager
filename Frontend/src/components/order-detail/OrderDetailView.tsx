@@ -104,10 +104,10 @@ export default function OrderDetailView({
                     <span className="od-info-label">Phone</span>
                     <span className="od-info-value">{order.phone || 'N/A'}</span>
                   </div>
-                  {order.shippingMethodName && (
+                  {order.paymentMethod && (
                     <div className="od-info-item">
-                      <span className="od-info-label">Shipping</span>
-                      <span className="od-info-value">{order.shippingMethodName}</span>
+                      <span className="od-info-label">Payment</span>
+                      <span className="od-info-value">{order.paymentMethod}</span>
                     </div>
                   )}
                 </div>

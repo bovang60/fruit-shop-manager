@@ -27,7 +27,7 @@ export interface AddToCartRequest {
 /**
  * Add a product to the user's cart
  * 
- * Endpoint: POST /api/cart/{userId}/add
+ * Endpoint: POST /api/cart/add
  */
 export async function addToCart(
   userId: number,
@@ -37,8 +37,9 @@ export async function addToCart(
   try {
     return await callApiWithMethod<AddToCartRequest, ApiResponse<CartDto>>(
       'POST',
-      `/api/cart/${userId}/add`,
-      { productId, quantity }
+      '/api/cart/add',
+      { productId, quantity },
+      { userId: String(userId) }
     );
   } catch (error) {
     console.error('Error adding to cart:', error);
@@ -53,13 +54,15 @@ export async function addToCart(
 /**
  * Get the current user's cart
  * 
- * Endpoint: GET /api/cart/{userId}
+ * Endpoint: GET /api/cart
  */
 export async function getCart(userId: number): Promise<ApiResponse<CartDto>> {
   try {
     return await callApiWithMethod<never, ApiResponse<CartDto>>(
       'GET',
-      `/api/cart/${userId}`
+      '/api/cart',
+      undefined,
+      { userId: String(userId) }
     );
   } catch (error) {
     console.error('Error fetching cart:', error);
@@ -74,7 +77,7 @@ export async function getCart(userId: number): Promise<ApiResponse<CartDto>> {
 /**
  * Update the quantity of a cart item
  * 
- * Endpoint: PUT /api/cart/{userId}/items/{cartItemId}?quantity={quantity}
+ * Endpoint: PUT /api/cart/items/{cartItemId}?quantity={quantity}
  */
 export async function updateCartItem(
   userId: number,
@@ -84,7 +87,9 @@ export async function updateCartItem(
   try {
     return await callApiWithMethod<never, ApiResponse<CartDto>>(
       'PUT',
-      `/api/cart/${userId}/items/${cartItemId}?quantity=${quantity}`
+      `/api/cart/items/${cartItemId}?quantity=${quantity}`,
+      undefined,
+      { userId: String(userId) }
     );
   } catch (error) {
     console.error('Error updating cart item:', error);
@@ -99,7 +104,7 @@ export async function updateCartItem(
 /**
  * Remove an item from the cart
  * 
- * Endpoint: DELETE /api/cart/{userId}/items/{cartItemId}
+ * Endpoint: DELETE /api/cart/items/{cartItemId}
  */
 export async function removeCartItem(
   userId: number,
@@ -108,7 +113,9 @@ export async function removeCartItem(
   try {
     return await callApiWithMethod<never, ApiResponse<null>>(
       'DELETE',
-      `/api/cart/${userId}/items/${cartItemId}`
+      `/api/cart/items/${cartItemId}`,
+      undefined,
+      { userId: String(userId) }
     );
   } catch (error) {
     console.error('Error removing cart item:', error);
@@ -123,13 +130,15 @@ export async function removeCartItem(
 /**
  * Clear all items from the cart
  * 
- * Endpoint: DELETE /api/cart/{userId}/clear
+ * Endpoint: DELETE /api/cart/clear
  */
 export async function clearCart(userId: number): Promise<ApiResponse<null>> {
   try {
     return await callApiWithMethod<never, ApiResponse<null>>(
       'DELETE',
-      `/api/cart/${userId}/clear`
+      '/api/cart/clear',
+      undefined,
+      { userId: String(userId) }
     );
   } catch (error) {
     console.error('Error clearing cart:', error);

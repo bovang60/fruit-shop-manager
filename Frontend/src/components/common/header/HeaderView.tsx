@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './Header.css'
 
 export type Props = {
@@ -15,15 +15,20 @@ export type Props = {
   onNavigateToCart: () => void
 }
 
-<<<<<<< HEAD
-export default function HeaderView({ userAvatar, userName, currentPath, onNavigateToHome, onNavigateToProducts, onNavigateToOrders, onNavigateToCustomers, onNavigateToProfile, onLogout }: Props) {
-=======
-export default function HeaderView({ onNavigateToProfile, onLogout, onNavigateToSellerRegistration, onNavigateToCart }: Props) {
->>>>>>> e420909 (Cart)
+export default function HeaderView({
+  userAvatar,
+  userName,
+  currentPath,
+  onNavigateToHome,
+  onNavigateToProducts,
+  onNavigateToProfile,
+  onLogout,
+  onNavigateToSellerRegistration,
+  onNavigateToCart,
+}: Props) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -55,7 +60,6 @@ export default function HeaderView({ onNavigateToProfile, onLogout, onNavigateTo
     <header className="site-header">
       <div className="brand">Trái cây tươi</div>
       <nav className="nav-tabs">
-<<<<<<< HEAD
         <button
           className={`tab${currentPath === '/home' ? ' active' : ''}`}
           onClick={onNavigateToHome}
@@ -69,23 +73,17 @@ export default function HeaderView({ onNavigateToProfile, onLogout, onNavigateTo
           Sản phẩm
         </button>
         <button
-          className={`tab${currentPath === '/orders' ? ' active' : ''}`}
-          onClick={onNavigateToOrders}
+          className={`tab${currentPath === '/cart' ? ' active' : ''}`}
+          onClick={onNavigateToCart}
         >
           Đơn hàng
         </button>
         <button
-          className={`tab${currentPath === '/customers' ? ' active' : ''}`}
-          onClick={onNavigateToCustomers}
+          className={`tab${currentPath === '/register-shop' ? ' active' : ''}`}
+          onClick={onNavigateToSellerRegistration}
         >
-          Khách hàng
+          Trở thành người bán
         </button>
-=======
-        <button className="tab active">Trang chủ</button>
-        <button className="tab">Sản phẩm</button>
-        <button className="tab" onClick={onNavigateToCart}>Đơn hàng</button>
-        <button className="tab" onClick={onNavigateToSellerRegistration}>Trở thành người bán</button>
->>>>>>> e420909 (Cart)
       </nav>
       <div className="header-actions">
         <div className="profile-dropdown-container" ref={dropdownRef}>
@@ -93,7 +91,7 @@ export default function HeaderView({ onNavigateToProfile, onLogout, onNavigateTo
             className="profile-icon-btn"
             onClick={toggleDropdown}
             aria-label="User menu"
-            title={userName || "User menu"}
+            title={userName || 'User menu'}
             aria-expanded={isDropdownOpen}
           >
             {userAvatar ? (
@@ -102,10 +100,11 @@ export default function HeaderView({ onNavigateToProfile, onLogout, onNavigateTo
                 alt={userName}
                 className="profile-avatar-image"
                 onError={(e) => {
-                  // Fallback to SVG icon if image fails to load
                   e.currentTarget.style.display = 'none'
                   const svg = e.currentTarget.nextElementSibling as HTMLElement
-                  if (svg) svg.style.display = 'block'
+                  if (svg) {
+                    svg.style.display = 'block'
+                  }
                 }}
               />
             ) : null}
