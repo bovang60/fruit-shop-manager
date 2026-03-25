@@ -97,37 +97,46 @@ export default function HomeView({
                   <input
                     type="radio"
                     name="category"
-                    checked={category === 'berries'}
-                    onChange={() => onCategoryChange('berries')}
+                    checked={category === '5'}
+                    onChange={() => onCategoryChange('5')}
                   />
-                  <span>Trái cây rừng</span>
+                  <span>Hoa quả nhập khẩu</span>
                 </label>
                 <label className="filter-option">
                   <input
                     type="radio"
                     name="category"
-                    checked={category === 'citrus'}
-                    onChange={() => onCategoryChange('citrus')}
+                    checked={category === '6'}
+                    onChange={() => onCategoryChange('6')}
                   />
-                  <span>Họ cam quýt</span>
+                  <span>Hoa quả nội địa</span>
                 </label>
                 <label className="filter-option">
                   <input
                     type="radio"
                     name="category"
-                    checked={category === 'tropical'}
-                    onChange={() => onCategoryChange('tropical')}
+                    checked={category === '7'}
+                    onChange={() => onCategoryChange('7')}
                   />
-                  <span>Nhiệt đới</span>
+                  <span>Giỏ quà trái cây</span>
                 </label>
                 <label className="filter-option">
                   <input
                     type="radio"
                     name="category"
-                    checked={category === 'seasonal'}
-                    onChange={() => onCategoryChange('seasonal')}
+                    checked={category === '8'}
+                    onChange={() => onCategoryChange('8')}
                   />
-                  <span>Theo mùa</span>
+                  <span>Trái cây sấy &amp; Hạt</span>
+                </label>
+                <label className="filter-option">
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={category === '9'}
+                    onChange={() => onCategoryChange('9')}
+                  />
+                  <span>Nước ép tươi</span>
                 </label>
               </div>
             </div>

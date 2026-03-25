@@ -90,7 +90,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                 <nav className="breadcrumbs-modern">
                     <Link to="/admin-dashboard">Dashboard</Link>
                     <span className="material-symbols-outlined">chevron_right</span>
-                    <span className="current">Category Management</span>
+                    <span className="current">Quản Lý Danh Mục</span>
                 </nav>
                 <h1>Quản Lý Danh Mục</h1>
                 <p>Quản lý phân loại danh mục cho thị trường trái cây.</p>

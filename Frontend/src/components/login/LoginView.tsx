@@ -41,7 +41,7 @@ export default function LoginView({
             <div className="hero-overlay"></div>
           </div>
           <div className="hero-content">
-            <h1 className="hero-title">Sự Tươi Ngon Đang Chờ Đón</h1>
+            <h1 className="hero-title">Sự tươi ngon đang chờ đón</h1>
             <p className="hero-subtitle">
               Tham gia cộng đồng yêu thích trái cây và nhận những trái cây tươi ngon nhất trong mùa giao tận tận nhà.
             </p>
