@@ -18,32 +18,70 @@ function buildUrlWithParams(url: string, params?: any): string {
 
 // ============= Dashboard Types & API =============
 
+export interface MonthlyOrderDto {
+    month: string;
+    orderCount: number;
+}
+
+export interface TopSellerDto {
+    shopName: string;
+    totalUnitsSold: number;
+    totalRevenue: number;
+    status: string;
+}
+
+export interface MonthlyPerformanceDto {
+    month: string;
+    totalOrders: number;
+    canceledOrders: number;
+    totalRevenue: number;
+}
+
 export interface DashboardStats {
-    grossMerchandiseValue: number;
-    gmvGrowth: number;
+    activeUsers: number;
+    totalOrders: number;
+    cancellationRate: number;
+    totalRevenue: number;
     totalActiveSellers: number;
-    sellerGrowth: number;
-    acquisitionRate: number;
-    acquisitionGrowth: number;
     pendingShopApprovals: number;
-    pendingGrowth: number;
-    revenueVsExpenses: Array<{
-        date: string;
-        revenue: number;
-        expenses: number;
-    }>;
-    topSellers: Array<{
-        shopName: string;
-        totalSales: number;
-        status: string;
-    }>;
+    ordersByMonth: MonthlyOrderDto[];
+    topSellers: TopSellerDto[];
+    shopPerformanceMonthly: MonthlyPerformanceDto[];
 }
 
 /**
  * Fetch dashboard statistics
  */
-export async function getDashboardStats() {
-    return callApi<undefined, ApiResponse<DashboardStats>>("/api/admin/dashboard/stats");
+export async function getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
+    const token = localStorage.getItem("token");
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+    
+    try {
+        const response = await fetch(`${baseUrl}/api/admin/dashboard/stats`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            return {
+                resultCd: 1,
+                message: "Lỗi phản hồi từ máy chủ",
+                data: null
+            };
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error("Dashboard Stats Fetch Error:", error);
+        return {
+            resultCd: 1,
+            message: "Không thể kết nối với máy chủ",
+            data: null
+        };
+    }
 }
 
 // ============= User Management Types & API =============

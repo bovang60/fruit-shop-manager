@@ -5,16 +5,19 @@
   gap: 1rem;
   padding: 0.75rem 0;
 }
+
 .brand {
   font-weight: 700;
   font-size: 1.25rem;
 }
+
 .nav-tabs {
   display: flex;
   gap: 0.5rem;
   flex: 1;
   margin-left: 2rem;
 }
+
 .tab {
   background: transparent;
   border: none;
@@ -23,6 +26,7 @@
   cursor: pointer;
   color: #334155;
 }
+
 .tab.active,
 .tab:hover {
   background: #e6f6f7;
@@ -97,6 +101,7 @@
     opacity: 0;
     transform: translateY(-0.5rem);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

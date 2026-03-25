@@ -17,7 +17,6 @@ export default function UserManagement() {
     // API Data State
     const [users, setUsers] = useState<UserData[]>([])
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
 
     // Filter & Pagination State
     const [searchQuery, setSearchQuery] = useState('')
@@ -31,7 +30,6 @@ export default function UserManagement() {
 
     const fetchUsers = useCallback(async () => {
         setLoading(true)
-        setError(null)
         try {
             const filter: UserFilter = {
                 search: searchQuery,
@@ -60,14 +58,14 @@ export default function UserManagement() {
                 setTotalPages(response.data.totalPages)
                 setTotalElements(response.data.totalElements)
             } else {
-                setError(response.message || 'Lỗi khi tải danh sách người dùng')
+                showError(response.message || 'Lỗi khi tải danh sách người dùng')
             }
         } catch (err) {
-            setError('Không thể kết nối đến máy chủ')
+            showError('Không thể kết nối đến máy chủ')
         } finally {
             setLoading(false)
         }
-    }, [searchQuery, statusFilter, roleFilter, page, pageSize, sortConfig])
+    }, [searchQuery, statusFilter, roleFilter, page, pageSize, sortConfig, showError])
 
     useEffect(() => {
         fetchUsers()
@@ -130,7 +128,6 @@ export default function UserManagement() {
         <UserManagementView
             users={users}
             loading={loading}
-            error={error}
             searchQuery={searchQuery}
             onSearchChange={(v: string) => {
                 setSearchQuery(v)

@@ -27,7 +27,6 @@ export type SortConfig = {
 export type Props = {
     users: UserData[]
     loading: boolean
-    error: string | null
     searchQuery: string
     isSidebarCollapsed: boolean
     onToggleSidebar: () => void
@@ -54,7 +53,6 @@ export type Props = {
 export default function UserManagementView({
     users,
     loading,
-    error,
     searchQuery,
     isSidebarCollapsed,
     onToggleSidebar,
@@ -186,7 +184,6 @@ export default function UserManagementView({
 
             {/* Table Section */}
             <div className="table-card">
-                {error && <div className="error-banner">{error}</div>}
                 <table className={`admin-table ${loading ? 'table-loading' : ''}`}>
                     <thead>
                         <tr>

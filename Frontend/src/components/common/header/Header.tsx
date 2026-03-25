@@ -56,7 +56,7 @@ export default function Header() {
   }
 
   return (
-    <HeaderView 
+    <HeaderView
       userAvatar={userAvatar}
       userName={userName}
       currentPath={location.pathname}

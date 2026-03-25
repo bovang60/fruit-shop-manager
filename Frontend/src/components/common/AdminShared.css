@@ -398,6 +398,191 @@
     box-shadow: 0 0 0 4px rgba(0, 167, 111, 0.08);
 }
 
+/* ─── Admin Frame Profile Dropdown (af-*) ─── */
+
+.af-profile-container {
+    position: relative;
+}
+
+.af-avatar-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 167, 111, 0.25);
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    background: #dbf6e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, transform 0.15s;
+    box-shadow: 0 0 0 4px rgba(0, 167, 111, 0.08);
+    flex-shrink: 0;
+}
+
+.af-avatar-btn:hover {
+    border-color: #00a76f;
+    transform: scale(1.06);
+}
+
+.af-avatar-btn:active {
+    transform: scale(0.95);
+}
+
+.af-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.af-avatar-fallback {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00a76f, #007b55);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dropdown menu */
+.af-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 240px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(145, 158, 171, 0.16);
+    overflow: hidden;
+    z-index: 9999;
+    animation: af-dropdown-in 0.15s ease-out;
+}
+
+@keyframes af-dropdown-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* User info header */
+.af-dropdown-header {
+    padding: 14px 16px 12px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.af-dropdown-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.af-dropdown-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.af-dropdown-avatar-fallback {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00a76f, #007b55);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.af-dropdown-user-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.af-dropdown-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.af-dropdown-email {
+    font-size: 0.75rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.af-dropdown-role-badge {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 2px 10px;
+    border-radius: 9999px;
+}
+
+/* Divider */
+.af-dropdown-divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 4px 0;
+}
+
+/* Items */
+.af-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #334155;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.af-dropdown-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.af-dropdown-item-danger {
+    color: #dc2626;
+}
+
+.af-dropdown-item-danger:hover {
+    background: rgba(220, 38, 38, 0.07);
+    color: #dc2626;
+}
+
 .page-header-content {
     padding: 1.25rem 2.5rem 0;
     /* Further reduced top padding to 1.25rem (20px) */

@@ -31,17 +31,10 @@ interface MonthlyPoint {
     y: number
 }
 
-interface CancelPoint {
-    day: string
-    total: number
-    cancelled: number
-}
-
 interface Props {
     stats: Stat[]
     sellers: Seller[]
     monthlyOrders: MonthlyPoint[]
-    cancelRateData: CancelPoint[]
     isLoading: boolean
     isSidebarCollapsed: boolean
     onToggleSidebar: () => void
@@ -51,18 +44,30 @@ export default function AdminDashboardView({
     stats,
     sellers,
     monthlyOrders,
-    cancelRateData,
     isLoading,
     isSidebarCollapsed,
     onToggleSidebar
 }: Props) {
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-    const [hoverBarIdx, setHoverBarIdx] = useState<number | null>(null);
+
+    const maxVal = monthlyOrders.length > 0 
+        ? Math.max(...monthlyOrders.map(o => {
+            const num = parseFloat(o.value.replace(/[^0-9.]/g, ''));
+            return isNaN(num) ? 0 : num;
+          }))
+        : 1000;
+
+    const yLabels = [
+        `${(maxVal * 1.5 / 1000).toFixed(0)}k`,
+        `${(maxVal * 1.0 / 1000).toFixed(0)}k`,
+        `${(maxVal * 0.5 / 1000).toFixed(0)}k`,
+        '0k'
+    ];
 
     if (isLoading) {
         return (
             <div className="admin-dashboard-root" style={{ alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-                <p style={{ fontWeight: 700, color: '#00a76f' }}>Loading Dashboard Data...</p>
+                <p style={{ fontWeight: 700, color: '#00a76f' }}>Đang tải dữ liệu...</p>
             </div>
         )
     }
@@ -74,20 +79,17 @@ export default function AdminDashboardView({
             onToggleSidebar={onToggleSidebar}
         >
             <div className="page-header-content">
-                <h1>Dashboard</h1>
-                <p>Welcome back, Admin. Real-time insights for your business.</p>
+                <h1>Bảng điều khiển</h1>
+                <p>Chào mừng trở lại! Đây là dữ liệu thống kê hệ thống của bạn.</p>
             </div>
 
                     {/* Stat Cards Grid */}
                     <div className="modern-stats-grid">
                         {stats.map(s => (
                             <div key={s.id} className="modern-stat-card">
-                                <div className="stat-card-info">
+                                <div className="stat-card-info" style={{ flex: 1 }}>
                                     <p className="stat-card-label">{s.label}</p>
                                     <h3 className="stat-card-value">{s.value}</h3>
-                                    <p style={{ fontSize: '0.75rem', fontWeight: 700, marginTop: '4px' }}>
-                                        <span style={{ color: s.trendDir === 'up' ? '#5ce444' : '#ef4444' }}>{s.trend}</span> vs last month
-                                    </p>
                                 </div>
                                 <div className="stat-card-icon" style={s.color ? { color: s.color, backgroundColor: `${s.color}14` } : {}}>
                                     <span className="material-symbols-outlined">{s.icon}</span>
@@ -97,42 +99,62 @@ export default function AdminDashboardView({
                     </div>
 
                     {/* Middle Section: Revenue Overview and Top Seller */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', padding: '0 2.5rem 1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', padding: '0 2.5rem 1.5rem' }}>
                         {/* Revenue Overview */}
                         <div className="card-with-header overview-card">
                             <div className="card-header-row" style={{ padding: '1.5rem 1.5rem 0' }}>
                                 <div className="card-title-group">
-                                    <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Orders per Month</h3>
+                                    <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Xu hướng doanh thu (7 ngày qua)</h3>
                                 </div>
                             </div>
-                            <div className="overview-chart-container" style={{ padding: '0 1.5rem 1.5rem' }}>
-                                <div className="weekly-revenue-svg-container" style={{ height: '220px', position: 'relative', marginTop: '1rem' }}>
+                            <div className="overview-chart-container" style={{ padding: '0 1.5rem 1.5rem 2.5rem' }}>
+                                <div className="weekly-revenue-svg-container" style={{ height: '220px', position: 'relative', marginTop: '1.5rem' }}>
+                                    {/* Y-Axis Labels */}
+                                    <div style={{ position: 'absolute', left: '-45px', top: 0, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.65rem', fontWeight: 700, textAlign: 'right', width: '35px' }}>
+                                        {yLabels.map((lbl, i) => <span key={i}>{lbl}</span>)}
+                                    </div>
+
                                     <svg width="100%" height="100%" viewBox="0 0 800 220" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
                                         <defs>
                                             <linearGradient id="areaGradBlue" x1="0" x2="0" y1="0" y2="1">
-                                                <stop offset="0%" stopColor="#00b8d9" stopOpacity="0.3" />
-                                                <stop offset="100%" stopColor="#00b8d9" stopOpacity="0" />
+                                                <stop offset="0%" stopColor="#2563eb" stopOpacity="0.2" />
+                                                <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
                                             </linearGradient>
                                         </defs>
 
-                                        <path d={`M0,${monthlyOrders[0].y} Q40,170 72,${monthlyOrders[1].y} T144,${monthlyOrders[2].y} T216,${monthlyOrders[3].y} T288,${monthlyOrders[4].y} T360,${monthlyOrders[5].y} T432,${monthlyOrders[6].y} T504,${monthlyOrders[7].y} T576,${monthlyOrders[8].y} T648,${monthlyOrders[9].y} T720,${monthlyOrders[10].y} T800,${monthlyOrders[11].y} V220 H0 Z`} fill="url(#areaGradBlue)" />
-                                        <path d={`M0,${monthlyOrders[0].y} Q40,170 72,${monthlyOrders[1].y} T144,${monthlyOrders[2].y} T216,${monthlyOrders[3].y} T288,${monthlyOrders[4].y} T360,${monthlyOrders[5].y} T432,${monthlyOrders[6].y} T504,${monthlyOrders[7].y} T576,${monthlyOrders[8].y} T648,${monthlyOrders[9].y} T720,${monthlyOrders[10].y} T800,${monthlyOrders[11].y}`} fill="none" stroke="#2563eb" strokeWidth="3" />
+                                        {/* Grid Lines */}
+                                        <line x1="0" y1="0" x2="800" y2="0" stroke="#f1f5f9" strokeDasharray="4 4" />
+                                        <line x1="0" y1="73" x2="800" y2="73" stroke="#f1f5f9" strokeDasharray="4 4" />
+                                        <line x1="0" y1="146" x2="800" y2="146" stroke="#f1f5f9" strokeDasharray="4 4" />
+                                        <line x1="0" y1="220" x2="800" y2="220" stroke="#f1f5f9" />
 
-                                        {monthlyOrders.map((pt, i) => (
-                                            <g key={i} onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(null)}>
-                                                <circle cx={pt.x} cy={pt.y} r={hoverIdx === i ? 6 : 4} fill="#2563eb" stroke="#fff" strokeWidth="2" style={{ transition: 'all 0.2s', cursor: 'pointer' }} />
-                                                {hoverIdx === i && (
-                                                    <foreignObject x={pt.x - 40} y={pt.y - 45} width="80" height="25">
-                                                        <div style={{ background: '#1e293b', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', textAlign: 'center' }}>
-                                                            {pt.value}
-                                                        </div>
-                                                    </foreignObject>
-                                                )}
-                                            </g>
-                                        ))}
+                                        {monthlyOrders.map((pt, i) => {
+                                            const barWidth = 35;
+                                            return (
+                                                <g key={i} onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(null)}>
+                                                    <rect 
+                                                        x={pt.x - barWidth/2} 
+                                                        y={pt.y} 
+                                                        width={barWidth} 
+                                                        height={220 - pt.y} 
+                                                        fill={hoverIdx === i ? '#1e40af' : '#2563eb'} 
+                                                        rx="4" 
+                                                        ry="4"
+                                                        style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', cursor: 'pointer' }}
+                                                    />
+                                                    {hoverIdx === i && (
+                                                        <foreignObject x={pt.x - 40} y={pt.y - 35} width="80" height="25">
+                                                            <div style={{ background: '#1e293b', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                                                                {pt.value}
+                                                            </div>
+                                                        </foreignObject>
+                                                    )}
+                                                </g>
+                                            )
+                                        })}
                                     </svg>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.65rem', fontWeight: 700, padding: '0 4px', marginTop: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.65rem', fontWeight: 700, padding: '0 4px', marginTop: '1.25rem' }}>
                                     {monthlyOrders.map((pt, i) => (
                                         <span
                                             key={i}
@@ -151,23 +173,19 @@ export default function AdminDashboardView({
                         <div className="card-with-header overview-card">
                             <div className="card-header-row" style={{ padding: '1.5rem 1.5rem 0' }}>
                                 <div className="card-title-group">
-                                    <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Top Seller</h3>
+                                    <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Cửa hàng hàng đầu</h3>
                                 </div>
                             </div>
                             <div className="seller-list-modern" style={{ padding: '0 1.5rem 1.5rem' }}>
                                 {sellers.map((seller) => (
                                     <div key={seller.id} className="seller-item-modern">
-                                        <div className="seller-avatar-square" style={{ backgroundImage: `url(${seller.img})`, borderRadius: '50%' }}></div>
+                                        <div className="seller-avatar-square" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e6ffed', borderRadius: '12px' }}>
+                                            <span className="material-symbols-outlined" style={{ color: '#00a76f', fontSize: '20px' }}>storefront</span>
+                                        </div>
                                         <div className="seller-info-col">
-                                            <div className="seller-name-row">
+                                            <div className="seller-name-row" style={{ alignItems: 'center' }}>
                                                 <span className="seller-name-text">{seller.name}</span>
                                                 <span className="seller-revenue-text">{seller.revenue}</span>
-                                            </div>
-                                            <div className="seller-stats-row">
-                                                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>{seller.orders}</span>
-                                                <span className={`seller-trend-text up`}>
-                                                    +{seller.trend}
-                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -176,77 +194,6 @@ export default function AdminDashboardView({
                         </div>
                     </div>
 
-                    {/* Bottom Section: Profit vs Expenses Full Width */}
-                    <div style={{ padding: '0 2.5rem 2.5rem' }}>
-                        <div className="card-with-header overview-card">
-                            <div className="card-header-row" style={{ padding: '1.5rem 1.5rem 0' }}>
-                                <div className="card-title-group">
-                                    <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Cancel Rate per Month</h3>
-                                </div>
-                            </div>
-                            <div className="overview-chart-container" style={{ padding: '1.5rem' }}>
-                                <div className="daily-orders-bars" style={{ height: '220px', alignItems: 'flex-end', gap: '12px', position: 'relative' }}>
-                                    {cancelRateData.map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            style={{
-                                                flex: 1,
-                                                display: 'flex',
-                                                gap: '3px',
-                                                height: '100%',
-                                                alignItems: 'flex-end',
-                                                position: 'relative',
-                                                cursor: 'pointer'
-                                            }}
-                                            onMouseEnter={() => setHoverBarIdx(idx)}
-                                            onMouseLeave={() => setHoverBarIdx(null)}
-                                        >
-                                            <div style={{ flex: 1, background: '#2563eb', height: `${(item.total / 100) * 100}%`, borderRadius: '3px', transition: 'all 0.3s', opacity: hoverBarIdx !== null && hoverBarIdx !== idx ? 0.3 : 1 }}></div>
-                                            <div style={{ flex: 1, background: '#ef4444', height: `${(item.cancelled / 100) * 100}%`, borderRadius: '3px', transition: 'all 0.3s', opacity: hoverBarIdx !== null && hoverBarIdx !== idx ? 0.3 : 1 }}></div>
-
-                                            {hoverBarIdx === idx && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: '-65px',
-                                                    left: '50%',
-                                                    transform: 'translateX(-50%)',
-                                                    background: '#1e293b',
-                                                    color: 'white',
-                                                    padding: '8px 12px',
-                                                    borderRadius: '6px',
-                                                    fontSize: '11px',
-                                                    zIndex: 10,
-                                                    minWidth: '100px',
-                                                    textAlign: 'center',
-                                                    boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
-                                                    pointerEvents: 'none'
-                                                }}>
-                                                    <div style={{ fontWeight: 800, marginBottom: '2px' }}>{item.day}</div>
-                                                    <div style={{ color: '#60a5fa' }}>Total: {item.total}</div>
-                                                    <div style={{ color: '#f87171' }}>Cancelled: {item.cancelled}</div>
-                                                    <div style={{ borderTop: '1px solid #334155', marginTop: '4px', paddingTop: '2px', color: '#fbbf24' }}>
-                                                        Rate: {((item.cancelled / item.total) * 100).toFixed(1)}%
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.65rem', fontWeight: 700, marginTop: '1rem' }}>
-                                    {cancelRateData.map((item, idx) => (
-                                        <span
-                                            key={idx}
-                                            onMouseEnter={() => setHoverBarIdx(idx)}
-                                            onMouseLeave={() => setHoverBarIdx(null)}
-                                            style={{ flex: 1, textAlign: 'center', cursor: 'pointer', transition: 'color 0.2s', color: hoverBarIdx === idx ? '#2563eb' : '#94a3b8' }}
-                                        >
-                                            {item.day}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                    </div>
-                </div>
         </AdminFrame>
     )
 }

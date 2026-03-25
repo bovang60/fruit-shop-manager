@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { getUserFromStorage } from '../../../services/authService';
 import './AdminFrame.css';
 
 export interface NavItem {
@@ -11,10 +12,10 @@ export interface NavItem {
 }
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [
-    { to: '/admin-dashboard', label: 'Global Overview', icon: 'dashboard', title: 'Global Overview' },
-    { to: '/user-management', label: 'User Management', icon: 'person_search', title: 'User Management' },
-    { to: '/shop-management', label: 'Shop Management', icon: 'verified', title: 'Shop Management' },
-    { to: '/category-management', label: 'Category Management', icon: 'category', title: 'Category Management' },
+    { to: '/admin-dashboard', label: 'Tổng quan', icon: 'dashboard', title: 'Tổng quan hệ thống' },
+    { to: '/user-management', label: 'Quản lý người dùng', icon: 'person_search', title: 'Quản lý người dùng' },
+    { to: '/shop-management', label: 'Phê duyệt Shop', icon: 'verified', title: 'Quản lý cửa hàng' },
+    { to: '/category-management', label: 'Quản lý danh mục', icon: 'category', title: 'Danh mục trái cây' },
 ];
 
 interface AdminFrameProps {
@@ -43,13 +44,47 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
     modalContent
 }) => {
     const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const profileRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
-    
+    const navigate = useNavigate();
+    const user = getUserFromStorage();
+
     const isSidebarCollapsed = controlledIsCollapsed !== undefined ? controlledIsCollapsed : internalIsCollapsed;
     const onToggleSidebar = controlledToggle || (() => setInternalIsCollapsed(!internalIsCollapsed));
 
-    // Determine active path: either from props or from current location
     const currentPath = activePath || location.pathname;
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+            }
+        }
+        if (isProfileOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [isProfileOpen]);
+
+    const handleProfileClick = () => {
+        setIsProfileOpen(false);
+        navigate('/admin-profile');
+    };
+
+    const handleLogout = () => {
+        setIsProfileOpen(false);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        navigate(logoutTo);
+    };
+
+    const userName = user?.fullName || 'Admin';
+    const userEmail = user?.email || '';
+    const userRole = user?.role || 'ADMIN';
+    const userAvatar = user?.image || '';
+    const initials = userName.charAt(0).toUpperCase() || userInitials;
 
     return (
         <>
@@ -103,7 +138,71 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
                             </button>
                         </div>
                         <div className="header-actions-right">
-                            <div className="user-avatar-circle">{userInitials}</div>
+                            {/* Profile Dropdown */}
+                            <div className="af-profile-container" ref={profileRef}>
+                                <button
+                                    className="af-avatar-btn"
+                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                    aria-label="User menu"
+                                    aria-expanded={isProfileOpen}
+                                    title={userName}
+                                >
+                                    {userAvatar ? (
+                                        <img
+                                            src={userAvatar}
+                                            alt={userName}
+                                            className="af-avatar-img"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                const fb = e.currentTarget.nextElementSibling as HTMLElement;
+                                                if (fb) fb.style.display = 'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div
+                                        className="af-avatar-fallback"
+                                        style={{ display: userAvatar ? 'none' : 'flex' }}
+                                    >
+                                        {initials}
+                                    </div>
+                                </button>
+
+                                {isProfileOpen && (
+                                    <div className="af-dropdown-menu">
+                                        {/* User info header */}
+                                        <div className="af-dropdown-header">
+                                            <div className="af-dropdown-avatar-row">
+                                                {userAvatar ? (
+                                                    <img src={userAvatar} alt={userName} className="af-dropdown-avatar-img" />
+                                                ) : (
+                                                    <div className="af-dropdown-avatar-fallback">{initials}</div>
+                                                )}
+                                                <div className="af-dropdown-user-info">
+                                                    <div className="af-dropdown-name">{userName}</div>
+                                                    <div className="af-dropdown-email">{userEmail}</div>
+                                                </div>
+                                            </div>
+                                            {userRole && (
+                                                <div className="af-dropdown-role-badge">{userRole}</div>
+                                            )}
+                                        </div>
+
+                                        <div className="af-dropdown-divider"></div>
+
+                                        <button className="af-dropdown-item" onClick={handleProfileClick}>
+                                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person</span>
+                                            <span>Xem hồ sơ</span>
+                                        </button>
+
+                                        <div className="af-dropdown-divider"></div>
+
+                                        <button className="af-dropdown-item af-dropdown-item-danger" onClick={handleLogout}>
+                                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>logout</span>
+                                            <span>Đăng xuất</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </header>
 
@@ -120,3 +219,4 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
 
 export default AdminFrame;
 export { AdminFrame };
+

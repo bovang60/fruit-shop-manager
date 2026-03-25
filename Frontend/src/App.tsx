@@ -10,6 +10,7 @@ import ShopManagement from './components/shop-management/ShopManagement'
 import UserManagement from './components/user-management/UserManagement'
 import Profile from './components/profile/Profile'
 import ShopRegistration from './components/shop-registration/ShopRegistration'
+import AdminProfilePage from './components/admin-profile/AdminProfile'
 import { PopupProvider } from './components/common/popup'
 import ProtectedRoute from './components/common/protected-route/ProtectedRoute'
 import './App.css'
@@ -30,6 +31,7 @@ function App() {
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
+          <Route path="/admin-profile" element={<ProtectedRoute requiredRole="ADMIN"><AdminProfilePage /></ProtectedRoute>} />
 
           {/* Admin Routes - Required ADMIN role */}
           <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
