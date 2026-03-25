@@ -34,6 +34,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "http://localhost:5173", // Vite dev server
+                        "http://localhost:5174", // Vite alternative port
+                        "http://localhost:5175", // Vite alternative port 2
                         "http://localhost:3000", // React dev server
                         "http://localhost:4200" // Angular dev server
                 )

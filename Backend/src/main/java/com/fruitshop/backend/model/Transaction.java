@@ -27,7 +27,7 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Column(name = "transaction_code")
     private String transactionCode;
@@ -40,6 +40,6 @@ public class Transaction {
     }
 
     public enum PaymentStatus {
-        PENDING, SUCCESS, FAILED
+        UNPAID, PAID, FAILED
     }
 }
