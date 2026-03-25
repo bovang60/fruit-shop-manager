@@ -16,7 +16,7 @@ public class DashboardDto {
     // KPI Cards
     private long activeUsers;
     private long totalOrders;
-    private double conversionRate;
+    private double cancellationRate;
     private BigDecimal totalRevenue;
     
     private long totalActiveSellers;

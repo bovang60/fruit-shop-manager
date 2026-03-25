@@ -37,18 +37,18 @@ public class DashboardServiceImpl implements DashboardService {
         long activeSellers = shopRepository.countByStatus(Shop.ShopStatus.APPROVED);
         long pendingApprovals = shopRepository.countByStatus(Shop.ShopStatus.PENDING);
 
-        // Conversion Rate: Total Orders / Total Users (Basic formula)
-        double conversionRate = (totalUsers > 0) ? ((double) totalOrders / totalUsers) * 100.0 : 0.0;
+        long canceledOrders = orderRepository.countByStatus(Order.OrderStatus.CANCELLED);
+        double cancellationRate = (totalOrders > 0) ? ((double) canceledOrders / totalOrders) * 100.0 : 0.0;
 
         DashboardDto dashboard = DashboardDto.builder()
                 .activeUsers(activeUsers)
                 .totalOrders(totalOrders)
-                .conversionRate(Math.round(conversionRate * 100.0) / 100.0)
+                .cancellationRate(Math.round(cancellationRate * 100.0) / 100.0)
                 .totalRevenue(totalRevenue)
                 .totalActiveSellers(activeSellers)
                 .pendingShopApprovals(pendingApprovals)
                 .ordersByMonth(orderRepository.countOrdersByMonth())
-                .topSellers(orderRepository.findTopSellersByQuantity(PageRequest.of(0, 5)))
+                .topSellers(orderRepository.findTopSellersByRevenue(PageRequest.of(0, 5)))
                 .shopPerformanceMonthly(orderRepository.findMonthlyPerformance())
                 .build();
 
