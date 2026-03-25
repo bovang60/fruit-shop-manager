@@ -10,6 +10,7 @@ import com.fruitshop.backend.dto.UpdateProfileDto;
 import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
 import com.fruitshop.backend.model.User;
+import com.fruitshop.backend.service.FileStorageService;
 import com.fruitshop.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final FileStorageService fileStorageService;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<UserDto>> login(@Valid @RequestBody LoginDto loginDto) {
@@ -104,5 +109,46 @@ public class UserController {
             @Valid @RequestBody ResetPasswordDto resetPasswordDto) {
         ApiResponse<String> response = userService.resetPassword(resetPasswordDto);
         return ResponseEntity.ok(response);
+    }
+
+    // Upload avatar
+    @PostMapping("/{id}/avatar")
+    public ResponseEntity<ApiResponse<UserDto>> uploadAvatar(
+            @PathVariable("id") Integer userId,
+            @RequestParam("image") MultipartFile imageFile) {
+
+        try {
+            // 1. File validation - Check if file is empty
+            if (imageFile.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("No image file provided."));
+            }
+
+            // 2. Check file type
+            String contentType = imageFile.getContentType();
+            if (!fileStorageService.isValidImageType(contentType)) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid file type. Only images (PNG, JPG, GIF) are allowed."));
+            }
+
+            // 3. Check file size (5MB = 5 * 1024 * 1024 bytes)
+            long maxFileSize = 5 * 1024 * 1024; // 5MB
+            if (imageFile.getSize() > maxFileSize) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("File size exceeds limit. Maximum 5MB allowed."));
+            }
+
+            // 4. Store file
+            String imageUrl = fileStorageService.storeFile(imageFile, "avatars", userId);
+
+            // 5. Update user in database
+            ApiResponse<UserDto> response = userService.updateUserAvatar(userId, imageUrl);
+
+            return ResponseEntity.ok(response);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Failed to upload image. Please try again later."));
+        }
     }
 }

@@ -26,7 +26,7 @@ public class ProductServiceImpl implements ProductService {
             Integer page,
             Integer pageSize,
             String search,
-            String category,
+            Integer categoryId,
             BigDecimal minPrice,
             BigDecimal maxPrice,
             String origin,
@@ -56,8 +56,8 @@ public class ProductServiceImpl implements ProductService {
             // Search products
             Page<Product> productPage = productRepository.searchProducts(
                     search,
-                    null, // categoryId - can be added later
-                    category,
+                    categoryId,
+                    null, // categoryName - not used, filtering by ID
                     minPrice,
                     maxPrice,
                     originEnum,
@@ -82,8 +82,8 @@ public class ProductServiceImpl implements ProductService {
             Map<String, Object> appliedFilters = new HashMap<>();
             if (search != null)
                 appliedFilters.put("search", search);
-            if (category != null)
-                appliedFilters.put("category", category);
+            if (categoryId != null)
+                appliedFilters.put("categoryId", categoryId);
             if (minPrice != null)
                 appliedFilters.put("minPrice", minPrice);
             if (maxPrice != null)
