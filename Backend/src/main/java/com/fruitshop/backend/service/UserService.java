@@ -32,6 +32,9 @@ public interface UserService {
 
     ApiResponse<String> changePassword(Integer userId, ChangePasswordDto changePasswordDto);
 
+    // Avatar upload
+    ApiResponse<UserDto> updateUserAvatar(Integer userId, String imageUrl);
+
     // Forgot password (2 steps with OTP verification)
     ApiResponse<String> requestForgotPassword(RequestForgotPasswordDto requestForgotPasswordDto);
 
