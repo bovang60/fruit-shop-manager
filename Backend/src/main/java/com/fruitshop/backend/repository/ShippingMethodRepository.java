@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ShippingMethodRepository extends JpaRepository<ShippingMethod, Integer> {
+    java.util.List<ShippingMethod> findByIsAvailableTrue();
 }

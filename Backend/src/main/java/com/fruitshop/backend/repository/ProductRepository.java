@@ -1,18 +1,25 @@
 package com.fruitshop.backend.repository;
 
 import com.fruitshop.backend.model.Product;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.productId = :productId")
+    Optional<Product> findByIdForUpdate(@Param("productId") Integer productId);
 
     // Search and filter products
     @Query("SELECT p FROM Product p LEFT JOIN p.category c WHERE " +

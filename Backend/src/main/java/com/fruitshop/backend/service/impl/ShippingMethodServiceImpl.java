@@ -19,7 +19,7 @@ public class ShippingMethodServiceImpl implements ShippingMethodService {
 
     @Override
     public ApiResponse<List<ShippingMethodDto>> getAllShippingMethods() {
-        List<ShippingMethod> methods = shippingMethodRepository.findAll();
+        List<ShippingMethod> methods = shippingMethodRepository.findByIsAvailableTrue();
         List<ShippingMethodDto> dtos = methods.stream().map(this::convertToDto).collect(Collectors.toList());
         return ApiResponse.success("Lấy danh sách phương thức vận chuyển thành công", dtos);
     }
