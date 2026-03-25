@@ -18,9 +18,8 @@ public class CartController {
 
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<CartDto>> addToCart(
-            @RequestHeader("userId") Integer userId,
             @Valid @RequestBody AddToCartRequestDto dto) {
-        ApiResponse<CartDto> response = cartService.addToCart(userId, dto);
+        ApiResponse<CartDto> response = cartService.addToCart(dto);
         return ResponseEntity.ok(response);
     }
 
