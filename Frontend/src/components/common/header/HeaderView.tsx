@@ -85,8 +85,8 @@ export default function HeaderView({ userAvatar, userName, currentPath, onNaviga
             aria-expanded={isDropdownOpen}
           >
             {userAvatar ? (
-              <img 
-                src={userAvatar} 
+              <img
+                src={userAvatar}
                 alt={userName}
                 className="profile-avatar-image"
                 onError={(e) => {
@@ -97,9 +97,9 @@ export default function HeaderView({ userAvatar, userName, currentPath, onNaviga
                 }}
               />
             ) : null}
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 24 24" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
               fill="currentColor"
               className="profile-icon"
               style={{ display: userAvatar ? 'none' : 'block' }}
