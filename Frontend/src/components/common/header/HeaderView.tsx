@@ -48,7 +48,7 @@ export default function HeaderView({ userAvatar, userName, currentPath, onNaviga
 
   return (
     <header className="site-header">
-      <div className="brand">Fruit Shop Manager</div>
+      <div className="brand">Trái cây tươi</div>
       <nav className="nav-tabs">
         <button
           className={`tab${currentPath === '/home' ? ' active' : ''}`}
