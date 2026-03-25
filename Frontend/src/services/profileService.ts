@@ -39,7 +39,7 @@ export async function getUserProfile(
     console.error("Error fetching user profile:", error);
     return {
       resultCd: 1,
-      message: "Failed to fetch profile. Please try again.",
+      message: "Không thể tải thông tin. Vui lòng thử lại.",
       data: null,
     };
   }
@@ -77,7 +77,7 @@ export async function updateUserProfile(
     console.error("Error updating profile:", error);
     return {
       resultCd: 1,
-      message: "Failed to update profile. Please try again.",
+      message: "Không thể cập nhật thông tin. Vui lòng thử lại.",
       data: null,
     };
   }

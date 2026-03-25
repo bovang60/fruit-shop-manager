@@ -57,7 +57,7 @@ const ShopRegistrationView: React.FC<Props> = ({
             <header className="registration-header">
                 <div className="header-brand">
                     <div className="brand" style={{ fontWeight: 700, fontSize: '1.25rem', color: '#212b36' }}>
-                        Fruit Shop Manager
+                        Trái cây tươi
                     </div>
                     <div className="header-title">Đăng ký trở thành Người bán</div>
                 </div>

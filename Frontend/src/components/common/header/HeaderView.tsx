@@ -53,7 +53,7 @@ export default function HeaderView({ onNavigateToProfile, onLogout, onNavigateTo
 
   return (
     <header className="site-header">
-      <div className="brand">Fruit Shop Manager</div>
+      <div className="brand">Trái cây tươi</div>
       <nav className="nav-tabs">
 <<<<<<< HEAD
         <button
