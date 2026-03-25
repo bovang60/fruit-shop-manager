@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { SortConfig } from './CategoryManagement';
 import { AdminFrame, ADMIN_NAV_ITEMS } from '../common/admin-frame';
@@ -90,10 +90,10 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                 <nav className="breadcrumbs-modern">
                     <Link to="/admin-dashboard">Dashboard</Link>
                     <span className="material-symbols-outlined">chevron_right</span>
-                    <span className="current">Category Management</span>
+                    <span className="current">Quản Lý Danh Mục</span>
                 </nav>
-                <h1>Category Management</h1>
-                <p>Manage the global taxonomy for the fruit marketplace.</p>
+                <h1>Quản Lý Danh Mục</h1>
+                <p>Quản lý phân loại danh mục cho thị trường trái cây.</p>
             </div>
 
             <div className="management-filter-section">
@@ -102,7 +102,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                         <span className="material-symbols-outlined">search</span>
                         <input
                             type="text"
-                            placeholder="Search categories by name..."
+                            placeholder="Tìm kiếm danh mục theo tên..."
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
@@ -115,9 +115,9 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                                 onChange={(e) => onStatusFilterChange(e.target.value)}
                                 className="modern-filter-select"
                             >
-                                <option value="">All Statuses</option>
-                                <option value="ACTIVE">Status: Active</option>
-                                <option value="INACTIVE">Status: Inactive</option>
+                                <option value="">Tất Cả Trạng Thái</option>
+                                <option value="ACTIVE">Trạng Thái: Đang Hoạt Động</option>
+                                <option value="INACTIVE">Trạng Thái: Ngừng Hoạt Động</option>
                             </select>
                             <span className="material-symbols-outlined select-arrow">expand_more</span>
                         </div>
@@ -125,7 +125,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
 
                     <button className="btn-primary-admin" onClick={() => setViewMode('CREATE')}>
                         <span className="material-symbols-outlined">add</span>
-                        Add Category
+                        Thêm Danh Mục
                     </button>
                 </div>
             </div>
@@ -136,32 +136,32 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                         <tr>
                             <th onClick={() => onSort('name')} style={{ cursor: 'pointer' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Category Name {renderSortIcon('name')}
+                                    Tên Danh Mục {renderSortIcon('name')}
                                 </div>
                             </th>
                             <th onClick={() => onSort('productCount')} style={{ cursor: 'pointer' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Product Count {renderSortIcon('productCount')}
+                                    Số Sản Phẩm {renderSortIcon('productCount')}
                                 </div>
                             </th>
-                            <th>Status</th>
+                            <th>Trạng Thái</th>
                             <th style={{ textAlign: 'center', width: '120px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>Loading categories...</td>
+                                <td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>Đang tải...</td>
                             </tr>
                         ) : categories.length === 0 ? (
                             <tr>
-                                <td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>No categories found.</td>
+                                <td colSpan={4} style={{ textAlign: 'center', padding: '2rem' }}>Không tìm thấy danh mục nào.</td>
                             </tr>
                         ) : (
                             categories.map((cat) => (
                                 <tr key={cat.id} style={{ opacity: cat.status === 'Inactive' ? 0.5 : 1 }}>
                                     <td><span style={{ fontWeight: 700 }}>{cat.name}</span></td>
-                                    <td>{cat.productCount} Items</td>
+                                    <td>{cat.productCount} sản phẩm</td>
                                     <td>
                                         <span className={`status-chip status-${cat.status.toLowerCase()}`}>
                                             {cat.status}
@@ -190,7 +190,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                 </table>
                 <div className="table-footer">
                     <p className="footer-stats">
-                        Showing {categories.length} of {totalElements} categories
+                        Hiển thị {categories.length} / {totalElements} danh mục
                     </p>
                     <div className="pagination-group">
                         <button
@@ -229,7 +229,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
         <div className="admin-modal-overlay" onClick={() => setViewMode('LIST')}>
             <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="admin-modal-header">
-                    <h2>Create New Category</h2>
+                    <h2>Tạo Danh Mục Mới</h2>
                     <button className="admin-modal-close-btn" onClick={() => setViewMode('LIST')} title="Close">
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -237,43 +237,43 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
 
                 <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     <div className="info-group">
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>CATEGORY NAME</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>TÊN DANH MỤC</label>
                         <input
                             type="text"
                             className="modern-search-input-wrap"
                             style={{ padding: '0 0.75rem', fontSize: '0.875rem', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', height: '48px', width: '100%' }}
-                            placeholder="e.g. Tropical Fruits"
+                            placeholder="vd: Trái Cây Nhiệt Đới"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                         />
                     </div>
                     <div className="info-group">
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>DESCRIPTION</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>MÔ TẢ</label>
                         <textarea
                             className="modern-search-input-wrap"
                             style={{ padding: '0.75rem', fontSize: '0.875rem', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', minHeight: '120px', width: '100%', resize: 'vertical', display: 'block' }}
-                            placeholder="Write a brief description of this category..."
+                            placeholder="Viết mô tả ngắn cho danh mục này..."
                             value={newDescription}
                             onChange={(e) => setNewDescription(e.target.value)}
                         />
                     </div>
                     <div className="info-group">
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>STATUS</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>TRẠNG THÁI</label>
                         <select
                             className="modern-search-input-wrap"
                             style={{ padding: '0 0.75rem', fontSize: '0.875rem', appearance: 'auto', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', height: '48px', width: '100%' }}
                             value={newStatus}
                             onChange={(e) => setNewStatus(e.target.value as 'Active' | 'Inactive')}
                         >
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
+                            <option value="Active">Đang Hoạt Động</option>
+                            <option value="Inactive">Ngừng Hoạt Động</option>
                         </select>
                     </div>
                 </div>
 
                 <div className="admin-modal-footer">
-                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Cancel</button>
-                    <button className="btn-status-toggle is-activate" onClick={() => onSave({ name: newName, status: newStatus, description: newDescription })}>Save Category</button>
+                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Hủy</button>
+                    <button className="btn-status-toggle is-activate" onClick={() => onSave({ name: newName, status: newStatus, description: newDescription })}>Lưu Danh Mục</button>
                 </div>
             </div>
         </div>
@@ -283,7 +283,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
         <div className="admin-modal-overlay" onClick={() => setViewMode('LIST')}>
             <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="admin-modal-header">
-                    <h2>Edit Category</h2>
+                    <h2>Chỉnh Sửa Danh Mục</h2>
                     <button className="admin-modal-close-btn" onClick={() => setViewMode('LIST')} title="Close">
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -291,42 +291,42 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
 
                 <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     <div className="info-group">
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>CATEGORY NAME</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>TÊN DANH MỤC</label>
                         <input
                             type="text"
                             className="modern-search-input-wrap"
                             style={{ padding: '0 0.75rem', fontSize: '0.875rem', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', height: '48px', width: '100%' }}
-                            placeholder="e.g. Tropical Fruits"
+                            placeholder="vd: Trái Cây Nhiệt Đới"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                         />
                     </div>
                     <div className="info-group">
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>DESCRIPTION</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>MÔ TẢ</label>
                         <textarea
                             className="modern-search-input-wrap"
                             style={{ padding: '0.75rem', fontSize: '0.875rem', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', minHeight: '120px', width: '100%', resize: 'vertical', display: 'block' }}
-                            placeholder="Write a brief description of this category..."
+                            placeholder="Viết mô tả ngắn cho danh mục này..."
                             value={newDescription}
                             onChange={(e) => setNewDescription(e.target.value)}
                         />
                     </div>
                     <div className="info-group">
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>STATUS</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#637381', fontSize: '0.75rem' }}>TRẠNG THÁI</label>
                         <select
                             className="modern-search-input-wrap"
                             style={{ padding: '0 0.75rem', fontSize: '0.875rem', appearance: 'auto', background: '#f4f6f8', border: '1px solid transparent', borderRadius: '10px', height: '48px', width: '100%' }}
                             value={newStatus}
                             onChange={(e) => setNewStatus(e.target.value as 'Active' | 'Inactive')}
                         >
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
+                            <option value="Active">Đang Hoạt Động</option>
+                            <option value="Inactive">Ngừng Hoạt Động</option>
                         </select>
                     </div>
                 </div>
 
                 <div className="detail-action-footer">
-                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Cancel</button>
+                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Hủy</button>
                     <button
                         className="btn-status-toggle is-activate"
                         onClick={() => currentCategory && onUpdate(currentCategory.id, { name: newName, status: newStatus, description: newDescription })}

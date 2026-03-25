@@ -40,9 +40,9 @@ export default function ChangePasswordView(props: Props) {
             <div className="hero-icon">
               🔒
             </div>
-            <h1 className="hero-title">Security First</h1>
+            <h1 className="hero-title">Bảo Mật Tài Khoản</h1>
             <p className="hero-subtitle">
-              A strong password ensures your healthy choices remain private and your account stays protected.
+              Mật khẩu mạnh giúp bảo vệ những lựa chọn lành mạnh và giữ an toàn cho tài khoản của bạn.
             </p>
           </div>
           {/* Decorative Elements */}
