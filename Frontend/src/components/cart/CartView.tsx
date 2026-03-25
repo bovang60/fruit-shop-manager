@@ -87,11 +87,11 @@ export default function CartView({
                     >
                       <div className="cart-item-image-wrap">
                         <img
-                          src={item.imageUrl || '/placeholder-fruit.png'}
+                          src={item.imageUrl}
                           alt={item.productName}
                           className="cart-item-image"
                           onError={(e) => {
-                            ;(e.target as HTMLImageElement).src = '/placeholder-fruit.png'
+                            ; (e.target as HTMLImageElement).src = ''
                           }}
                         />
                       </div>
