@@ -190,11 +190,16 @@ export default function OtpVerificationView({
                   style={{
                     width: '3rem',
                     height: '3rem',
+                    padding: 0,
                     textAlign: 'center',
                     fontSize: '1.5rem',
                     fontWeight: 'bold',
                     border: '2px solid #ddd',
                     borderRadius: '8px',
+                    color: '#212b36',
+                    WebkitTextFillColor: '#212b36',
+                    backgroundColor: '#ffffff',
+                    opacity: 1,
                   }}
                   aria-label={`OTP digit ${index + 1}`}
                 />
