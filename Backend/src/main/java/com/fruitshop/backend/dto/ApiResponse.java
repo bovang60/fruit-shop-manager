@@ -27,7 +27,7 @@ public class ApiResponse<T> {
      * @return ApiResponse với resultCd=0, message="Success", data=data
      */
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(0, "Success", data);
+        return new ApiResponse<>(0, "Thành công", data);
     }
 
     /**

@@ -1,7 +1,10 @@
 package com.fruitshop.backend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -10,6 +13,9 @@ import com.fruitshop.backend.model.User;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -33,6 +39,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "http://localhost:5173", // Vite dev server
+                        "http://localhost:5174", // Vite alternative port
+                        "http://localhost:5175", // Vite alternative port 2
                         "http://localhost:3000", // React dev server
                         "http://localhost:4200" // Angular dev server
                 )
@@ -44,7 +52,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Serve uploaded files from /uploads/** URL pattern
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/");
+                .addResourceLocations("file:" + uploadDir + "/")
+                .setCachePeriod(3600); // Cache for 1 hour
     }
 }

@@ -23,6 +23,9 @@ public class Category {
     @Convert(converter = CategoryStatus.CategoryStatusConverter.class)
     private CategoryStatus status = CategoryStatus.ACTIVE;
 
+    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM products p WHERE p.category_id = category_id)")
+    private Long fruitCount;
+
     @OneToMany(mappedBy = "category")
     private List<Fruit> fruits;
 

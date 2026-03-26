@@ -18,6 +18,7 @@ import com.fruitshop.backend.repository.PendingRegistrationRepository;
 import com.fruitshop.backend.repository.ShopRepository;
 import com.fruitshop.backend.repository.UserRepository;
 import com.fruitshop.backend.service.EmailService;
+import com.fruitshop.backend.service.FileStorageService;
 import com.fruitshop.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,9 +38,11 @@ public class UserServiceImpl implements UserService {
     private final PasswordResetOtpRepository passwordResetOtpRepository;
     private final ShopRepository shopRepository;
     private final EmailService emailService;
+    private final FileStorageService fileStorageService;
 
     @Override
-    public ApiResponse<Page<UserDto>> getUsers(String search, User.UserStatus status, User.Role role, Pageable pageable) {
+    public ApiResponse<Page<UserDto>> getUsers(String search, User.UserStatus status, User.Role role,
+            Pageable pageable) {
         Page<User> users;
         User.Role excludeRole = User.Role.ADMIN;
 
@@ -411,6 +414,28 @@ public class UserServiceImpl implements UserService {
                 null);
     }
 
+    @Override
+    @Transactional
+    public ApiResponse<UserDto> updateUserAvatar(Integer userId, String newImageUrl) {
+        User user = userRepository.findById(userId)
+                .orElse(null);
+
+        if (user == null) {
+            return ApiResponse.error("User not found");
+        }
+
+        // Delete old avatar if exists
+        if (user.getImage() != null && !user.getImage().isEmpty()) {
+            fileStorageService.deleteFile(user.getImage());
+        }
+
+        // Update with new image URL
+        user.setImage(newImageUrl);
+        User savedUser = userRepository.save(user);
+
+        return ApiResponse.success("Avatar uploaded successfully", convertToDto(savedUser));
+    }
+
     private UserDto convertToDto(User user) {
         UserDto dto = new UserDto();
         dto.setUserId(user.getUserId());
@@ -418,6 +443,7 @@ public class UserServiceImpl implements UserService {
         dto.setEmail(user.getEmail());
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setAddress(user.getAddress());
+        dto.setImage(user.getImage());
         dto.setRole(user.getRole());
         dto.setStatus(user.getStatus());
         dto.setCreatedAt(user.getCreatedAt());

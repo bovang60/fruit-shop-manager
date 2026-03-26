@@ -11,4 +11,5 @@ public interface CategoryService {
     ApiResponse<CategoryDto> createCategory(CategoryDto categoryDto);
     ApiResponse<CategoryDto> updateCategory(Integer id, CategoryDto categoryDto);
     ApiResponse<CategoryDto> toggleCategoryStatus(Integer id);
+    ApiResponse<CategoryDto> deleteCategory(Integer id);
 }

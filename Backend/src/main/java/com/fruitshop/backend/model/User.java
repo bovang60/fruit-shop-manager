@@ -28,6 +28,9 @@ public class User {
     @Column(name = "address")
     private String address;
 
+    @Column(name = "image")
+    private String image;
+
     @Column(nullable = false)
     @Convert(converter = RoleConverter.class)
     private Role role;

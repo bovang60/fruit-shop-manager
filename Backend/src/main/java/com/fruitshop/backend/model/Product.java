@@ -25,6 +25,10 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "shop_id", nullable = false, foreignKey = @ForeignKey(name = "FK_products_shop"))
+    private Shop shop;
+
     @Column(length = 255)
     private String name;
 

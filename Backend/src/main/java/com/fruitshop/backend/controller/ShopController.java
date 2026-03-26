@@ -49,4 +49,16 @@ public class ShopController {
     public ResponseEntity<ApiResponse<ShopDto>> suspendShop(@PathVariable Integer id) {
         return ResponseEntity.ok(shopService.suspendShop(id));
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<ShopDto>> registerSeller(@Valid @RequestBody com.fruitshop.backend.dto.RegisterShopDto registerShopDto) {
+        return ResponseEntity.ok(shopService.registerSeller(registerShopDto));
+    }
+
+    @GetMapping("/check-name")
+    public ResponseEntity<ApiResponse<Boolean>> checkShopName(@RequestParam String name) {
+        boolean exists = shopService.isShopNameExists(name);
+        String message = exists ? "Tên cửa hàng đã tồn tại" : "Tên cửa hàng có thể sử dụng";
+        return ResponseEntity.ok(ApiResponse.success(message, exists));
+    }
 }

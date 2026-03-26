@@ -17,9 +17,9 @@ public class OrderItem {
     @JoinColumn(name = "order_id", nullable = false, foreignKey = @ForeignKey(name = "FK_order_items_order"))
     private Order order;
 
-    @ManyToOne
-    @JoinColumn(name = "fruit_id", nullable = false, foreignKey = @ForeignKey(name = "FK_order_items_fruit"))
-    private Fruit fruit;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(nullable = false)
     private Integer quantity;
