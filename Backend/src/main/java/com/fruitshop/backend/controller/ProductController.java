@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
+@Slf4j
 public class ProductController {
 
     private final ProductService productService;
@@ -35,16 +37,17 @@ public class ProductController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<ProductListResponseDto>> getProducts(
-            @RequestParam(required = false, defaultValue = "1") Integer page,
-            @RequestParam(required = false, defaultValue = "25") Integer pageSize,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) String origin,
-            @RequestParam(required = false) Boolean organic,
-            @RequestParam(required = false, defaultValue = "popularity") String sortBy,
-            @RequestParam(required = false, defaultValue = "desc") String sortOrder) {
+            @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "25") Integer pageSize,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
+            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(name = "origin", required = false) String origin,
+            @RequestParam(name = "organic", required = false) Boolean organic,
+            @RequestParam(name = "sortBy", required = false, defaultValue = "popularity") String sortBy,
+            @RequestParam(name = "sortOrder", required = false, defaultValue = "desc") String sortOrder) {
+        log.info("GET /api/products - params: page={}, pageSize={}, category={}, search={}, organic={}", page, pageSize, category, search, organic);
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
                 page, pageSize, search, category, minPrice, maxPrice,
                 origin, organic, sortBy, sortOrder);
@@ -59,7 +62,8 @@ public class ProductController {
      */
     @GetMapping("/new-arrivals")
     public ResponseEntity<ApiResponse<List<ProductSummaryDto>>> getNewArrivals(
-            @RequestParam(required = false, defaultValue = "10") Integer limit) {
+            @RequestParam(name = "limit", required = false, defaultValue = "10") Integer limit) {
+        log.info("GET /api/products/new-arrivals - limit={}", limit);
         ApiResponse<List<ProductSummaryDto>> response = productService.getNewArrivals(limit);
         return ResponseEntity.ok(response);
     }
@@ -72,7 +76,8 @@ public class ProductController {
      */
     @GetMapping("/trending")
     public ResponseEntity<ApiResponse<List<ProductSummaryDto>>> getTrendingProducts(
-            @RequestParam(required = false, defaultValue = "10") Integer limit) {
+            @RequestParam(name = "limit", required = false, defaultValue = "10") Integer limit) {
+        log.info("GET /api/products/trending - limit={}", limit);
         ApiResponse<List<ProductSummaryDto>> response = productService.getTrendingProducts(limit);
         return ResponseEntity.ok(response);
     }

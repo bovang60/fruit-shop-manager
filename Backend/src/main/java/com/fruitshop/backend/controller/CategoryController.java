@@ -20,15 +20,15 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<CategoryDto>>> getCategories(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) com.fruitshop.backend.model.Category.CategoryStatus status,
-            @RequestParam(defaultValue = "false") Boolean sortByFruitCount,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "status", required = false) com.fruitshop.backend.model.Category.CategoryStatus status,
+            @RequestParam(name = "sortByFruitCount", defaultValue = "false") Boolean sortByFruitCount,
             Pageable pageable) {
         return ResponseEntity.ok(categoryService.getCategories(search, status, sortByFruitCount, pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoryDto>> getCategory(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<CategoryDto>> getCategory(@PathVariable(name = "id") Integer id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
@@ -39,18 +39,18 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryDto>> updateCategory(
-            @PathVariable Integer id,
+            @PathVariable(name = "id") Integer id,
             @RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok(categoryService.updateCategory(id, categoryDto));
     }
 
     @PutMapping("/{id}/toggle-status")
-    public ResponseEntity<ApiResponse<CategoryDto>> toggleStatus(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<CategoryDto>> toggleStatus(@PathVariable(name = "id") Integer id) {
         return ResponseEntity.ok(categoryService.toggleCategoryStatus(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoryDto>> deleteCategory(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<CategoryDto>> deleteCategory(@PathVariable(name = "id") Integer id) {
         return ResponseEntity.ok(categoryService.deleteCategory(id));
     }
 }

@@ -348,53 +348,64 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ApiResponse<List<OrderDto>> getOrderHistory(Integer userId) {
-        System.out.println("getOrderHistory -> userId: " + userId);
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            return ApiResponse.error("User not found");
-        }
-
-        List<Order> orders = orderRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
-        if (orders == null) {
-            orders = new ArrayList<>();
-        }
-        
-        System.out.println("getOrderHistory -> number of orders: " + orders.size());
-        
-        List<OrderDto> orderDtos = new ArrayList<>();
-
-        for (Order order : orders) {
-            System.out.println("getOrderHistory -> processing orderId: " + order.getOrderId());
-            List<OrderItem> items = orderItemRepository.findByOrderOrderId(order.getOrderId());
-            if (items == null) {
-                items = new ArrayList<>();
+        log.info("getOrderHistory -> userId: {}", userId);
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ApiResponse.error("User not found");
             }
-            orderDtos.add(buildOrderDto(order, items));
-        }
 
-        return ApiResponse.success(orderDtos);
+            List<Order> orders = orderRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
+            if (orders == null) {
+                orders = new ArrayList<>();
+            }
+            log.info("getOrderHistory -> number of orders: {}", orders.size());
+
+            List<OrderDto> orderDtos = new ArrayList<>();
+            for (Order order : orders) {
+                log.info("getOrderHistory -> processing orderId: {}", order.getOrderId());
+                List<OrderItem> items = orderItemRepository.findByOrderOrderId(order.getOrderId());
+                if (items == null || items.isEmpty()) {
+                    log.warn("getOrderHistory -> orderId {} has no items, skipping", order.getOrderId());
+                    continue; // Skip invalid orders
+                }
+                orderDtos.add(buildOrderDto(order, items));
+            }
+
+            return ApiResponse.success(orderDtos);
+        } catch (Exception e) {
+            log.error("Error fetching order history for userId: {}", userId, e);
+            return ApiResponse.error("Internal Server Error fetching order history: " + e.getClass().getName() + " - " + e.getMessage());
+        }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ApiResponse<OrderDto> getOrderDetail(Integer orderId, Integer userId) {
-        System.out.println("getOrderDetail -> userId: " + userId + ", orderId: " + orderId);
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
-        if (orderOpt.isEmpty()) {
-            return ApiResponse.error("Order not found");
+        log.info("getOrderDetail -> userId: {}, orderId: {}", userId, orderId);
+        try {
+            Optional<Order> orderOpt = orderRepository.findById(orderId);
+            if (orderOpt.isEmpty()) {
+                return ApiResponse.error("Order not found");
+            }
+
+            Order order = orderOpt.get();
+
+            // Verify order belongs to user
+            if (order.getUser() == null || !order.getUser().getUserId().equals(userId)) {
+                log.warn("getOrderDetail -> Unauthorized access attempt for orderId: {} by userId: {}", orderId, userId);
+                return ApiResponse.error("Unauthorized");
+            }
+
+            List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
+            log.info("getOrderDetail -> found {} items", (items != null ? items.size() : 0));
+            return ApiResponse.success(buildOrderDto(order, items));
+        } catch (Exception e) {
+            log.error("Error fetching order detail for orderId: {}, userId: {}", orderId, userId, e);
+            return ApiResponse.error("Internal Server Error fetching order detail: " + e.getClass().getName() + " - " + e.getMessage());
         }
-
-        Order order = orderOpt.get();
-
-        // Verify order belongs to user
-        if (order.getUser() == null || !order.getUser().getUserId().equals(userId)) {
-            System.out.println("getOrderDetail -> Unauthorized access attempt for orderId: " + orderId + " by userId: " + userId);
-            return ApiResponse.error("Unauthorized");
-        }
-
-        List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
-        System.out.println("getOrderDetail -> found " + (items != null ? items.size() : 0) + " items");
-        return ApiResponse.success(buildOrderDto(order, items));
     }
 
     @Override
