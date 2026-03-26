@@ -40,14 +40,15 @@ public class ProductController {
             @RequestParam(name = "page", required = false, defaultValue = "1") Integer page,
             @RequestParam(name = "pageSize", required = false, defaultValue = "25") Integer pageSize,
             @RequestParam(name = "search", required = false) String search,
-            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "category", required = false) Integer category,
             @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
             @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
             @RequestParam(name = "origin", required = false) String origin,
             @RequestParam(name = "organic", required = false) Boolean organic,
             @RequestParam(name = "sortBy", required = false, defaultValue = "popularity") String sortBy,
             @RequestParam(name = "sortOrder", required = false, defaultValue = "desc") String sortOrder) {
-        log.info("GET /api/products - params: page={}, pageSize={}, category={}, search={}, organic={}", page, pageSize, category, search, organic);
+        log.info("GET /api/products - params: page={}, pageSize={}, category={}, search={}, organic={}", page, pageSize,
+                category, search, organic);
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
                 page, pageSize, search, category, minPrice, maxPrice,
                 origin, organic, sortBy, sortOrder);

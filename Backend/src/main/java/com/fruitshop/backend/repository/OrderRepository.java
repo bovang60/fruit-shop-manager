@@ -34,8 +34,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
                         "FROM OrderItem oi JOIN oi.order o JOIN o.shop s " +
                         "WHERE o.status = 'COMPLETED' " +
                         "GROUP BY s.shopId, s.shopName, s.status " +
-                        "ORDER BY SUM(oi.quantity) DESC")
-        java.util.List<com.fruitshop.backend.dto.DashboardDto.TopSellerDto> findTopSellersByQuantity(
+                        "ORDER BY SUM(o.subTotal + o.shippingFee) DESC")
+        java.util.List<com.fruitshop.backend.dto.DashboardDto.TopSellerDto> findTopSellersByRevenue(
                         org.springframework.data.domain.Pageable pageable);
 
         java.util.List<Order> findByUser_UserIdOrderByCreatedAtDesc(Integer userId);
