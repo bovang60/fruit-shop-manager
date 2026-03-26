@@ -7,7 +7,7 @@
 `DELETE /api/seller/fruits/{fruitId}`
 
 ## Description
-Xoa fruit theo `fruitId`.
+Xoa product theo `fruitId`.
 
 ## Path params
 - `fruitId` (Integer, required): ID cua fruit can xoa.
@@ -19,7 +19,11 @@ Khong co.
 **HTTP 200**
 
 ```json
-"Xoa san pham thanh cong!"
+{
+  "resultCd": 0,
+  "message": "Xóa sản phẩm thành công!",
+  "data": null
+}
 ```
 
 ## Error behavior
@@ -27,4 +31,4 @@ Khong co.
 - Hien tai khong co exception handler rieng trong controller nay, nen loi se ra theo co che mac dinh cua Spring (thuong la HTTP 500).
 
 ## Notes
-- Controller khong dung `ApiResponse`, tra truc tiep `String`.
+- Controller dung `ApiResponse` va tra ve `null`.

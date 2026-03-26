@@ -18,6 +18,10 @@ public class Product {
     private Integer productId;
 
     @ManyToOne
+    @JoinColumn(name = "shop_id", foreignKey = @ForeignKey(name = "FK_products_shop"))
+    private Shop shop;
+
+    @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 

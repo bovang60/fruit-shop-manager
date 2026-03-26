@@ -19,3 +19,11 @@
     padding: 6px 12px;
     font-size: 0.85rem;
 }
+
+.order-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px 20px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+}

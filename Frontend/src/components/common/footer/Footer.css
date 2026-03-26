@@ -1,0 +1,20 @@
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: center;
+  text-align: center;
+}
+
+.footer-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.footer-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}

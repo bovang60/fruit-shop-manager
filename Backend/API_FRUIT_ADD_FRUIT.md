@@ -7,25 +7,30 @@
 `POST /api/seller/fruits/{shopId}`
 
 ## Description
-Tao moi fruit cho shop theo `shopId`.
+Tao moi product cho shop theo `shopId`.
 
 ## Path params
 - `shopId` (Integer, required): ID cua shop.
 
 ## Request body
-Body la object `Fruit` (JSON).
+Body la object `Product` (JSON).
 
 ```json
 {
   "category": {
     "categoryId": 2
   },
-  "fruitName": "Xoai Cat Hoa Loc",
+  "name": "Xoai Cat Hoa Loc",
   "price": 90000,
-  "stockQuantity": 50,
+  "stock": 50,
   "imageUrl": "https://example.com/xoai.jpg",
   "description": "Xoai ngot thom",
-  "status": "AVAILABLE"
+  "isActive": true,
+  "discount": 0,
+  "originalPrice": 95000,
+  "unit": "kg",
+  "origin": "LOCAL",
+  "isOrganic": false
 }
 ```
 
@@ -34,20 +39,23 @@ Body la object `Fruit` (JSON).
 
 ```json
 {
-  "fruitId": 15,
-  "shop": {
-    "shopId": 10
-  },
-  "category": {
-    "categoryId": 2
-  },
-  "fruitName": "Xoai Cat Hoa Loc",
-  "price": 90000,
-  "stockQuantity": 50,
-  "imageUrl": "https://example.com/xoai.jpg",
-  "description": "Xoai ngot thom",
-  "status": "AVAILABLE",
-  "createdAt": "2026-03-09T09:10:00"
+  "resultCd": 0,
+  "message": "Tạo sản phẩm thành công!",
+  "data": {
+    "productId": 15,
+    "name": "Xoai Cat Hoa Loc",
+    "price": 90000,
+    "stock": 50,
+    "imageUrl": "https://example.com/xoai.jpg",
+    "description": "Xoai ngot thom",
+    "isActive": true,
+    "categoryId": 2,
+    "discount": 0,
+    "originalPrice": 95000,
+    "unit": "kg",
+    "origin": "LOCAL",
+    "isOrganic": false
+  }
 }
 ```
 
@@ -57,4 +65,4 @@ Body la object `Fruit` (JSON).
 
 ## Notes
 - Truong `shop` trong body khong can gui; backend set theo `shopId` path param.
-- Controller khong dung `ApiResponse`, tra truc tiep `Fruit`.
+- Controller dung `ApiResponse` va tra ve `SellerProductDto`.

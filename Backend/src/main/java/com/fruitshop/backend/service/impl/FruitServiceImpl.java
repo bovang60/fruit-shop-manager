@@ -1,8 +1,8 @@
 package com.fruitshop.backend.service.impl;
 
-import com.fruitshop.backend.model.Fruit;
+import com.fruitshop.backend.model.Product;
 import com.fruitshop.backend.model.Shop;
-import com.fruitshop.backend.repository.FruitRepository;
+import com.fruitshop.backend.repository.ProductRepository;
 import com.fruitshop.backend.repository.ShopRepository;
 import com.fruitshop.backend.service.FruitService;
 import lombok.RequiredArgsConstructor;
@@ -15,61 +15,66 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FruitServiceImpl implements FruitService {
 
-    private final FruitRepository fruitRepository;
+    private final ProductRepository productRepository;
     private final ShopRepository shopRepository;
 
     @Override
     @Transactional
-    public Fruit createFruit(Fruit fruit, Integer shopId) {
+    public Product createFruit(Product product, Integer shopId) {
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy cửa hàng!"));
-        fruit.setShop(shop);
-        return fruitRepository.save(fruit);
+        product.setShop(shop);
+        return productRepository.save(product);
     }
 
     @Override
     @Transactional
-    public Fruit updateFruit(Integer fruitId, Fruit fruitDetails) {
-        Fruit existingFruit = fruitRepository.findById(fruitId)
+    public Product updateFruit(Integer productId, Product productDetails) {
+        Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
 
-        existingFruit.setFruitName(fruitDetails.getFruitName());
-        existingFruit.setPrice(fruitDetails.getPrice());
-        existingFruit.setStockQuantity(fruitDetails.getStockQuantity());
-        existingFruit.setCategory(fruitDetails.getCategory());
-        existingFruit.setDescription(fruitDetails.getDescription());
-        existingFruit.setImageUrl(fruitDetails.getImageUrl());
-        existingFruit.setStatus(fruitDetails.getStatus());
+        existingProduct.setName(productDetails.getName());
+        existingProduct.setPrice(productDetails.getPrice());
+        existingProduct.setStock(productDetails.getStock());
+        existingProduct.setCategory(productDetails.getCategory());
+        existingProduct.setDescription(productDetails.getDescription());
+        existingProduct.setImageUrl(productDetails.getImageUrl());
+        existingProduct.setIsActive(productDetails.getIsActive());
+        existingProduct.setDiscount(productDetails.getDiscount());
+        existingProduct.setOriginalPrice(productDetails.getOriginalPrice());
+        existingProduct.setUnit(productDetails.getUnit());
+        existingProduct.setOrigin(productDetails.getOrigin());
+        existingProduct.setIsOrganic(productDetails.getIsOrganic());
 
-        return fruitRepository.save(existingFruit);
+        return productRepository.save(existingProduct);
     }
 
     @Override
     @Transactional
-    public Fruit updateFruitStatus(Integer fruitId, Fruit.FruitStatus status) {
-        Fruit existingFruit = fruitRepository.findById(fruitId)
+    public Product updateFruitStatus(Integer productId, Boolean isActive) {
+        Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
-        existingFruit.setStatus(status);
-        return fruitRepository.save(existingFruit);
+        existingProduct.setIsActive(isActive);
+        return productRepository.save(existingProduct);
     }
 
     @Override
     @Transactional
     public void deleteFruit(Integer fruitId) {
-        if (!fruitRepository.existsById(fruitId)) {
+        if (!productRepository.existsById(fruitId)) {
             throw new RuntimeException("Sản phẩm không tồn tại!");
         }
-        fruitRepository.deleteById(fruitId);
+        productRepository.deleteById(fruitId);
     }
 
     @Override
-    public List<Fruit> getFruitsByShop(Integer shopId) {
-        return fruitRepository.findByShop_ShopId(shopId);
+    public List<Product> getFruitsByShop(Integer shopId) {
+        return productRepository.findByShop_ShopId(shopId);
     }
 
     @Override
-    public Fruit getFruitById(Integer fruitId) {
-        return fruitRepository.findById(fruitId)
+    public Product getFruitById(Integer productId) {
+        return productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
     }
 }

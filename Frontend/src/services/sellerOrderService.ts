@@ -13,8 +13,12 @@ export interface SellerOrderApiModel {
   orderId: number;
   receiverName: string;
   receiverPhone: string;
+  shippingAddress?: string;
+  note?: string;
   subTotal: number | string;
   shippingFee?: number | string;
+  paymentMethod?: string;
+  paymentStatus?: string;
   status: OrderStatus;
   createdAt: string;
 }
@@ -23,6 +27,12 @@ export interface SellerOrderDto {
   orderId: number;
   receiverName: string;
   receiverPhone: string;
+  shippingAddress?: string;
+  note?: string;
+  subTotal: number;
+  shippingFee: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
   totalAmount: number;
   status: OrderStatus;
   createdAt: string;
@@ -42,6 +52,12 @@ function mapOrder(order: SellerOrderApiModel): SellerOrderDto {
     orderId: order.orderId,
     receiverName: order.receiverName,
     receiverPhone: order.receiverPhone,
+    shippingAddress: order.shippingAddress,
+    note: order.note,
+    subTotal,
+    shippingFee,
+    paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
     totalAmount: subTotal + shippingFee,
     status: order.status,
     createdAt: order.createdAt,

@@ -50,6 +50,7 @@ export interface UserDto {
   role: string;
   status: string;
   createdAt: string;
+  shopId?: number;
 }
 
 // ============= API Functions =============
@@ -207,3 +208,4 @@ export function getUserFromStorage(): UserDto | null {
 export function clearUserStorage(): void {
   localStorage.removeItem("user");
 }
+

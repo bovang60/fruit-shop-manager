@@ -12,6 +12,11 @@
     sans-serif;
 }
 
+.profile-root-embedded {
+  min-height: auto;
+  background: transparent;
+}
+
 /* Header */
 .profile-header {
   position: sticky;
@@ -28,12 +33,20 @@
   padding: 2rem 1rem;
 }
 
+.profile-main-embedded {
+  padding: 0;
+}
+
 .profile-container {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+.profile-container-embedded {
+  max-width: none;
 }
 
 /* Sidebar */

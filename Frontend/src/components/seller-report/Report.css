@@ -1,0 +1,19 @@
+.loading {
+  padding: 1rem;
+  color: #4b5563;
+}
+
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.price.success {
+  color: #16a34a;
+}
+
+.price.highlight {
+  color: #2563eb;
+}

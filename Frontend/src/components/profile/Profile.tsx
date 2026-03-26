@@ -8,7 +8,11 @@ import type { UpdateProfileDto } from './Profile.types'
 
 export type { UserProfile }
 
-export default function Profile() {
+type ProfileProps = {
+  embedded?: boolean
+}
+
+export default function Profile({ embedded = false }: ProfileProps) {
   const navigate = useNavigate()
   
   // Get user ID from localStorage (from login session)
@@ -227,7 +231,7 @@ export default function Profile() {
   // Show loading state while fetching data
   if (loading && !profile) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: embedded ? '320px' : '100vh' }}>
         <p>Loading profile...</p>
       </div>
     )
@@ -236,7 +240,7 @@ export default function Profile() {
   // Show error state if failed to load and no profile data
   if (!profile && error) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', gap: '1rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: embedded ? '320px' : '100vh', gap: '1rem' }}>
         <p style={{ color: '#dc2626' }}>⚠️ {error}</p>
         <button onClick={loadUserProfile} style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid #33f20d', background: '#33f20d', color: 'white', cursor: 'pointer' }}>
           Retry
@@ -250,6 +254,7 @@ export default function Profile() {
 
   return (
     <ProfileView
+      embedded={embedded}
       profile={profile}
       loading={loading}
       isEditing={isEditing}

@@ -51,6 +51,10 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
         // alert(`Đăng nhập thành công! Chào mừng ${result.data.fullName}`)
         if (onSuccess) {
           onSuccess()
+        }
+        const role = (result.data.role || '').toLowerCase()
+        if (role === 'seller') {
+          navigate('/seller/dashboard')
         } else {
           navigate('/home')
         }

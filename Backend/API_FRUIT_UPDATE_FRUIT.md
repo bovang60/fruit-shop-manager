@@ -7,32 +7,42 @@
 `PUT /api/seller/fruits/{fruitId}`
 
 ## Description
-Cap nhat thong tin fruit theo `fruitId`.
+Cap nhat thong tin product theo `fruitId`.
 
 ## Path params
 - `fruitId` (Integer, required): ID cua fruit can cap nhat.
 
 ## Request body
-Body la object `Fruit` (JSON). Cac field duoc update trong service:
-- `fruitName`
+Body la object `Product` (JSON). Cac field duoc update trong service:
+- `name`
 - `price`
-- `stockQuantity`
+- `stock`
 - `category`
 - `description`
 - `imageUrl`
-- `status`
+- `isActive`
+- `discount`
+- `originalPrice`
+- `unit`
+- `origin`
+- `isOrganic`
 
 ```json
 {
   "category": {
     "categoryId": 3
   },
-  "fruitName": "Xoai Cat Hoa Loc Loai 1",
+  "name": "Xoai Cat Hoa Loc Loai 1",
   "price": 95000,
-  "stockQuantity": 40,
+  "stock": 40,
   "imageUrl": "https://example.com/xoai-loai1.jpg",
   "description": "Xoai loai 1, chat luong cao",
-  "status": "AVAILABLE"
+  "isActive": true,
+  "discount": 0,
+  "originalPrice": 98000,
+  "unit": "kg",
+  "origin": "LOCAL",
+  "isOrganic": false
 }
 ```
 
@@ -41,20 +51,23 @@ Body la object `Fruit` (JSON). Cac field duoc update trong service:
 
 ```json
 {
-  "fruitId": 15,
-  "shop": {
-    "shopId": 10
-  },
-  "category": {
-    "categoryId": 3
-  },
-  "fruitName": "Xoai Cat Hoa Loc Loai 1",
-  "price": 95000,
-  "stockQuantity": 40,
-  "imageUrl": "https://example.com/xoai-loai1.jpg",
-  "description": "Xoai loai 1, chat luong cao",
-  "status": "AVAILABLE",
-  "createdAt": "2026-03-09T09:10:00"
+  "resultCd": 0,
+  "message": "Cập nhật sản phẩm thành công!",
+  "data": {
+    "productId": 15,
+    "name": "Xoai Cat Hoa Loc Loai 1",
+    "price": 95000,
+    "stock": 40,
+    "imageUrl": "https://example.com/xoai-loai1.jpg",
+    "description": "Xoai loai 1, chat luong cao",
+    "isActive": true,
+    "categoryId": 3,
+    "discount": 0,
+    "originalPrice": 98000,
+    "unit": "kg",
+    "origin": "LOCAL",
+    "isOrganic": false
+  }
 }
 ```
 
@@ -63,4 +76,4 @@ Body la object `Fruit` (JSON). Cac field duoc update trong service:
 - Hien tai khong co exception handler rieng trong controller nay, nen loi se ra theo co che mac dinh cua Spring (thuong la HTTP 500).
 
 ## Notes
-- Controller khong dung `ApiResponse`, tra truc tiep `Fruit`.
+- Controller dung `ApiResponse` va tra ve `SellerProductDto`.

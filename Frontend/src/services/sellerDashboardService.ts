@@ -22,12 +22,10 @@ export interface SellerOrderApiModel {
   createdAt: string;
 }
 
-export type FruitStatus = "AVAILABLE" | "OUT_OF_STOCK" | "HIDDEN" | "DISCONTINUED";
-
-export interface SellerFruitApiModel {
-  fruitId: number;
-  stockQuantity: number;
-  status: FruitStatus;
+export interface SellerProductApiModel {
+  productId: number;
+  stock: number;
+  isActive?: boolean;
 }
 
 export interface DashboardStats {
@@ -90,25 +88,23 @@ export async function getSellerDashboardData(
         "GET",
         `/api/seller/orders/shop/${shopId}`,
       ),
-      callApiWithMethod<never, ApiResponse<SellerFruitApiModel[]> | SellerFruitApiModel[]>(
+      callApiWithMethod<never, ApiResponse<SellerProductApiModel[]> | SellerProductApiModel[]>(
         "GET",
-        `/api/fruits/shop/${shopId}`,
+        `/api/seller/fruits/shop/${shopId}`,
       ),
     ]);
 
     const report = normalizeApiResponse<SalesReportApiModel>(reportRes).data ?? {};
     const orders = normalizeApiResponse<SellerOrderApiModel[]>(ordersRes).data ?? [];
-    const fruits = normalizeApiResponse<SellerFruitApiModel[]>(fruitsRes).data ?? [];
+    const fruits = normalizeApiResponse<SellerProductApiModel[]>(fruitsRes).data ?? [];
 
     const pendingOrders = orders.filter((order) => order.status === "PENDING")
       .length;
 
-    const lowStockItems = fruits.filter(
-      (fruit) =>
-        fruit.status !== "DISCONTINUED" &&
-        fruit.status !== "HIDDEN" &&
-        fruit.stockQuantity <= lowStockThreshold,
-    ).length;
+    const lowStockItems = fruits.filter((fruit) => {
+      const isActive = fruit.isActive !== false;
+      return isActive && (fruit.stock ?? 0) <= lowStockThreshold;
+    }).length;
 
     const recentOrders = orders
       .slice(0, recentLimit)

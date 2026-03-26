@@ -4,6 +4,7 @@ import Footer from '../common/footer/Footer'
 import type { UserProfile } from './Profile'
 
 export type Props = {
+  embedded?: boolean
   profile: UserProfile
   loading: boolean
   isEditing: boolean
@@ -27,240 +28,239 @@ export type Props = {
 export default function ProfileView(props: Props) {
   const { profile } = props
 
+  const content = (
+    <main className={`profile-main ${props.embedded ? 'profile-main-embedded' : ''}`}>
+      <div className={`profile-container ${props.embedded ? 'profile-container-embedded' : ''}`}>
+        <aside className="profile-sidebar">
+          <div className="profile-card-avatar">
+            <div className="avatar-section">
+              <div
+                className="avatar-image"
+                style={{ backgroundImage: `url('${profile.avatar}')` }}
+                role="img"
+                aria-label={`${profile.fullName} profile picture`}
+              />
+              <label htmlFor="avatar-upload" className="avatar-upload-btn">
+                <span className="material-icon">📷</span>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={props.onAvatarChange}
+                  className="avatar-upload-input"
+                  aria-label="Upload profile picture"
+                />
+              </label>
+            </div>
+
+            <div className="profile-info-brief">
+              <h1 className="profile-name">{profile.fullName}</h1>
+              <p className="profile-role">{profile.role || 'Member'}</p>
+            </div>
+
+            <div className="profile-actions">
+              {props.isEditing ? (
+                <>
+                  <button
+                    className="btn-save-profile"
+                    onClick={props.onSaveProfile}
+                    disabled={props.loading}
+                    aria-label="Save profile changes"
+                  >
+                    <span className="material-icon">💾</span>
+                    Save Changes
+                  </button>
+                  <button
+                    className="btn-cancel-edit"
+                    onClick={props.onCancelEdit}
+                    disabled={props.loading}
+                    aria-label="Cancel editing"
+                  >
+                    <span className="material-icon">✖️</span>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="btn-edit-profile"
+                    onClick={props.onEditProfile}
+                    disabled={props.loading}
+                    aria-label="Edit profile information"
+                  >
+                    <span className="material-icon">✏️</span>
+                    Edit Profile
+                  </button>
+                  <button
+                    className="btn-change-password"
+                    onClick={props.onChangePassword}
+                    disabled={props.loading}
+                    aria-label="Change password"
+                  >
+                    <span className="material-icon">🔒</span>
+                    Change Password
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="profile-card-stats">
+            <h3 className="stats-title">Account Stats</h3>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <p className="stat-label">Orders</p>
+                <p className="stat-value">{profile.stats.orders}</p>
+              </div>
+              <div className="stat-item">
+                <p className="stat-label">Points</p>
+                <p className="stat-value">{profile.stats.points}</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div className="profile-content">
+          <section className="profile-card-details">
+            <div className="details-header">
+              <h2 className="details-title">Personal Information</h2>
+              <span className="material-icon-large">👤</span>
+            </div>
+
+            {props.error && (
+              <div className="message-container message-error">
+                <span className="message-icon">⚠️</span>
+                <span className="message-text">{props.error}</span>
+              </div>
+            )}
+
+            {props.successMessage && (
+              <div className="message-container message-success">
+                <span className="message-icon">✅</span>
+                <span className="message-text">{props.successMessage}</span>
+              </div>
+            )}
+
+            <div className="details-list">
+              <div className="detail-item">
+                <div className="detail-label-group">
+                  <span className="detail-icon">🏷️</span>
+                  <span className="detail-label">Full Name</span>
+                </div>
+                {props.isEditing ? (
+                  <input
+                    type="text"
+                    className="detail-input"
+                    value={props.editedProfile.fullName}
+                    onChange={(e) => props.onFieldChange('fullName', e.target.value)}
+                    placeholder="Enter your full name"
+                  />
+                ) : (
+                  <span className="detail-value">{profile.fullName}</span>
+                )}
+              </div>
+
+              <div className="detail-item">
+                <div className="detail-label-group">
+                  <span className="detail-icon">✉️</span>
+                  <span className="detail-label">Email</span>
+                </div>
+                <span className="detail-value detail-value-readonly">{profile.email}</span>
+              </div>
+
+              <div className="detail-item">
+                <div className="detail-label-group">
+                  <span className="detail-icon">📞</span>
+                  <span className="detail-label">Phone Number</span>
+                </div>
+                {props.isEditing ? (
+                  <input
+                    type="tel"
+                    className="detail-input"
+                    value={props.editedProfile.phoneNumber}
+                    onChange={(e) => props.onFieldChange('phoneNumber', e.target.value)}
+                    placeholder="Enter your phone number"
+                  />
+                ) : (
+                  <span className="detail-value">{profile.phoneNumber}</span>
+                )}
+              </div>
+
+              <div className="detail-item detail-item-address">
+                <div className="detail-label-group">
+                  <span className="detail-icon">📍</span>
+                  <span className="detail-label">Address</span>
+                </div>
+                {props.isEditing ? (
+                  <textarea
+                    className="detail-textarea"
+                    value={props.editedProfile.address}
+                    onChange={(e) => props.onFieldChange('address', e.target.value)}
+                    placeholder="Enter your address"
+                    rows={3}
+                  />
+                ) : (
+                  <p className="detail-value detail-value-address">
+                    {profile.address}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="security-section">
+              <h3 className="security-title">Security & Preferences</h3>
+              <div className="security-grid">
+                <div className="security-item">
+                  <div className="security-label-group">
+                    <span className="security-icon">✓</span>
+                    <span className="security-label">Two-Factor Auth</span>
+                  </div>
+                  <button
+                    className={`toggle-switch ${profile.settings.twoFactorAuth ? 'active' : ''}`}
+                    onClick={props.onToggleTwoFactor}
+                    disabled={props.loading}
+                    role="switch"
+                    aria-checked={profile.settings.twoFactorAuth}
+                    aria-label="Toggle two-factor authentication"
+                  >
+                    <div className="toggle-knob" />
+                  </button>
+                </div>
+
+                <div className="security-item">
+                  <div className="security-label-group">
+                    <span className="security-icon">🔔</span>
+                    <span className="security-label">Order Updates</span>
+                  </div>
+                  <button
+                    className={`toggle-switch ${profile.settings.orderNotifications ? 'active' : ''}`}
+                    onClick={props.onToggleNotifications}
+                    disabled={props.loading}
+                    role="switch"
+                    aria-checked={profile.settings.orderNotifications}
+                    aria-label="Toggle order notifications"
+                  >
+                    <div className="toggle-knob" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  )
+
+  if (props.embedded) {
+    return <div className="profile-root profile-root-embedded">{content}</div>
+  }
+
   return (
     <div className="profile-root">
       <header className="profile-header">
         <Header />
       </header>
-
-      <main className="profile-main">
-        <div className="profile-container">
-          {/* Sidebar - Profile Summary */}
-          <aside className="profile-sidebar">
-            {/* Avatar Card */}
-            <div className="profile-card-avatar">
-              <div className="avatar-section">
-                <div 
-                  className="avatar-image"
-                  style={{ backgroundImage: `url('${profile.avatar}')` }}
-                  role="img"
-                  aria-label={`${profile.fullName} profile picture`}
-                />
-                <label htmlFor="avatar-upload" className="avatar-upload-btn">
-                  <span className="material-icon">📷</span>
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={props.onAvatarChange}
-                    className="avatar-upload-input"
-                    aria-label="Upload profile picture"
-                  />
-                </label>
-              </div>
-
-              <div className="profile-info-brief">
-                <h1 className="profile-name">{profile.fullName}</h1>
-                <p className="profile-role">{profile.role || 'Member'}</p>
-              </div>
-
-              <div className="profile-actions">
-                {props.isEditing ? (
-                  <>
-                    <button 
-                      className="btn-save-profile"
-                      onClick={props.onSaveProfile}
-                      disabled={props.loading}
-                      aria-label="Save profile changes"
-                    >
-                      <span className="material-icon">💾</span>
-                      Save Changes
-                    </button>
-                    <button 
-                      className="btn-cancel-edit"
-                      onClick={props.onCancelEdit}
-                      disabled={props.loading}
-                      aria-label="Cancel editing"
-                    >
-                      <span className="material-icon">✖️</span>
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button 
-                      className="btn-edit-profile"
-                      onClick={props.onEditProfile}
-                      disabled={props.loading}
-                      aria-label="Edit profile information"
-                    >
-                      <span className="material-icon">✏️</span>
-                      Edit Profile
-                    </button>
-                    <button 
-                      className="btn-change-password"
-                      onClick={props.onChangePassword}
-                      disabled={props.loading}
-                      aria-label="Change password"
-                    >
-                      <span className="material-icon">🔒</span>
-                      Change Password
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Stats Card */}
-            <div className="profile-card-stats">
-              <h3 className="stats-title">Account Stats</h3>
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <p className="stat-label">Orders</p>
-                  <p className="stat-value">{profile.stats.orders}</p>
-                </div>
-                <div className="stat-item">
-                  <p className="stat-label">Points</p>
-                  <p className="stat-value">{profile.stats.points}</p>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* Main Content - Profile Details */}
-          <div className="profile-content">
-            <section className="profile-card-details">
-              <div className="details-header">
-                <h2 className="details-title">Personal Information</h2>
-                <span className="material-icon-large">👤</span>
-              </div>
-
-              {/* Error Message */}
-              {props.error && (
-                <div className="message-container message-error">
-                  <span className="message-icon">⚠️</span>
-                  <span className="message-text">{props.error}</span>
-                </div>
-              )}
-
-              {/* Success Message */}
-              {props.successMessage && (
-                <div className="message-container message-success">
-                  <span className="message-icon">✅</span>
-                  <span className="message-text">{props.successMessage}</span>
-                </div>
-              )}
-
-              <div className="details-list">
-                <div className="detail-item">
-                  <div className="detail-label-group">
-                    <span className="detail-icon">🏷️</span>
-                    <span className="detail-label">Full Name</span>
-                  </div>
-                  {props.isEditing ? (
-                    <input
-                      type="text"
-                      className="detail-input"
-                      value={props.editedProfile.fullName}
-                      onChange={(e) => props.onFieldChange('fullName', e.target.value)}
-                      placeholder="Enter your full name"
-                    />
-                  ) : (
-                    <span className="detail-value">{profile.fullName}</span>
-                  )}
-                </div>
-
-                <div className="detail-item">
-                  <div className="detail-label-group">
-                    <span className="detail-icon">✉️</span>
-                    <span className="detail-label">Email</span>
-                  </div>
-                  <span className="detail-value detail-value-readonly">{profile.email}</span>
-                </div>
-
-                <div className="detail-item">
-                  <div className="detail-label-group">
-                    <span className="detail-icon">📞</span>
-                    <span className="detail-label">Phone Number</span>
-                  </div>
-                  {props.isEditing ? (
-                    <input
-                      type="tel"
-                      className="detail-input"
-                      value={props.editedProfile.phoneNumber}
-                      onChange={(e) => props.onFieldChange('phoneNumber', e.target.value)}
-                      placeholder="Enter your phone number"
-                    />
-                  ) : (
-                    <span className="detail-value">{profile.phoneNumber}</span>
-                  )}
-                </div>
-
-                <div className="detail-item detail-item-address">
-                  <div className="detail-label-group">
-                    <span className="detail-icon">📍</span>
-                    <span className="detail-label">Address</span>
-                  </div>
-                  {props.isEditing ? (
-                    <textarea
-                      className="detail-textarea"
-                      value={props.editedProfile.address}
-                      onChange={(e) => props.onFieldChange('address', e.target.value)}
-                      placeholder="Enter your address"
-                      rows={3}
-                    />
-                  ) : (
-                    <p className="detail-value detail-value-address">
-                      {profile.address}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Security & Preferences */}
-              <div className="security-section">
-                <h3 className="security-title">Security & Preferences</h3>
-                <div className="security-grid">
-                  <div className="security-item">
-                    <div className="security-label-group">
-                      <span className="security-icon">✓</span>
-                      <span className="security-label">Two-Factor Auth</span>
-                    </div>
-                    <button
-                      className={`toggle-switch ${profile.settings.twoFactorAuth ? 'active' : ''}`}
-                      onClick={props.onToggleTwoFactor}
-                      disabled={props.loading}
-                      role="switch"
-                      aria-checked={profile.settings.twoFactorAuth}
-                      aria-label="Toggle two-factor authentication"
-                    >
-                      <div className="toggle-knob" />
-                    </button>
-                  </div>
-
-                  <div className="security-item">
-                    <div className="security-label-group">
-                      <span className="security-icon">🔔</span>
-                      <span className="security-label">Order Updates</span>
-                    </div>
-                    <button
-                      className={`toggle-switch ${profile.settings.orderNotifications ? 'active' : ''}`}
-                      onClick={props.onToggleNotifications}
-                      disabled={props.loading}
-                      role="switch"
-                      aria-checked={profile.settings.orderNotifications}
-                      aria-label="Toggle order notifications"
-                    >
-                      <div className="toggle-knob" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </main>
-
+      {content}
       <footer className="profile-footer">
         <Footer />
       </footer>

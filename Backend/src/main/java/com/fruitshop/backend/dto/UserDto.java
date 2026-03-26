@@ -14,4 +14,6 @@ public class UserDto {
     private User.Role role;
     private User.UserStatus status;
     private LocalDateTime createdAt;
+    private Integer shopId;
 }
+

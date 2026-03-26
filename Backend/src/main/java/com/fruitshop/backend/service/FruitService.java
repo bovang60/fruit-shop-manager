@@ -1,13 +1,13 @@
 package com.fruitshop.backend.service;
 
-import com.fruitshop.backend.model.Fruit;
+import com.fruitshop.backend.model.Product;
 import java.util.List;
 
 public interface FruitService {
-    Fruit createFruit(Fruit fruit, Integer shopId);
-    Fruit updateFruit(Integer fruitId, Fruit fruitDetails);
-    Fruit updateFruitStatus(Integer fruitId, Fruit.FruitStatus status);
+    Product createFruit(Product product, Integer shopId);
+    Product updateFruit(Integer productId, Product productDetails);
+    Product updateFruitStatus(Integer productId, Boolean isActive);
     void deleteFruit(Integer fruitId);
-    List<Fruit> getFruitsByShop(Integer shopId);
-    Fruit getFruitById(Integer fruitId);
+    List<Product> getFruitsByShop(Integer shopId);
+    Product getFruitById(Integer productId);
 }

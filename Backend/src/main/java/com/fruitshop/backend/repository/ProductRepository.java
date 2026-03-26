@@ -13,6 +13,8 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
+    List<Product> findByShop_ShopId(Integer shopId);
+
 
     // Search and filter products
     @Query("SELECT p FROM Product p LEFT JOIN p.category c WHERE " +

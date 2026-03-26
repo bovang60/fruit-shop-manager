@@ -1,60 +1,73 @@
 import { callApiWithMethod, get, post, put, type ApiResponse } from "../utils/apiClient";
 
-export type SellerFruitStatus = "AVAILABLE" | "OUT_OF_STOCK" | "DISCONTINUED";
-
-export interface SellerFruitDto {
-  fruitId: number;
-  fruitName: string;
+export interface SellerProductDto {
+  productId: number;
+  name: string;
   description?: string;
   price: number;
-  stockQuantity: number;
-  status: SellerFruitStatus;
+  stock: number;
+  isActive?: boolean;
   imageUrl?: string;
   categoryId?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  discount?: number;
+  originalPrice?: number;
+  unit?: string;
+  origin?: "LOCAL" | "IMPORTED";
+  isOrganic?: boolean;
 }
 
-export type SellerFruitQueryParams = Record<
+export type SellerProductQueryParams = Record<
   string,
   string | number | boolean | undefined
 > & {
   page?: number;
   size?: number;
   search?: string;
-  status?: SellerFruitStatus;
+  isActive?: boolean;
   categoryId?: number;
 };
 
-export interface CreateSellerFruitRequest {
-  fruitName: string;
+export interface CreateSellerProductRequest {
+  name: string;
   description?: string;
   price: number;
-  stockQuantity: number;
+  stock?: number;
   imageUrl?: string;
   categoryId?: number;
+  discount?: number;
+  originalPrice?: number;
+  unit?: string;
+  origin?: "LOCAL" | "IMPORTED";
+  isOrganic?: boolean;
+  isActive?: boolean;
 }
 
-export interface UpdateSellerFruitRequest {
-  fruitName?: string;
+export interface UpdateSellerProductRequest {
+  name?: string;
   description?: string;
   price?: number;
-  stockQuantity?: number;
+  stock?: number;
   imageUrl?: string;
   categoryId?: number;
+  discount?: number;
+  originalPrice?: number;
+  unit?: string;
+  origin?: "LOCAL" | "IMPORTED";
+  isOrganic?: boolean;
+  isActive?: boolean;
 }
 
-export interface UpdateSellerFruitStatusRequest {
-  status: SellerFruitStatus;
+export interface UpdateSellerProductStatusRequest {
+  isActive: boolean;
 }
 
 export async function getSellerFruitsByShop(
   shopId: number,
-  params?: SellerFruitQueryParams,
-): Promise<ApiResponse<SellerFruitDto[]>> {
+  params?: SellerProductQueryParams,
+): Promise<ApiResponse<SellerProductDto[]>> {
   try {
-    return await get<ApiResponse<SellerFruitDto[]>>(
-      `/api/fruits/shop/${shopId}`,
+    return await get<ApiResponse<SellerProductDto[]>>(
+      `/api/seller/fruits/shop/${shopId}`,
       params,
     );
   } catch (error) {
@@ -69,11 +82,11 @@ export async function getSellerFruitsByShop(
 
 export async function getSellerFruitById(
   fruitId: number,
-): Promise<ApiResponse<SellerFruitDto>> {
+): Promise<ApiResponse<SellerProductDto>> {
   try {
-    return await callApiWithMethod<never, ApiResponse<SellerFruitDto>>(
+    return await callApiWithMethod<never, ApiResponse<SellerProductDto>>(
       "GET",
-      `/api/fruits/${fruitId}`,
+      `/api/seller/fruits/${fruitId}`,
     );
   } catch (error) {
     console.error("Error fetching seller fruit details:", error);
@@ -86,11 +99,12 @@ export async function getSellerFruitById(
 }
 
 export async function createSellerFruit(
-  data: CreateSellerFruitRequest,
-): Promise<ApiResponse<SellerFruitDto>> {
+  shopId: number,
+  data: CreateSellerProductRequest,
+): Promise<ApiResponse<SellerProductDto>> {
   try {
-    return await post<CreateSellerFruitRequest, ApiResponse<SellerFruitDto>>(
-      "/api/fruits",
+    return await post<CreateSellerProductRequest, ApiResponse<SellerProductDto>>(
+      `/api/seller/fruits/${shopId}`,
       data,
     );
   } catch (error) {
@@ -105,11 +119,11 @@ export async function createSellerFruit(
 
 export async function updateSellerFruit(
   fruitId: number,
-  data: UpdateSellerFruitRequest,
-): Promise<ApiResponse<SellerFruitDto>> {
+  data: UpdateSellerProductRequest,
+): Promise<ApiResponse<SellerProductDto>> {
   try {
-    return await put<UpdateSellerFruitRequest, ApiResponse<SellerFruitDto>>(
-      `/api/fruits/${fruitId}`,
+    return await put<UpdateSellerProductRequest, ApiResponse<SellerProductDto>>(
+      `/api/seller/fruits/${fruitId}`,
       data,
     );
   } catch (error) {
@@ -124,13 +138,13 @@ export async function updateSellerFruit(
 
 export async function updateSellerFruitStatus(
   fruitId: number,
-  status: SellerFruitStatus,
-): Promise<ApiResponse<SellerFruitDto>> {
+  isActive: boolean,
+): Promise<ApiResponse<SellerProductDto>> {
   try {
     return await callApiWithMethod<
-      UpdateSellerFruitStatusRequest,
-      ApiResponse<SellerFruitDto>
-    >("PATCH", `/api/fruits/${fruitId}/status`, { status });
+      UpdateSellerProductStatusRequest,
+      ApiResponse<SellerProductDto>
+    >("PATCH", `/api/seller/fruits/${fruitId}/status`, { isActive });
   } catch (error) {
     console.error("Error updating seller fruit status:", error);
     return {
@@ -147,7 +161,7 @@ export async function deleteSellerFruit(
   try {
     return await callApiWithMethod<never, ApiResponse<null>>(
       "DELETE",
-      `/api/fruits/${fruitId}`,
+      `/api/seller/fruits/${fruitId}`,
     );
   } catch (error) {
     console.error("Error deleting seller fruit:", error);
@@ -161,9 +175,9 @@ export async function deleteSellerFruit(
 
 export function getSellerFruitDisplayMessage(message: string): string {
   const ERROR_MESSAGES: Record<string, string> = {
-    "Fruit not found": "Không tìm thấy trái cây",
-    "Fruit name already exists": "Tên trái cây đã tồn tại",
-    "Invalid fruit data": "Dữ liệu trái cây không hợp lệ",
+    "Fruit not found": "Không tìm thấy sản phẩm",
+    "Fruit name already exists": "Tên sản phẩm đã tồn tại",
+    "Invalid fruit data": "Dữ liệu sản phẩm không hợp lệ",
     "Price must be greater than 0": "Giá phải lớn hơn 0",
     "Stock quantity must be greater than or equal to 0":
       "Số lượng tồn kho phải lớn hơn hoặc bằng 0",

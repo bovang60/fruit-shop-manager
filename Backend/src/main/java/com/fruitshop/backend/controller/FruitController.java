@@ -1,9 +1,9 @@
 package com.fruitshop.backend.controller;
 
 import com.fruitshop.backend.dto.ApiResponse;
-import com.fruitshop.backend.dto.SellerFruitDto;
-import com.fruitshop.backend.dto.UpdateFruitStatusDto;
-import com.fruitshop.backend.model.Fruit;
+import com.fruitshop.backend.dto.SellerProductDto;
+import com.fruitshop.backend.dto.UpdateProductStatusDto;
+import com.fruitshop.backend.model.Product;
 import com.fruitshop.backend.service.FruitService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +19,13 @@ public class FruitController {
 
     // Lấy danh sách sản phẩm của Shop mình
     @GetMapping("/shop/{shopId}")
-    public ResponseEntity<ApiResponse<List<SellerFruitDto>>> getMyFruits(@PathVariable Integer shopId) {
+    public ResponseEntity<ApiResponse<List<SellerProductDto>>> getMyFruits(@PathVariable Integer shopId) {
         try {
-            List<Fruit> fruits = fruitService.getFruitsByShop(shopId);
-            List<SellerFruitDto> fruitDtos = fruits.stream()
+            List<Product> products = fruitService.getFruitsByShop(shopId);
+            List<SellerProductDto> productDtos = products.stream()
                     .map(this::toDto)
                     .toList();
-            return ResponseEntity.ok(ApiResponse.success("Tải danh sách sản phẩm thành công", fruitDtos));
+            return ResponseEntity.ok(ApiResponse.success("Tải danh sách sản phẩm thành công", productDtos));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -33,10 +33,10 @@ public class FruitController {
 
     // Lấy chi tiết sản phẩm theo ID
     @GetMapping("/{fruitId}")
-    public ResponseEntity<ApiResponse<SellerFruitDto>> getFruitById(@PathVariable Integer fruitId) {
+    public ResponseEntity<ApiResponse<SellerProductDto>> getFruitById(@PathVariable Integer fruitId) {
         try {
-            Fruit fruit = fruitService.getFruitById(fruitId);
-            return ResponseEntity.ok(ApiResponse.success("Tải thông tin sản phẩm thành công", toDto(fruit)));
+            Product product = fruitService.getFruitById(fruitId);
+            return ResponseEntity.ok(ApiResponse.success("Tải thông tin sản phẩm thành công", toDto(product)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -44,12 +44,12 @@ public class FruitController {
 
     // Tạo mới sản phẩm
     @PostMapping("/{shopId}")
-    public ResponseEntity<ApiResponse<SellerFruitDto>> addFruit(
+    public ResponseEntity<ApiResponse<SellerProductDto>> addFruit(
             @PathVariable Integer shopId,
-            @RequestBody Fruit fruit) {
+            @RequestBody Product product) {
         try {
-            Fruit createdFruit = fruitService.createFruit(fruit, shopId);
-            return ResponseEntity.ok(ApiResponse.success("Tạo sản phẩm thành công!", toDto(createdFruit)));
+            Product createdProduct = fruitService.createFruit(product, shopId);
+            return ResponseEntity.ok(ApiResponse.success("Tạo sản phẩm thành công!", toDto(createdProduct)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -57,12 +57,12 @@ public class FruitController {
 
     // Cập nhật sản phẩm
     @PutMapping("/{fruitId}")
-    public ResponseEntity<ApiResponse<SellerFruitDto>> updateFruit(
+    public ResponseEntity<ApiResponse<SellerProductDto>> updateFruit(
             @PathVariable Integer fruitId,
-            @RequestBody Fruit fruit) {
+            @RequestBody Product product) {
         try {
-            Fruit updatedFruit = fruitService.updateFruit(fruitId, fruit);
-            return ResponseEntity.ok(ApiResponse.success("Cập nhật sản phẩm thành công!", toDto(updatedFruit)));
+            Product updatedProduct = fruitService.updateFruit(fruitId, product);
+            return ResponseEntity.ok(ApiResponse.success("Cập nhật sản phẩm thành công!", toDto(updatedProduct)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -70,12 +70,12 @@ public class FruitController {
 
     // Cập nhật trạng thái sản phẩm
     @PatchMapping("/{fruitId}/status")
-    public ResponseEntity<ApiResponse<SellerFruitDto>> updateFruitStatus(
+    public ResponseEntity<ApiResponse<SellerProductDto>> updateFruitStatus(
             @PathVariable Integer fruitId,
-            @RequestBody UpdateFruitStatusDto statusDto) {
+            @RequestBody UpdateProductStatusDto statusDto) {
         try {
-            Fruit updatedFruit = fruitService.updateFruitStatus(fruitId, statusDto.getStatus());
-            return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái sản phẩm thành công!", toDto(updatedFruit)));
+            Product updatedProduct = fruitService.updateFruitStatus(fruitId, statusDto.getIsActive());
+            return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái sản phẩm thành công!", toDto(updatedProduct)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }
@@ -92,20 +92,25 @@ public class FruitController {
         }
     }
 
-    private SellerFruitDto toDto(Fruit fruit) {
-        if (fruit == null) {
+    private SellerProductDto toDto(Product product) {
+        if (product == null) {
             return null;
         }
-        Integer categoryId = fruit.getCategory() != null ? fruit.getCategory().getCategoryId() : null;
-        return SellerFruitDto.builder()
-                .fruitId(fruit.getFruitId())
-                .fruitName(fruit.getFruitName())
-                .description(fruit.getDescription())
-                .price(fruit.getPrice())
-                .stockQuantity(fruit.getStockQuantity())
-                .status(fruit.getStatus())
-                .imageUrl(fruit.getImageUrl())
+        Integer categoryId = product.getCategory() != null ? product.getCategory().getCategoryId() : null;
+        return SellerProductDto.builder()
+                .productId(product.getProductId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .isActive(product.getIsActive())
+                .imageUrl(product.getImageUrl())
                 .categoryId(categoryId)
+                .discount(product.getDiscount())
+                .originalPrice(product.getOriginalPrice())
+                .unit(product.getUnit())
+                .origin(product.getOrigin())
+                .isOrganic(product.getIsOrganic())
                 .build();
     }
 }
