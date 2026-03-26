@@ -1,7 +1,7 @@
-import React from 'react'
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
 import Pagination from '../common/pagination/Pagination'
+import LoadingModal from '../common/loading/LoadingModal'
 import './Home.css'
 
 type Product = { id: number; name: string; price: string; img?: string; desc?: string; tag?: string }
@@ -11,12 +11,59 @@ export type Props = {
   onQueryChange: (v: string) => void
   products: Product[]
   displayed: Product[]
+  newArrivals: Product[]
+  trending: Product[]
   page: number
   totalPages: number
   onPageChange: (p: number) => void
+  onAddToCart: (productId: number) => void
+  loading: boolean
+  error: string
+  // Filter values
+  category?: string
+  minPrice?: number
+  maxPrice?: number
+  origin?: string
+  organic?: boolean
+  sortBy: string
+  sortOrder: string
+  // Filter handlers
+  onCategoryChange: (category: string) => void
+  onPriceChange: (minPrice: number, maxPrice: number) => void
+  onOriginChange: (origin: string | undefined) => void
+  onOrganicChange: (organic: boolean | undefined) => void
+  onSortChange: (sortBy: string, sortOrder: string) => void
+  onSearchSubmit: () => void
 }
 
-export default function HomeView({ query, onQueryChange, displayed, page, totalPages, onPageChange }: Props) {
+export default function HomeView({
+  query,
+  onQueryChange,
+  displayed,
+  newArrivals,
+  trending,
+  page,
+  totalPages,
+  onPageChange,
+  onAddToCart,
+  loading,
+  error,
+  // Filter values
+  category,
+  minPrice = 0,
+  maxPrice = 500000,
+  origin,
+  organic,
+  sortBy,
+  sortOrder,
+  // Filter handlers
+  onCategoryChange,
+  onPriceChange,
+  onOriginChange,
+  onOrganicChange,
+  onSortChange,
+  onSearchSubmit
+}: Props) {
   return (
     <div className="home-root">
       {/* Sticky Header */}
@@ -33,72 +80,133 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
           <div className="filters-sticky">
             {/* Category Filter */}
             <div className="filter-section">
-              <h3 className="filter-title">Category</h3>
+              <h3 className="filter-title">Danh mục</h3>
               <div className="filter-options">
                 <label className="filter-option">
-                  <input type="checkbox" defaultChecked />
-                  <span>All Fruits</span>
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={!category}
+                    onChange={() => onCategoryChange('')}
+                  />
+                  <span>Tất cả</span>
                 </label>
                 <label className="filter-option">
-                  <input type="checkbox" />
-                  <span>Berries</span>
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={category === '5'}
+                    onChange={() => onCategoryChange('5')}
+                  />
+                  <span>Hoa quả nhập khẩu</span>
                 </label>
                 <label className="filter-option">
-                  <input type="checkbox" />
-                  <span>Citrus</span>
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={category === '6'}
+                    onChange={() => onCategoryChange('6')}
+                  />
+                  <span>Hoa quả nội địa</span>
                 </label>
                 <label className="filter-option">
-                  <input type="checkbox" />
-                  <span>Tropical</span>
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={category === '7'}
+                    onChange={() => onCategoryChange('7')}
+                  />
+                  <span>Giỏ quà trái cây</span>
                 </label>
                 <label className="filter-option">
-                  <input type="checkbox" />
-                  <span>Seasonal</span>
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={category === '8'}
+                    onChange={() => onCategoryChange('8')}
+                  />
+                  <span>Trái cây sấy &amp; Hạt</span>
+                </label>
+                <label className="filter-option">
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={category === '9'}
+                    onChange={() => onCategoryChange('9')}
+                  />
+                  <span>Nước ép tươi</span>
                 </label>
               </div>
             </div>
 
             {/* Price Range */}
             <div className="filter-section">
-              <h3 className="filter-title">Price Range</h3>
+              <h3 className="filter-title">Khoảng giá</h3>
               <div className="price-range-wrap">
-                <input type="range" min="0" max="50" defaultValue="25" className="price-slider" />
+                <input
+                  type="range"
+                  min="0"
+                  max="500000"
+                  step="10000"
+                  value={maxPrice}
+                  onChange={(e) => onPriceChange(minPrice, Number(e.target.value))}
+                  className="price-slider"
+                />
                 <div className="price-labels">
-                  <span>$0</span>
-                  <span>$50</span>
+                  <span>₫{minPrice.toLocaleString('vi-VN')}</span>
+                  <span>₫{maxPrice.toLocaleString('vi-VN')}</span>
                 </div>
               </div>
             </div>
 
             {/* Origin */}
             <div className="filter-section">
-              <h3 className="filter-title">Origin</h3>
+              <h3 className="filter-title">Xuất xứ</h3>
               <div className="filter-options">
                 <label className="filter-option">
-                  <input type="radio" name="origin" defaultChecked />
-                  <span>Any</span>
+                  <input
+                    type="radio"
+                    name="origin"
+                    checked={!origin}
+                    onChange={() => onOriginChange(undefined)}
+                  />
+                  <span>Tất cả</span>
                 </label>
                 <label className="filter-option">
-                  <input type="radio" name="origin" />
-                  <span>Local Farms</span>
+                  <input
+                    type="radio"
+                    name="origin"
+                    checked={origin === 'local'}
+                    onChange={() => onOriginChange('local')}
+                  />
+                  <span>Nông sản trong nước</span>
                 </label>
                 <label className="filter-option">
-                  <input type="radio" name="origin" />
-                  <span>Imported</span>
+                  <input
+                    type="radio"
+                    name="origin"
+                    checked={origin === 'imported'}
+                    onChange={() => onOriginChange('imported')}
+                  />
+                  <span>Hàng nhập khẩu</span>
                 </label>
               </div>
             </div>
 
             {/* Organic Status */}
             <div className="filter-section">
-              <h3 className="filter-title">Organic Status</h3>
+              <h3 className="filter-title">Chứng nhận hữu cơ</h3>
               <label className="filter-option-organic">
-                <input type="checkbox" defaultChecked />
-                <span>Certified Organic</span>
+                <input
+                  type="checkbox"
+                  checked={organic === true}
+                  onChange={(e) => onOrganicChange(e.target.checked ? true : undefined)}
+                />
+                <span>Sản phẩm hữu cơ</span>
               </label>
             </div>
 
-            <button className="apply-filters-btn">Apply Filters</button>
+
           </div>
         </aside>
 
@@ -107,56 +215,78 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
           {/* Title and Sort */}
           <div className="content-header">
             <div>
-              <h1 className="content-title">Fresh Produce</h1>
-              <p className="content-subtitle">Showing {displayed.length} results for "All Fruits"</p>
+              <h1 className="content-title">Trái cây tươi</h1>
+              <p className="content-subtitle">Hiển thị {displayed.length} sản phẩm</p>
             </div>
             <div className="content-actions">
-              <input 
-                className="search-input" 
-                placeholder="Search fruits..." 
-                value={query} 
-                onChange={(e) => onQueryChange(e.target.value)} 
-              />
-              <select className="sort-select">
-                <option>Sort by: Popularity</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Newest First</option>
+              <div className="search-wrap">
+                <input
+                  className="search-input"
+                  placeholder="Tìm kiếm trái cây..."
+                  value={query}
+                  onChange={(e) => onQueryChange(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && onSearchSubmit()}
+                />
+                <button className="search-btn" onClick={onSearchSubmit} aria-label="Search">
+                  🔍
+                </button>
+              </div>
+              <select 
+                className="sort-select"
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortOrder] = e.target.value.split('-')
+                  onSortChange(newSortBy, newSortOrder)
+                }}
+              >
+                <option value="popularity-desc">Sắp xếp: Phổ biến nhất</option>
+                <option value="price-asc">Giá: Thấp đến cao</option>
+                <option value="price-desc">Giá: Cao đến thấp</option>
+                <option value="createdAt-desc">Mới nhất</option>
               </select>
             </div>
           </div>
 
+          {/* Error State */}
+          {error && (
+            <div className="error-state">
+              <p style={{ color: 'red' }}>{error}</p>
+            </div>
+          )}
+
           {/* Products Grid */}
-          <div className="modern-products-grid">
-            {displayed.map((p) => (
-              <div key={p.id} className="modern-product-card">
-                <div className="product-image-wrap">
-                  {p.img ? (
-                    <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
-                  ) : (
-                    <div className="product-image-placeholder">🍊</div>
-                  )}
-                  {p.tag && <div className="product-tag">{p.tag}</div>}
-                  <div className="product-favorite">❤</div>
-                </div>
-                <div className="product-info">
-                  <div className="product-details">
-                    <div>
-                      <p className="product-name-modern">{p.name}</p>
-                      {p.desc && <p className="product-desc">{p.desc}</p>}
-                    </div>
-                    <p className="product-price-modern">{p.price}</p>
+          {!error && (
+            <div className="modern-products-grid">
+              {displayed.map((p) => (
+                <div key={p.id} className="modern-product-card">
+                  <div className="product-image-wrap">
+                    {p.img ? (
+                      <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
+                    ) : (
+                      <div className="product-image-placeholder">🍊</div>
+                    )}
+                    {p.tag && <div className="product-tag">{p.tag}</div>}
+                    <div className="product-favorite">❤</div>
                   </div>
-                  <button 
-                    className="add-to-cart-btn" 
-                    onClick={() => alert('Đã thêm vào giỏ (mock)')}
-                  >
-                    🛒 Add to Cart
-                  </button>
+                  <div className="product-info">
+                    <div className="product-details">
+                      <div>
+                        <p className="product-name-modern">{p.name}</p>
+                        {p.desc && <p className="product-desc">{p.desc}</p>}
+                      </div>
+                      <p className="product-price-modern">{p.price}</p>
+                    </div>
+                    <button
+                      className="add-to-cart-btn"
+                      onClick={() => onAddToCart(p.id)}
+                    >
+                      🛒 Thêm vào giỏ
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Pagination */}
           <div className="pagination-wrap">
@@ -168,18 +298,18 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
             {/* Newest Arrivals */}
             <section className="section-arrivals">
               <div className="section-header">
-                <h2 className="section-title">Newest Arrivals</h2>
+                <h2 className="section-title">Hàng mới về</h2>
                 <div className="section-nav">
                   <button className="nav-btn">←</button>
                   <button className="nav-btn">→</button>
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')`}}></div>
-                    <p className="mini-card-name">Fruit {i}</p>
-                    <p className="mini-card-price">${(i*3.5+2).toFixed(2)}</p>
+                {newArrivals.map(p => (
+                  <div key={p.id} className="mini-card">
+                    <div className="mini-card-img" style={{ backgroundImage: p.img ? `url('${p.img}')` : 'none' }}></div>
+                    <p className="mini-card-name">{p.name}</p>
+                    <p className="mini-card-price">{p.price}</p>
                   </div>
                 ))}
               </div>
@@ -189,8 +319,8 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
             <section className="section-trending">
               <div className="section-header">
                 <div className="trending-header-left">
-                  <h2 className="section-title">Trending Now</h2>
-                  <span className="trending-badge">🔥 Hot Picks</span>
+                  <h2 className="section-title">Đang thịnh hành</h2>
+                  <span className="trending-badge">🔥 Nổi bật</span>
                 </div>
                 <div className="section-nav">
                   <button className="nav-btn">←</button>
@@ -198,11 +328,11 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {[5,6,7].map(i => (
-                  <div key={i} className="mini-card">
-                    <div className="mini-card-img" style={{backgroundImage: `url('https://source.unsplash.com/200x200/?fruit,${i}')`}}></div>
-                    <p className="mini-card-name">Fruit {i}</p>
-                    <p className="mini-card-price">${(i*3.5+2).toFixed(2)}</p>
+                {trending.map(p => (
+                  <div key={p.id} className="mini-card">
+                    <div className="mini-card-img" style={{ backgroundImage: p.img ? `url('${p.img}')` : 'none' }}></div>
+                    <p className="mini-card-name">{p.name}</p>
+                    <p className="mini-card-price">{p.price}</p>
                   </div>
                 ))}
               </div>
@@ -217,6 +347,14 @@ export default function HomeView({ query, onQueryChange, displayed, page, totalP
           <Footer />
         </div>
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal
+        isOpen={loading}
+        message="Đang tải sản phẩm..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }

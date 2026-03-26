@@ -3,7 +3,6 @@ import Home from './components/home-page/Home'
 import Login from './components/login/Login'
 import Register from './components/register/Register'
 import ChangePassword from './components/change-password/ChangePassword'
-import './App.css'
 
 // Seller Components
 import SellerLayout from './components/seller/SellerLayout';
@@ -11,10 +10,18 @@ import SellerDashboard from './components/seller-dashboard/SellerDashboard';
 import FruitManager from './components/seller-fruit/FruitManager';
 import OrderManager from './components/seller-order/OrderManager';
 import Voucher from './components/seller-voucher/Voucher';
-import ProtectedRoute from './components/common/ProtectedRoute';
 
 // Import helper để lấy thông tin user
 import { getUserFromStorage } from './utils/apiClient';
+import ForgotPassword from './components/forgot-password/ForgotPassword';
+import CategoryManagement from './components/category-management/CategoryManagement';
+import AdminDashboard from './components/dashboard-admin/AdminDashboard';
+import ShopManagement from './components/shop-management/ShopManagement';
+import UserManagement from './components/user-management/UserManagement';
+import Profile from './components/profile/Profile';
+import ShopRegistration from './components/shop-registration/ShopRegistration';
+import { PopupProvider } from './components/common/popup';
+import ProtectedRoute from './components/common/protected-route/ProtectedRoute';
 
 function App() {
   // Lấy dữ liệu người dùng từ bộ nhớ cục bộ
@@ -23,17 +30,35 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        {/* === PUBLIC ROUTES === */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/change-password" element={<ChangePassword />} />
+      <PopupProvider>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Public Routes */}
+          <Route path="/home" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* === PROTECTED SELLER ROUTES === */}
-        <Route element={<ProtectedRoute allowedRole="SELLER" />}>
-          <Route path="/seller" element={<SellerLayout />}>
+          {/* Private Routes - Required Login */}
+          <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
+
+          {/* Admin Routes - Required ADMIN role */}
+          <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/category-management" element={<ProtectedRoute requiredRole="ADMIN"><CategoryManagement /></ProtectedRoute>} />
+          <Route path="/shop-management" element={<ProtectedRoute requiredRole="ADMIN"><ShopManagement /></ProtectedRoute>} />
+          <Route path="/user-management" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
+
+          {/* === PROTECTED SELLER ROUTES === */}
+          <Route
+            path="/seller"
+            element={
+              <ProtectedRoute requiredRole="SELLER">
+                <SellerLayout />
+              </ProtectedRoute>
+            }
+          >
             {/* Tự động chuyển hướng từ /seller sang /seller/dashboard */}
             <Route index element={<Navigate to="dashboard" replace />} />
 
@@ -43,13 +68,10 @@ function App() {
             <Route path="orders" element={<OrderManager shopId={shopId} />} />
             <Route path="vouchers" element={<Voucher shopId={shopId} />} />
           </Route>
-        </Route>
-
-        {/* Catch-all route: Chuyển hướng các đường dẫn không tồn tại về trang chủ */}
-        <Route path="*" element={<Navigate to="/home" replace />} />
-      </Routes>
+        </Routes>
+      </PopupProvider>
     </BrowserRouter>
   )
 }
 
-export default App
+export default App;

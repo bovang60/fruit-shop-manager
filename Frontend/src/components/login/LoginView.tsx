@@ -1,5 +1,6 @@
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 import './Login.css'
 
 export type Props = {
@@ -11,6 +12,7 @@ export type Props = {
   onPasswordChange: (v: string) => void
   onSubmit: (e: React.FormEvent) => void
   onGoToRegister: () => void
+  onGoToForgotPassword: () => void
 }
 
 export default function LoginView({
@@ -22,6 +24,7 @@ export default function LoginView({
   onPasswordChange,
   onSubmit,
   onGoToRegister,
+  onGoToForgotPassword,
 }: Props) {
   return (
     <div className="login-root">
@@ -38,9 +41,9 @@ export default function LoginView({
             <div className="hero-overlay"></div>
           </div>
           <div className="hero-content">
-            <h1 className="hero-title">Freshness Awaits</h1>
+            <h1 className="hero-title">Sự tươi ngon đang chờ đón</h1>
             <p className="hero-subtitle">
-              Join our community of fruit lovers and get the season's best harvests delivered straight to your doorstep.
+              Tham gia cộng đồng yêu thích trái cây và nhận những trái cây tươi ngon nhất trong mùa giao tận tận nhà.
             </p>
           </div>
         </div>
@@ -49,8 +52,8 @@ export default function LoginView({
         <div className="login-form-section">
           <div className="login-form-container">
             <div className="login-header-text">
-              <h2>Welcome Back!</h2>
-              <p className="muted">Login to access your favorite harvests.</p>
+              <h2>Chào Mừng Trở Lại!</h2>
+              <p className="muted">Đăng nhập để truy cập mục yêu thích của bạn.</p>
             </div>
 
             <form className="login-form" onSubmit={onSubmit}>
@@ -63,7 +66,7 @@ export default function LoginView({
 
               {/* Email Field */}
               <div className="field">
-                <label htmlFor="email">Email or Username</label>
+                <label htmlFor="email">Email</label>
                 <div className="input-wrapper">
                   {/* <span className="input-icon">✉️</span> */}
                   <input
@@ -71,7 +74,7 @@ export default function LoginView({
                     type="email"
                     value={email}
                     onChange={(e) => onEmailChange(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder="Nhập email của bạn"
                     aria-invalid={!!errors.email}
                     aria-describedby={errors.email ? 'email-error' : undefined}
                     disabled={loading}
@@ -87,8 +90,10 @@ export default function LoginView({
               {/* Password Field */}
               <div className="field">
                 <div className="field-header">
-                  <label htmlFor="password">Password</label>
-                  <a href="#" className="forgot-link">Forgot Password?</a>
+                  <label htmlFor="password">Mật khẩu</label>
+                  <button type="button" className="forgot-link" onClick={onGoToForgotPassword}>
+                    Quên mật khẩu?
+                  </button>
                 </div>
                 <div className="input-wrapper">
                   {/* <span className="input-icon">🔒</span> */}
@@ -97,7 +102,7 @@ export default function LoginView({
                     type="password"
                     value={password}
                     onChange={(e) => onPasswordChange(e.target.value)}
-                    placeholder="Enter your password"
+                    placeholder="Nhập mật khẩu của bạn"
                     aria-invalid={!!errors.password}
                     aria-describedby={errors.password ? 'password-error' : undefined}
                     disabled={loading}
@@ -113,37 +118,37 @@ export default function LoginView({
               {/* Remember Me */}
               <div className="remember-me">
                 <input type="checkbox" id="remember" />
-                <label htmlFor="remember">Remember Me</label>
+                <label htmlFor="remember">Ghi nhớ đăng nhập</label>
               </div>
 
               {/* Login Button */}
               <button type="submit" className="primary login-btn" disabled={loading}>
-                {loading ? 'Logging in...' : 'Login'}
+                {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </button>
             </form>
 
             {/* Divider */}
-            <div className="divider">
+            {/* <div className="divider">
               <div className="divider-line"></div>
-              <span className="divider-text">Or continue with</span>
+              <span className="divider-text">Hoặc tiếp tục với</span>
               <div className="divider-line"></div>
-            </div>
+            </div> */}
 
             {/* Social Login */}
-            <div className="social-login">
+            {/* <div className="social-login">
               <button type="button" className="social-btn" aria-label="Login with Google">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7c0hccFF0Q2ai4PEyNY0oGUKajtYEc04krya811d0VSpXKb74Y6c7aRpRL_0KUhax2Jm-cWang_w8spWDjfWk2rP3porlxzn7fskgeTm13wQ5bTPlLte43SA3-PfkscLUqW1YaZptO3s4P0AkbvuPtBoukYBjxtzID2pLTSudzQEPF7kWwH1xP-5mxBZ3qYy8Utd7R3QymVZc3UFR6JnB9ofhS4P9UbjH7N8SswCGgMcvUHNbgl2XsvN6oNWkbongOS__zCxPHvU" alt="Google" />
               </button>
               <button type="button" className="social-btn" aria-label="Login with Facebook">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuArhJrCRLkSbiRUDunubHsZ0zgAlQyf9edRhFpGXdUtmXvsAPE7xTPEjv6Bw3tNiasJlAK6l7K3fLo_eB44O97YwyKkhtl8EMK-Qv166111KaAzA40cfMI7UrsKuqHNAzKKHofJ6FNPtgRB4_aXOD0oBPEa-rDQPWXqCwGrnHFEAnbVoFrJN43V3aL5aNxdliWHVPcfmi4tyt1Un8IGkC5na1hAfDJM9gljEWY-B9r7v7bLVajj6pBUBGEGY6f1F6miTJuT--1ZeOI" alt="Facebook" />
               </button>
-            </div>
+            </div> */}
 
             {/* Footer Link */}
             <p className="signup-link">
-              Don't have an account?
+              Chưa có tài khoản?
               <button type="button" className="link-btn" onClick={onGoToRegister}>
-                Sign Up
+                Đăng ký
               </button>
             </p>
           </div>
@@ -154,6 +159,14 @@ export default function LoginView({
       <footer className="login-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={loading} 
+        message="Đang đăng nhập..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }

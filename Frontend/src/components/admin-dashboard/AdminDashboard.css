@@ -1,0 +1,51 @@
+.dash-container {
+    padding: 24px;
+    background: #fff;
+    min-height: 100%;
+}
+
+.stat-card {
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.stat-icon-wrap {
+    padding: 12px;
+    border-radius: 12px;
+}
+
+.stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chart-card {
+    border-radius: 12px;
+    height: 100%;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.top-sellers-card {
+    border-radius: 12px;
+    height: 100%;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.rank-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    color: #fff;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #fff;
+}

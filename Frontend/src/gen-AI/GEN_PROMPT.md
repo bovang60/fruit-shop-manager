@@ -465,7 +465,211 @@ interface ApiResponse<T> {
 }
 ```
 
-### 7. Validation Pattern
+### 7. Message Display Pattern (Common Popup)
+
+**⚠️ QUAN TRỌNG: KHÔNG dùng `alert()` - Dùng Common Popup Component**
+
+Project có sẵn common popup component với 4 loại thông báo:
+- **Notice** (xanh dương): Thông báo thông thường
+- **Confirm** (xanh lá): Xác nhận hành động
+- **Error** (đỏ): Thông báo lỗi
+- **Warning** (vàng): Cảnh báo
+
+#### Import và Setup
+
+**Container component:**
+```tsx
+import { usePopup } from '../common/popup'
+
+export default function MyComponent() {
+  const { showNotice, showConfirm, showError, showWarning } = usePopup()
+  
+  // Sử dụng popup methods
+}
+```
+
+#### Usage Examples
+
+**1. Notice (Success message):**
+```tsx
+const handleSubmit = async () => {
+  try {
+    const result = await saveData(data)
+    if (result.resultCd === 0) {
+      showNotice('Đã lưu thành công!', 'Thành công')
+      navigate('/home')
+    }
+  } catch (error) {
+    showError('Có lỗi xảy ra!')
+  }
+}
+```
+
+**2. Confirm (Before destructive action):**
+```tsx
+const handleDelete = (id: number) => {
+  showConfirm(
+    'Bạn có chắc chắn muốn xóa? Thao tác này không thể hoàn tác!',
+    async () => {
+      // Logic khi user click Xác nhận
+      try {
+        await deleteItem(id)
+        showNotice('Đã xóa thành công!')
+        refreshList()
+      } catch (error) {
+        showError('Không thể xóa. Vui lòng thử lại!')
+      }
+    },
+    'Xác nhận xóa',
+    () => {
+      // Optional: Logic khi user click Hủy
+      console.log('User cancelled')
+    }
+  )
+}
+```
+
+**3. Error (API/Validation errors):**
+```tsx
+const handleLogin = async () => {
+  try {
+    const result = await login(email, password)
+    if (result.resultCd === 0) {
+      navigate('/home')
+    } else {
+      // Show business error from API
+      showError(result.message || 'Đăng nhập thất bại')
+    }
+  } catch (error) {
+    // Show network/system error
+    showError('Không thể kết nối đến server. Vui lòng thử lại!')
+  }
+}
+```
+
+**4. Warning (Important notice):**
+```tsx
+const handleSubmit = () => {
+  if (stockLevel < 10) {
+    showWarning('Số lượng tồn kho thấp. Vui lòng kiểm tra!', 'Cảnh báo tồn kho')
+  }
+  // Continue with submission
+}
+```
+
+#### API Methods
+
+```typescript
+// Notice: showNotice(message: string, title?: string)
+showNotice('Đã thêm vào giỏ hàng!', 'Thành công')
+showNotice('Thao tác hoàn tất!')
+
+// Confirm: showConfirm(message, onConfirm, title?, onCancel?)
+showConfirm('Bạn có chắc?', () => { /* confirm logic */ })
+showConfirm('Xóa item?', handleDelete, 'Xác nhận', handleCancel)
+
+// Error: showError(message: string, title?: string)
+showError('Email không hợp lệ!', 'Lỗi đăng nhập')
+showError('Có lỗi xảy ra!')
+
+// Warning: showWarning(message: string, title?: string)
+showWarning('Tài khoản sắp hết hạn', 'Cảnh báo')
+showWarning('Vui lòng kiểm tra lại thông tin')
+```
+
+#### When to use each type:
+
+- **Notice**: Success operations, information messages
+  - "Đã lưu thành công!"
+  - "Đã thêm vào giỏ hàng!"
+  - "Cập nhật hoàn tất!"
+
+- **Confirm**: Before destructive or important actions
+  - Delete operations
+  - Submit forms with sensitive data
+  - Status changes (approve, reject, suspend)
+
+- **Error**: Errors, validation failures, API errors
+  - API errors (resultCd === 1)
+  - Network errors (catch block)
+  - Validation errors
+  - "Email không hợp lệ!"
+
+- **Warning**: Important notices that aren't errors
+  - Low stock warnings
+  - Account expiration notices
+  - Data inconsistencies
+
+#### ❌ KHÔNG làm:
+```tsx
+// ❌ WRONG: Dùng alert()
+alert('Đã lưu thành công!')
+alert('Có lỗi xảy ra!')
+
+// ❌ WRONG: Dùng confirm()
+if (confirm('Bạn có chắc?')) { ... }
+```
+
+#### ✅ Đúng:
+```tsx
+// ✅ CORRECT: Dùng popup
+showNotice('Đã lưu thành công!')
+showError('Có lỗi xảy ra!')
+showConfirm('Bạn có chắc?', () => { ... })
+```
+
+#### Full Example Pattern:
+
+```tsx
+import { usePopup } from '../common/popup'
+import { deleteProduct } from '../../services/productService'
+
+export default function ProductManagement() {
+  const { showNotice, showConfirm, showError } = usePopup()
+  const [products, setProducts] = useState<Product[]>([])
+
+  const handleDelete = (id: number) => {
+    showConfirm(
+      `Bạn có chắc chắn muốn xóa sản phẩm này?`,
+      async () => {
+        try {
+          const result = await deleteProduct(id)
+          if (result.resultCd === 0) {
+            showNotice('Đã xóa sản phẩm thành công!')
+            loadProducts() // Refresh list
+          } else {
+            showError(result.message || 'Không thể xóa sản phẩm')
+          }
+        } catch (error) {
+          console.error('Delete error:', error)
+          showError('Có lỗi xảy ra. Vui lòng thử lại!')
+        }
+      },
+      'Xác nhận xóa'
+    )
+  }
+
+  const handleAdd = async (data: ProductDto) => {
+    try {
+      const result = await createProduct(data)
+      if (result.resultCd === 0) {
+        showNotice('Đã thêm sản phẩm thành công!', 'Thành công')
+        loadProducts()
+      } else {
+        showError(result.message || 'Không thể thêm sản phẩm')
+      }
+    } catch (error) {
+      showError('Lỗi kết nối. Vui lòng thử lại!')
+    }
+  }
+
+  return <ProductManagementView onDelete={handleDelete} onAdd={handleAdd} />
+}
+```
+
+### 8. Validation Pattern
+
+### 8. Validation Pattern
 
 Client-side validation:
 ```tsx
@@ -489,7 +693,9 @@ const validate = (): boolean => {
 }
 ```
 
-### 8. Responsive Rules
+### 9. Responsive Rules
+
+### 9. Responsive Rules
 
 **Mobile-first approach:**
 - Base styles: Mobile (< 768px)
@@ -515,7 +721,7 @@ const validate = (): boolean => {
 }
 ```
 
-### 9. Accessibility Requirements
+### 10. Accessibility Requirements
 
 - Semantic HTML: `<header>`, `<main>`, `<section>`, `<footer>`
 - All inputs have `<label>` with matching `htmlFor`
@@ -524,6 +730,8 @@ const validate = (): boolean => {
 - Images: `alt` text (or use background-image for decorative)
 - Focus states: visible focus indicators
 - Keyboard navigation: proper tab order
+
+### 11oard navigation: proper tab order
 
 ### 10. TypeScript Types
 

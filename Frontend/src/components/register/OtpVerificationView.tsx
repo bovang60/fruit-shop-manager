@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 import './Register.css'
 
 export type OtpVerificationProps = {
@@ -126,10 +127,10 @@ export default function OtpVerificationView({
           </div>
           <div className="hero-content">
             <h1 className="hero-title">
-              Almost There!
+              Gần Hoàn Thành!
             </h1>
             <p className="hero-subtitle">
-              Just one more step to join our fresh fruit community.
+              Chỉ còn một bước nữa để tham gia cộng đồng trái cây tươi của chúng tôi.
             </p>
           </div>
         </div>
@@ -189,11 +190,16 @@ export default function OtpVerificationView({
                   style={{
                     width: '3rem',
                     height: '3rem',
+                    padding: 0,
                     textAlign: 'center',
                     fontSize: '1.5rem',
                     fontWeight: 'bold',
                     border: '2px solid #ddd',
                     borderRadius: '8px',
+                    color: '#212b36',
+                    WebkitTextFillColor: '#212b36',
+                    backgroundColor: '#ffffff',
+                    opacity: 1,
                   }}
                   aria-label={`OTP digit ${index + 1}`}
                 />
@@ -254,6 +260,14 @@ export default function OtpVerificationView({
       <footer className="register-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={loading} 
+        message="Đang xác thực..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }

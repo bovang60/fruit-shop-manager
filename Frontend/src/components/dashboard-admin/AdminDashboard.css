@@ -1,0 +1,458 @@
+@import "../common/AdminShared.css";
+
+/* Admin Dashboard - Page Specific Content */
+.admin-dashboard-root {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+
+/* Inheriting all header styles from AdminShared.css */
+
+.btn-new-order {
+    background: #00a76f;
+    color: white;
+    border: none;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.625rem;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-new-order:hover {
+    background: #008f5e;
+    box-shadow: 0 8px 16px 0 rgba(0, 167, 111, 0.24);
+}
+
+.icon-action-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #637381;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.icon-action-btn:hover {
+    background: rgba(145, 158, 171, 0.08);
+}
+
+.notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: #ff5630;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.user-avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #c3f6e1;
+    color: #007867;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    margin-left: 0.5rem;
+}
+
+/* Page Header */
+.page-header-content {
+    padding: 1.25rem 2.5rem 0;
+}
+
+.page-header-content h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0;
+    color: #1e293b;
+    letter-spacing: -0.025em;
+}
+
+.page-header-content p {
+    color: #64748b;
+    margin-top: 0.5rem;
+    font-size: 0.9375rem;
+}
+
+
+/* Stat Cards */
+.dashboard-grid-main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    padding: 0 2.5rem 2.5rem;
+}
+
+.seller-list-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.seller-item-modern {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+
+.seller-rank-badge {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    border: 2px solid white;
+}
+
+.seller-avatar-square {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+}
+
+.seller-info-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.seller-name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.seller-name-text {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.9375rem;
+}
+
+.seller-revenue-text {
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 0.9375rem;
+}
+
+.seller-stats-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.seller-rating-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.seller-rating-pill .material-symbols-outlined {
+    font-size: 14px;
+    color: #ffab00;
+}
+
+.seller-trend-text {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.seller-trend-text.up {
+    color: #5ce444;
+}
+
+.seller-trend-text.down {
+    color: #ef4444;
+}
+
+.btn-full-report {
+    margin-top: 0.75rem;
+    width: 100%;
+    padding: 0.875rem;
+    border-radius: 12px;
+    border: none;
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-full-report:hover {
+    background: #e2e8f0;
+}
+
+
+.card-with-header {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header-row {
+    padding: 1.5rem 1.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.card-title-group h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #212b36;
+    margin: 0;
+}
+
+.card-title-group p {
+    font-size: 0.875rem;
+    color: #637381;
+    margin: 0.25rem 0 0;
+}
+
+.tab-switcher-modern {
+    display: flex;
+    background: rgba(145, 158, 171, 0.08);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.tab-btn-modern {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: #637381;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn-modern.active {
+    background: #fff;
+    color: #212b36;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.overview-chart-container {
+    padding: 1.5rem;
+    flex: 1;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Daily Orders Bar Chart Styles */
+.daily-orders-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 200px;
+    width: 100%;
+    gap: 8px;
+    margin-top: 1rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.order-bar-item {
+    flex: 1;
+    background: #5ce444;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 12px;
+}
+
+.order-bar-item:hover {
+    background: #4cd137;
+    transform: scaleY(1.05);
+}
+
+.bar-tooltip {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.order-bar-item:hover .bar-tooltip {
+    opacity: 1;
+}
+
+.bar-label {
+    position: absolute;
+    bottom: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 700;
+}
+
+/* Weekly Revenue Styles */
+.weekly-revenue-svg-container {
+    width: 100%;
+    height: 240px;
+    margin-top: 1rem;
+}
+
+.chart-legend-bottom {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.legend-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.indicator-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.donut-chart-wrap {
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.total-visits-center {
+    position: absolute;
+    text-align: center;
+}
+
+.total-visits-center h4 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    color: #212b36;
+}
+
+.total-visits-center p {
+    font-size: 0.75rem;
+    color: #637381;
+    margin: 0;
+    font-weight: 600;
+}
+
+.legend-list-modern {
+    padding: 0 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.legend-item-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.legend-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #212b36;
+}
+
+.legend-dot-modern {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
+.legend-value-modern {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #637381;
+}
+
+@media (max-width: 1200px) {
+    .dashboard-grid-main {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-header-rich {
+        padding: 0.75rem 1rem;
+    }
+
+    .page-header-content {
+        padding: 1.5rem 1.5rem 0;
+    }
+
+    .admin-content-scroll {
+        padding: 1.5rem;
+    }
+
+    .modern-search-bar {
+        max-width: 200px;
+    }
+
+    .search-shortcut,
+    .btn-new-order span {
+        display: none;
+    }
+}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginView from './LoginView'
 import { login, saveUserToStorage, getDisplayMessage } from '../../services/authService'
+import { usePopup } from '../common/popup'
 
 type LoginProps = {
   onSuccess?: () => void
@@ -10,6 +11,7 @@ type LoginProps = {
 
 export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
   const navigate = useNavigate()
+  const { showError } = usePopup()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,15 +21,15 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
     const newErrors: { email?: string; password?: string } = {}
     
     if (!email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = 'Email là bắt buộc'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Email is invalid'
+      newErrors.email = 'Email không hợp lệ'
     }
     
     if (!password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = 'Mật khẩu là bắt buộc'
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự'
     }
     
     setErrors(newErrors)
@@ -52,16 +54,20 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
         if (onSuccess) {
           onSuccess()
         } else {
-          navigate('/home')
+          if (result.data.role === 'ADMIN') {
+            navigate('/admin-dashboard')
+          } else {
+            navigate('/home')
+          }
         }
       } else {
         // Business logic error
         const displayMessage = getDisplayMessage(result.message || 'Đăng nhập thất bại')
-        setErrors({ general: displayMessage })
+        showError(displayMessage, 'Lỗi đăng nhập')
       }
     } catch (error) {
       console.error('Login error:', error)
-      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại!' })
+      showError('Có lỗi xảy ra. Vui lòng thử lại!', 'Lỗi')
     } finally {
       setLoading(false)
     }
@@ -75,6 +81,10 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
     }
   }
 
+  const handleGoToForgotPassword = () => {
+    navigate('/forgot-password')
+  }
+
   return (
     <LoginView
       email={email}
@@ -85,6 +95,7 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
       onPasswordChange={setPassword}
       onSubmit={handleSubmit}
       onGoToRegister={handleGoToRegister}
+      onGoToForgotPassword={handleGoToForgotPassword}
     />
   )
 }
