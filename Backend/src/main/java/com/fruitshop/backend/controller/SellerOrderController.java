@@ -67,8 +67,16 @@ public class SellerOrderController {
                 .orderId(order.getOrderId())
                 .receiverName(order.getReceiverName())
                 .receiverPhone(order.getReceiverPhone())
+                .shippingAddress(order.getShippingAddress())
+                .note(order.getNote())
                 .subTotal(order.getSubTotal())
                 .shippingFee(order.getShippingFee() == null ? BigDecimal.ZERO : order.getShippingFee())
+                .paymentMethod(order.getTransaction() != null && order.getTransaction().getPaymentMethod() != null
+                        ? order.getTransaction().getPaymentMethod().name()
+                        : null)
+                .paymentStatus(order.getTransaction() != null && order.getTransaction().getPaymentStatus() != null
+                        ? order.getTransaction().getPaymentStatus().name()
+                        : null)
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .build();

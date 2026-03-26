@@ -18,12 +18,17 @@ type EditFormState = {
   imageUrl: string;
 };
 
-const parsePositivePrice = (priceValue: string): number | null => {
+const PRODUCT_NAME_REGEX = /^[\p{L}\p{M}\d\s\-().,/&]+$/u;
+
+const normalizeProductName = (value: string): string =>
+  value.normalize("NFC").replace(/\s+/g, " ").trim();
+
+const parsePrice = (priceValue: string): number | null => {
   if (!priceValue) {
     return null;
   }
 
-  if (!/^\d+(\.\d+)?$/.test(priceValue)) {
+  if (!/^-?\d+(\.\d+)?$/.test(priceValue)) {
     return null;
   }
 
@@ -95,18 +100,30 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
   };
 
   const handleSaveEdit = async (fruitId: number) => {
-    const name = editForm.name.trim();
+    const name = normalizeProductName(editForm.name);
     const priceValue = editForm.price.trim();
     const stockValue = editForm.stock.trim();
-    const price = parsePositivePrice(priceValue);
+    const price = parsePrice(priceValue);
     const stock = Number(stockValue);
 
     if (!name) {
       showError("Vui lòng nhập tên sản phẩm", "Lỗi");
       return;
     }
+    if (!priceValue) {
+      showError("Vui lòng nhập giá", "Lỗi");
+      return;
+    }
     if (price === null) {
-      showError("Giá sản phẩm phải là số và lớn hơn 0", "Lỗi");
+      showError("Giá sản phẩm phải là số", "Lỗi");
+      return;
+    }
+    if (price <= 0) {
+      showError("Giá sản phẩm phải lớn hơn 0", "Lỗi");
+      return;
+    }
+    if (!stockValue) {
+      showError("Vui lòng nhập tồn kho", "Lỗi");
       return;
     }
     if (!stockValue || Number.isNaN(stock)) {
@@ -115,6 +132,13 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
     }
     if (stock < 0) {
       showError("Tồn kho phải lớn hơn hoặc bằng 0", "Lỗi");
+      return;
+    }
+    if (!PRODUCT_NAME_REGEX.test(name)) {
+      showError(
+        "Tên sản phẩm chỉ được chứa chữ tiếng Việt, số, khoảng trắng và các ký tự - ( ) . , / &",
+        "Lỗi",
+      );
       return;
     }
 
@@ -149,17 +173,29 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
     stock: string;
     imageUrl?: string;
   }): Promise<boolean> => {
-    const name = data.name.trim();
+    const name = normalizeProductName(data.name);
     const priceValue = data.price.trim();
     const stockValue = data.stock.trim();
-    const price = parsePositivePrice(priceValue);
+    const price = parsePrice(priceValue);
     const stock = Number(stockValue);
     if (!name) {
       showError("Vui lòng nhập tên sản phẩm", "Lỗi");
       return false;
     }
+    if (!priceValue) {
+      showError("Vui lòng nhập giá", "Lỗi");
+      return false;
+    }
     if (price === null) {
-      showError("Giá sản phẩm phải là số và lớn hơn 0", "Lỗi");
+      showError("Giá sản phẩm phải là số", "Lỗi");
+      return false;
+    }
+    if (price <= 0) {
+      showError("Giá sản phẩm phải lớn hơn 0", "Lỗi");
+      return false;
+    }
+    if (!stockValue) {
+      showError("Vui lòng nhập tồn kho", "Lỗi");
       return false;
     }
     if (!stockValue || Number.isNaN(stock)) {
@@ -168,6 +204,13 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
     }
     if (stock < 0) {
       showError("Tồn kho phải lớn hơn hoặc bằng 0", "Lỗi");
+      return false;
+    }
+    if (!PRODUCT_NAME_REGEX.test(name)) {
+      showError(
+        "Tên sản phẩm chỉ được chứa chữ tiếng Việt, số, khoảng trắng và các ký tự - ( ) . , / &",
+        "Lỗi",
+      );
       return false;
     }
 

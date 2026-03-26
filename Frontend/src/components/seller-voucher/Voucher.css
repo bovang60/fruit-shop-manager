@@ -1,51 +1,5 @@
-.voucher-item {
-    border: 2px dashed #28a745;
-    background: #f1fcf4;
-    text-align: center;
-    padding: 20px;
-}
+@import "../seller/SellerPageShared.css";
 
-.voucher-item .product-name {
-    font-size: 1.4rem;
-    letter-spacing: 2px;
-    color: #28a745;
-}
-
-.voucher-item .product-meta {
-    font-size: 0.85rem;
-    color: #666;
-    margin-top: 5px;
-}
-
-.voucher-item .price {
-    margin: 10px 0;
-    display: block;
-}
-
-.voucher-edit-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    text-align: left;
-}
-
-.voucher-edit-form label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: #555;
-}
-
-.voucher-edit-form input {
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 8px 10px;
-    font-size: 0.9rem;
-}
-
-.voucher-edit-form input:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+.seller-voucher-code {
+    letter-spacing: 0.08em;
 }

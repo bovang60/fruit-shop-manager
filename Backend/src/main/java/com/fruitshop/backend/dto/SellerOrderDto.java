@@ -16,8 +16,12 @@ public class SellerOrderDto {
     private Integer orderId;
     private String receiverName;
     private String receiverPhone;
+    private String shippingAddress;
+    private String note;
     private BigDecimal subTotal;
     private BigDecimal shippingFee;
+    private String paymentMethod;
+    private String paymentStatus;
     private Order.OrderStatus status;
     private LocalDateTime createdAt;
 }

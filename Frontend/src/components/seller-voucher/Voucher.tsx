@@ -16,6 +16,8 @@ type EditFormState = {
     expiryDate: string;
 };
 
+const DISCOUNT_VALUE_ERROR = "Giá trị giảm phải lớn hơn 0";
+
 const Voucher = ({ shopId }: { shopId: number }) => {
     const [vouchers, setVouchers] = useState<VoucherData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -83,12 +85,19 @@ const Voucher = ({ shopId }: { shopId: number }) => {
     // Thêm mới Voucher
     const handleCreateVoucher = async (data: Partial<VoucherData>) => {
         try {
-            if (!data.code || !data.discountValue || !data.expiryDate) {
+            if (!data.code || !data.expiryDate) {
                 showError("Vui lòng nhập đầy đủ thông tin voucher", "Lỗi");
                 return;
             }
-            if (Number(data.discountValue) < 0) {
-                showError("Giá trị giảm phải lớn hơn hoặc bằng 0", "Lỗi");
+            const discountValue = Number(data.discountValue);
+            const minOrderValue = Number(data.minOrderValue ?? 0);
+
+            if (Number.isNaN(discountValue) || discountValue <= 0) {
+                showError(DISCOUNT_VALUE_ERROR, "Lỗi");
+                return;
+            }
+            if (Number.isNaN(minOrderValue) || minOrderValue < 0) {
+                showError("Đơn tối thiểu phải lớn hơn hoặc bằng 0", "Lỗi");
                 return;
             }
             const expiryDateValue = new Date(data.expiryDate);
@@ -110,8 +119,8 @@ const Voucher = ({ shopId }: { shopId: number }) => {
 
             const response = await createSellerVoucher(shopId, {
                 code: data.code.trim(),
-                discountValue: data.discountValue,
-                minOrderValue: data.minOrderValue ?? 0,
+                discountValue,
+                minOrderValue,
                 expiryDate: data.expiryDate,
             });
 
@@ -144,7 +153,7 @@ const Voucher = ({ shopId }: { shopId: number }) => {
             return;
         }
         if (Number.isNaN(discountValue) || discountValue <= 0) {
-            showError("Giá trị giảm phải lớn hơn 0", "Lỗi");
+            showError(DISCOUNT_VALUE_ERROR, "Lỗi");
             return;
         }
         if (Number.isNaN(minOrderValue) || minOrderValue < 0) {
