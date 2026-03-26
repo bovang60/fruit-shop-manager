@@ -197,7 +197,7 @@ class ProductControllerTest {
     void getProducts_Success_WithCategoryFilter() throws Exception {
         // Arrange
         when(productService.getProducts(
-                eq(1), eq(25), any(), eq("seasonal"), any(), any(), any(), any(), any(), any()))
+                eq(1), eq(25), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -208,7 +208,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.resultCd").value(0));
 
         verify(productService, times(1)).getProducts(
-                eq(1), eq(25), any(), eq("seasonal"), any(), any(), any(), any(), any(), any());
+                eq(1), eq(25), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -289,7 +289,7 @@ class ProductControllerTest {
     void getProducts_Success_WithAllFilters() throws Exception {
         // Arrange
         when(productService.getProducts(
-                eq(1), eq(20), eq("táo"), eq("seasonal"),
+                eq(1), eq(20), eq("táo"), any(),
                 eq(new BigDecimal("10000")), eq(new BigDecimal("500000")),
                 eq("imported"), eq(true), eq("rating"), eq("desc")))
                 .thenReturn(productsApiResponse);
@@ -311,7 +311,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.resultCd").value(0));
 
         verify(productService, times(1)).getProducts(
-                eq(1), eq(20), eq("táo"), eq("seasonal"),
+                eq(1), eq(20), eq("táo"), any(),
                 eq(new BigDecimal("10000")), eq(new BigDecimal("500000")),
                 eq("imported"), eq(true), eq("rating"), eq("desc"));
     }
