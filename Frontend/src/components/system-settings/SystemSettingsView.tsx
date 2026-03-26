@@ -35,11 +35,11 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 }) => {
     return (
         <div className="settings-container">
-            <AdminHeader placeholder="Search settings, configurations, or logs..." />
+            <AdminHeader placeholder="Tìm kiếm cài đặt, cấu hình, hoặc nhật ký..." />
 
             <div style={{ marginBottom: 32 }}>
-                <Title level={3} style={{ margin: '0 0 8px 0' }}>System Settings</Title>
-                <Text type="secondary">Configure global parameters, payment methods, and platform notifications</Text>
+                <Title level={3} style={{ margin: '0 0 8px 0' }}>Cài Đặt Hệ Thống</Title>
+                <Text type="secondary">Cấu hình các tham số chung, phương thức thanh toán và thông báo nền tảng</Text>
             </div>
 
             <Row gutter={[24, 24]}>
@@ -49,7 +49,7 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         title={
                             <Space>
                                 <GlobalOutlined style={{ color: '#52c41a' }} />
-                                <span>General Settings</span>
+                                <span>Cài Đặt Chung</span>
                             </Space>
                         }
                         bordered={false}
@@ -59,22 +59,22 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div>
-                                <Text strong className="settings-field-label">SITE NAME</Text>
+                                <Text strong className="settings-field-label">TÊN TRANG WEB</Text>
                                 <Input defaultValue="FruitShop Premium" size="large" style={{ borderRadius: 6 }} />
                             </div>
                             <div>
-                                <Text strong className="settings-field-label">STORE EMAIL</Text>
+                                <Text strong className="settings-field-label">EMAIL CỬA HÀNG</Text>
                                 <Input defaultValue="contact@fruitshop.com" size="large" style={{ borderRadius: 6 }} />
                             </div>
                             <div>
-                                <Text strong className="settings-field-label">CURRENCY</Text>
+                                <Text strong className="settings-field-label">TIỀN TỆ</Text>
                                 <Select defaultValue="usd" size="large" style={{ width: '100%', borderRadius: 6 }}>
                                     <Option value="usd">USD - US Dollar ($)</Option>
                                     <Option value="eur">EUR - Euro (€)</Option>
-                                    <Option value="vnd">VND - Vietnamese Dong (₫)</Option>
+                                    <Option value="vnd">VND - Đồng Việt Nam (₫)</Option>
                                 </Select>
                             </div>
-                            <Button type="primary" size="large" block className="settings-save-btn">Save Changes</Button>
+                            <Button type="primary" size="large" block className="settings-save-btn">Lưu Thay Đổi</Button>
                         </div>
                     </Card>
                 </Col>
@@ -85,7 +85,7 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         title={
                             <Space>
                                 <CreditCardOutlined style={{ color: '#52c41a' }} />
-                                <span>Payment Gateways</span>
+                                <span>Cổng Thanh Toán</span>
                             </Space>
                         }
                         bordered={false}
@@ -96,27 +96,27 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Credit Card</Text>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Enable Visa, MasterCard, Amex</Text>
+                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Thẻ Tín Dụng</Text>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>Kích hoạt Visa, MasterCard, Amex</Text>
                                 </div>
                                 <Switch defaultChecked style={{ background: '#52c41a' }} />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
                                     <Text strong style={{ display: 'block', fontSize: 16 }}>PayPal</Text>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Accept International PayPal payments</Text>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>Chấp nhận thanh toán PayPal quốc tế</Text>
                                 </div>
                                 <Switch defaultChecked style={{ background: '#52c41a' }} />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <Text strong style={{ display: 'block', fontSize: 16 }}>E-wallet</Text>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Apple Pay, Google Pay, Local Wallets</Text>
+                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Ví Điện Tử</Text>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>Apple Pay, Google Pay, Ví nội địa</Text>
                                 </div>
                                 <Switch />
                             </div>
                             <div style={{ flexGrow: 1 }}></div>
-                            <Button type="primary" size="large" block className="settings-save-btn">Save Changes</Button>
+                            <Button type="primary" size="large" block className="settings-save-btn">Lưu Thay Đổi</Button>
                         </div>
                     </Card>
                 </Col>
@@ -127,7 +127,7 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         title={
                             <Space>
                                 <CarOutlined style={{ color: '#52c41a' }} />
-                                <span>Shipping Configurations</span>
+                                <span>Cấu Hình Giao Hàng</span>
                             </Space>
                         }
                         bordered={false}
@@ -137,7 +137,7 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                             <div>
-                                <Text strong className="settings-field-label">DELIVERY ZONES</Text>
+                                <Text strong className="settings-field-label">KHU VỰC GIAO HÀNG</Text>
                                 <div style={{ marginBottom: 8 }}>
                                     {deliveryZones.map((tag) => (
                                         <Tag
@@ -163,16 +163,16 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                                     )}
                                     {!inputVisible && (
                                         <Tag onClick={showInput} style={{ background: '#f6ffed', borderStyle: 'dashed', cursor: 'pointer', marginBottom: 8, padding: '6px 14px', fontSize: 13, color: '#52c41a', borderColor: '#b7eb8f', borderRadius: 16 }}>
-                                            <PlusOutlined /> Add New Zone
+                                            <PlusOutlined /> Thêm Khu Vực Mới
                                         </Tag>
                                     )}
                                 </div>
                             </div>
                             <div>
-                                <Text strong className="settings-field-label">BASE FEES ($)</Text>
+                                <Text strong className="settings-field-label">PHÍ CƠ BẢN ($)</Text>
                                 <Input defaultValue="5.00" size="large" style={{ borderRadius: 6 }} />
                             </div>
-                            <Button type="primary" size="large" block className="settings-save-btn">Save Changes</Button>
+                            <Button type="primary" size="large" block className="settings-save-btn">Lưu Thay Đổi</Button>
                         </div>
                     </Card>
                 </Col>
@@ -183,7 +183,7 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         title={
                             <Space>
                                 <MailOutlined style={{ color: '#52c41a' }} />
-                                <span>Email Notifications</span>
+                                <span>Thông Báo Email</span>
                             </Space>
                         }
                         bordered={false}
@@ -194,27 +194,27 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Order Confirmations</Text>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Sent to customer after purchase</Text>
+                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Xác Nhận Đơn Hàng</Text>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>Gửi cho khách hàng sau khi mua hàng</Text>
                                 </div>
                                 <Switch defaultChecked style={{ background: '#52c41a' }} />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Marketing Emails</Text>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Weekly deals and newsletters</Text>
+                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Email Tiếp Thị</Text>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>Ưu đãi hàng tuần và bản tin</Text>
                                 </div>
                                 <Switch defaultChecked style={{ background: '#52c41a' }} />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Stock Alerts</Text>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Notify admins of low inventory</Text>
+                                    <Text strong style={{ display: 'block', fontSize: 16 }}>Cảnh Báo Kho Hàng</Text>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>Thông báo cho admin khi hàng sắp hết</Text>
                                 </div>
                                 <Switch />
                             </div>
                             <div style={{ flexGrow: 1 }}></div>
-                            <Button type="primary" size="large" block className="settings-save-btn">Save Changes</Button>
+                            <Button type="primary" size="large" block className="settings-save-btn">Lưu Thay Đổi</Button>
                         </div>
                     </Card>
                 </Col>
@@ -227,9 +227,9 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         <SafetyCertificateOutlined style={{ color: '#fff', fontSize: 24 }} />
                     </div>
                     <div>
-                        <Text strong style={{ fontSize: 16, display: 'block' }}>System Integrity</Text>
+                        <Text strong style={{ fontSize: 16, display: 'block' }}>Tính Toàn Vẹn Hệ Thống</Text>
                         <Text type="secondary" style={{ maxWidth: 600, display: 'block' }}>
-                            All changes made to system settings are logged for auditing purposes. Ensure critical updates are performed during low-traffic periods.
+                            Tất cả các thay đổi đối với cài đặt hệ thống đều được ghi lại cho mục đích kiểm soát. Đảm bảo cập nhật quan trọng được thực hiện trong thời gian lưu lượng truy cập thấp.
                         </Text>
                     </div>
                 </div>
@@ -240,7 +240,7 @@ const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     fontWeight: 600,
                     borderRadius: 6
                 }}>
-                    View Audit Log
+                    Xem Nhật Ký Kiểm Tra
                 </Button>
             </div>
         </div>

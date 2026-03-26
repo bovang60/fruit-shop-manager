@@ -24,7 +24,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
     if (loading) {
         return (
             <div className="dash-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <Spin size="large" tip="Loading dashboard statistics..." />
+                <Spin size="large" tip="Đang tải dữ liệu thống kê..." />
             </div>
         );
     }
@@ -32,10 +32,10 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
     if (!stats) {
         return (
             <div className="dash-container">
-                <AdminHeader placeholder="Search analytics, sellers, or reports..." />
+                <AdminHeader placeholder="Tìm kiếm phân tích, người bán, hoặc báo cáo..." />
                 <div style={{ marginTop: 50, textAlign: 'center' }}>
-                    <Empty description="No data available" />
-                    <Button type="primary" onClick={() => window.location.reload()}>Retry</Button>
+                    <Empty description="Không có dữ liệu khả dụng" />
+                    <Button type="primary" onClick={() => window.location.reload()}>Thử lại</Button>
                 </div>
             </div>
         );
@@ -59,11 +59,11 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
 
     return (
         <div className="dash-container">
-            <AdminHeader placeholder="Search analytics, sellers, or reports..." />
+            <AdminHeader placeholder="Tìm kiếm phân tích, người bán, hoặc báo cáo..." />
 
             <div style={{ marginBottom: 32 }}>
-                <Title level={3} style={{ margin: '0 0 8px 0' }}>Executive Dashboard</Title>
-                <Text type="secondary">Overview of platform performance and key metrics</Text>
+                <Title level={3} style={{ margin: '0 0 8px 0' }}>Bảng Điều Khiển Quản Trị</Title>
+                <Text type="secondary">Tổng quan về hiệu suất và các chỉ số chính của nền tảng</Text>
             </div>
 
             <Row gutter={[24, 24]}>
@@ -77,7 +77,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
                                 <ArrowUpOutlined /> GMV
                             </Tag>
                         </div>
-                        <Text type="secondary" className="stat-label">Total Revenue</Text>
+                        <Text type="secondary" className="stat-label">Tổng Doanh Thu</Text>
                         <Title level={3} style={{ margin: '4px 0 0' }}>{formatCurrency(stats.totalRevenue)}</Title>
                     </Card>
                 </Col>
@@ -87,9 +87,9 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
                             <div className="stat-icon-wrap" style={{ background: '#e6f7ff' }}>
                                 <UsergroupAddOutlined style={{ fontSize: 24, color: '#1890ff' }} />
                             </div>
-                            <Tag color="blue" style={{ borderRadius: 12, height: 24, lineHeight: '22px' }}>Active</Tag>
+                            <Tag color="blue" style={{ borderRadius: 12, height: 24, lineHeight: '22px' }}>Hoạt động</Tag>
                         </div>
-                        <Text type="secondary" className="stat-label">Active Sellers</Text>
+                        <Text type="secondary" className="stat-label">Người bán hoạt động</Text>
                         <Title level={2} style={{ margin: '4px 0 0' }}>{formatNumber(stats.totalActiveSellers)}</Title>
                     </Card>
                 </Col>
@@ -103,7 +103,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
                                 {stats.cancellationRate}%
                             </Tag>
                         </div>
-                        <Text type="secondary" className="stat-label">Cancellation Rate</Text>
+                        <Text type="secondary" className="stat-label">Tỷ Lệ Hủy Đơn</Text>
                         <Title level={2} style={{ margin: '4px 0 0' }}>{stats.cancellationRate}%</Title>
                     </Card>
                 </Col>
@@ -115,11 +115,11 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
                             </div>
                             {stats.pendingShopApprovals > 0 && (
                                 <Tag color="error" style={{ borderRadius: 12, height: 24, lineHeight: '22px' }}>
-                                    {stats.pendingShopApprovals} Pending
+                                    {stats.pendingShopApprovals} Đang chờ
                                 </Tag>
                             )}
                         </div>
-                        <Text type="secondary" className="stat-label">Needs Approval</Text>
+                        <Text type="secondary" className="stat-label">Cần Phê Duyệt</Text>
                         <Title level={2} style={{ margin: '4px 0 0' }}>{stats.pendingShopApprovals}</Title>
                     </Card>
                 </Col>
@@ -130,14 +130,14 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
                     <Card bordered={false} className="chart-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                             <div>
-                                <Title level={4} style={{ margin: 0 }}>Monthly Performance</Title>
+                                <Title level={4} style={{ margin: 0 }}>Hiệu suất hàng tháng</Title>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <Title level={2} style={{ margin: 0 }}>{formatCurrency(stats.totalRevenue)}</Title>
-                                    <Text type="secondary">Total Lifetime Revenue</Text>
+                                    <Text type="secondary">Tổng doanh thu trọn đời</Text>
                                 </div>
                             </div>
                             <Space>
-                                <Button size="small" type="primary" style={{ background: '#73d13d', color: '#fff', borderColor: '#73d13d' }}>Monthly View</Button>
+                                <Button size="small" type="primary" style={{ background: '#73d13d', color: '#fff', borderColor: '#73d13d' }}>Xem theo tháng</Button>
                             </Space>
                         </div>
                         <div style={{ height: 300 }}>
@@ -173,8 +173,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
                 <Col span={8}>
                     <Card bordered={false} className="top-sellers-card">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                            <Title level={4} style={{ margin: 0 }}>Top Sellers</Title>
-                            <Button type="link" size="small" style={{ color: '#52c41a' }} onClick={() => onNavigate('shops')}>View All</Button>
+                            <Title level={4} style={{ margin: 0 }}>Người bán hàng đầu</Title>
+                            <Button type="link" size="small" style={{ color: '#52c41a' }} onClick={() => onNavigate('shops')}>Xem tất cả</Button>
                         </div>
                         <List
                             itemLayout="horizontal"
@@ -195,14 +195,14 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ stats, loading,
                                         title={<Text strong>{item.shopName}</Text>}
                                         description={
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
-                                                <Text type="secondary">{formatNumber(item.totalUnitsSold)} units sold</Text>
+                                                <Text type="secondary">{formatNumber(item.totalUnitsSold)} đơn vị đã bán</Text>
                                             </div>
                                         }
                                     />
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ fontWeight: 'bold' }}>{formatCurrency(item.totalRevenue)}</div>
                                         <Tag color={item.status === 'APPROVED' ? 'success' : 'warning'} style={{ fontSize: 10, marginRight: 0 }}>
-                                            {item.status}
+                                            {item.status === 'APPROVED' ? 'ĐÃ PHÊ DUYỆT' : 'CHỜ PHÊ DUYỆT'}
                                         </Tag>
                                     </div>
                                 </List.Item>

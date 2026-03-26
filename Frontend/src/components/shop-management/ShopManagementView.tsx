@@ -69,12 +69,12 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
         <>
             <div className="page-header-content">
                 <nav className="breadcrumbs-modern">
-                    <Link to="/admin-dashboard">Dashboard</Link>
+                    <Link to="/admin-dashboard">Bảng điều khiển</Link>
                     <span className="material-symbols-outlined">chevron_right</span>
-                    <span className="current">Shop Management</span>
+                    <span className="current">Quản lý cửa hàng</span>
                 </nav>
-                <h1>Shop Management</h1>
-                <p>Review and manage merchant applications and storefront approvals.</p>
+                <h1>Quản lý cửa hàng</h1>
+                <p>Xem xét và quản lý các đơn đăng ký người bán và phê duyệt cửa hàng.</p>
             </div>
 
             <div className="management-filter-section">
@@ -83,7 +83,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                         <span className="material-symbols-outlined">search</span>
                         <input
                             type="text"
-                            placeholder="Search by shop or owner name..."
+                            placeholder="Tìm kiếm theo tên shop hoặc chủ shop..."
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
@@ -96,10 +96,10 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                                 onChange={(e) => onTabChange(e.target.value)}
                                 className="modern-filter-select"
                             >
-                                <option value="ALL">All Statuses</option>
-                                <option value="PENDING">Status: Pending</option>
-                                <option value="APPROVED">Status: Approval</option>
-                                <option value="REJECTED">Status: Rejected</option>
+                                <option value="ALL">Tất cả trạng thái</option>
+                                <option value="PENDING">Trạng thái: Chờ duyệt</option>
+                                <option value="APPROVED">Trạng thái: Đã duyệt</option>
+                                <option value="REJECTED">Trạng thái: Từ chối</option>
                             </select>
                             <span className="material-symbols-outlined select-arrow">expand_more</span>
                         </div>
@@ -111,22 +111,22 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                 <table className={`admin-table ${loading ? 'table-loading' : ''}`}>
                     <thead>
                         <tr>
-                            <th>Shop Name</th>
-                            <th>Owner</th>
-                            <th>Reg Date</th>
-                            <th>Status</th>
-                            {activeTab === 'REJECTED' && <th>Reason</th>}
-                            <th style={{ textAlign: 'center', width: '200px' }}>Actions</th>
+                            <th>Tên cửa hàng</th>
+                            <th>Chủ sở hữu</th>
+                            <th>Ngày đăng ký</th>
+                            <th>Trạng thái</th>
+                            {activeTab === 'REJECTED' && <th>Lý do</th>}
+                            <th style={{ textAlign: 'center', width: '200px' }}>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>Loading shops...</td>
+                                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>Đang tải cửa hàng...</td>
                             </tr>
                         ) : shops.length === 0 ? (
                             <tr>
-                                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>No shops found.</td>
+                                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>Không tìm thấy cửa hàng nào.</td>
                             </tr>
                         ) : (
                             shops.map((s) => (
@@ -136,7 +136,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                                     <td style={{ color: '#637381' }}>{s.regDate}</td>
                                     <td>
                                         <span className={`status-chip status-${s.status.toLowerCase()}`}>
-                                            {s.status === 'APPROVED' ? 'Approval' : s.status}
+                                            {s.status === 'APPROVED' ? 'Đã duyệt' : s.status === 'PENDING' ? 'Chờ duyệt' : s.status === 'REJECTED' ? 'Từ chối' : 'Đình chỉ'}
                                         </span>
                                     </td>
                                     {activeTab === 'REJECTED' && <td>{s.rejectReason}</td>}
@@ -144,7 +144,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                                         <div className="status-actions-group">
                                             <button
                                                 className="icon-btn-action"
-                                                title="View details"
+                                                title="Xem chi tiết"
                                                 onClick={() => { setSelectedShop(s); setViewMode('DETAIL'); }}
                                             >
                                                 <span className="material-symbols-outlined">visibility</span>
@@ -157,7 +157,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                                                             className={`action-status-btn ${s.status === 'SUSPENDED' ? 'activate' : 'deactivate'}`}
                                                             onClick={() => onSuspend(s.id)}
                                                         >
-                                                            {s.status === 'SUSPENDED' ? 'Re-activate' : 'Suspend'}
+                                                            {s.status === 'SUSPENDED' ? 'Kích hoạt lại' : 'Đình chỉ'}
                                                         </button>
                                                     )}
                                                     {s.status === 'PENDING' && (
@@ -165,7 +165,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                                                             className="action-status-btn activate"
                                                             onClick={() => onApprove(s.id)}
                                                         >
-                                                            Approve
+                                                            Phê duyệt
                                                         </button>
                                                     )}
                                                 </>
@@ -179,7 +179,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                 </table>
                 <div className="table-footer">
                     <p className="footer-stats">
-                        Showing {shops.length} of {totalElements} shops
+                        Hiển thị {shops.length} trên {totalElements} cửa hàng
                     </p>
                     <div className="pagination-group">
                         <button
@@ -218,8 +218,8 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
         <div className="admin-modal-overlay" onClick={() => setViewMode('LIST')}>
             <div className="admin-modal-content large" onClick={(e) => e.stopPropagation()}>
                 <div className="admin-modal-header">
-                    <h2>Shop Details</h2>
-                    <button className="admin-modal-close-btn" onClick={() => setViewMode('LIST')} title="Close">
+                    <h2>Chi tiết cửa hàng</h2>
+                    <button className="admin-modal-close-btn" onClick={() => setViewMode('LIST')} title="Đóng">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -233,7 +233,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                             <div className="identity-title-row">
                                 <h2 className="user-name-title">{shop.shopName}</h2>
                                 <span className={`status-chip status-${shop.status.toLowerCase()}`}>
-                                    {shop.status}
+                                    {shop.status === 'APPROVED' ? 'Đã duyệt' : shop.status === 'PENDING' ? 'Chờ duyệt' : shop.status === 'REJECTED' ? 'Từ chối' : 'Đình chỉ'}
                                 </span>
                             </div>
                             <div className="user-role-meta">
@@ -244,26 +244,26 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                     </div>
 
                     <div className="detail-section-card" style={{ marginBottom: 0, padding: '1rem', boxShadow: 'none' }}>
-                        <h3 className="section-title-label" style={{ marginBottom: '1.25rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Shop & Owner Information</h3>
+                        <h3 className="section-title-label" style={{ marginBottom: '1.25rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Thông tin Cửa hàng & Chủ sở hữu</h3>
                         <div className="section-content-body grid-info">
                             <div className="info-group">
-                                <label>Owner Name</label>
+                                <label>Tên chủ sở hữu</label>
                                 <p>{shop.ownerName}</p>
                             </div>
                             <div className="info-group">
-                                <label>Phone Number</label>
+                                <label>Số điện thoại</label>
                                 <p>{shop.ownerPhone || 'N/A'}</p>
                             </div>
                             <div className="info-group">
-                                <label>Email Address</label>
+                                <label>Địa chỉ Email</label>
                                 <p>{shop.ownerEmail || 'N/A'}</p>
                             </div>
                             <div className="info-group">
-                                <label>Registration Date</label>
+                                <label>Ngày đăng ký</label>
                                 <p>{shop.regDate}</p>
                             </div>
                             <div className="info-group" style={{ gridColumn: 'span 2' }}>
-                                <label>Business Address</label>
+                                <label>Địa chỉ kinh doanh</label>
                                 <p>{shop.businessAddress || 'N/A'}</p>
                             </div>
                         </div>
@@ -271,18 +271,18 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
 
                     {shop.description && (
                         <div className="detail-section-card" style={{ marginBottom: 0, padding: '1rem', boxShadow: 'none' }}>
-                            <h3 className="section-title-label" style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#637381' }}>Business Description</h3>
+                            <h3 className="section-title-label" style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#637381' }}>Mô tả kinh doanh</h3>
                             <p style={{ fontSize: '0.875rem', color: '#212b36', lineHeight: 1.6 }}>{shop.description}</p>
                         </div>
                     )}
                 </div>
 
                 <div className="admin-modal-footer">
-                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Close</button>
+                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Đóng</button>
                     {shop.status === 'PENDING' && (
                         <div style={{ display: 'flex', gap: '0.75rem' }}>
-                            <button className="btn-status-toggle is-deactivate" onClick={() => onReject(shop.id)}>Reject Shop</button>
-                            <button className="btn-status-toggle is-activate" onClick={() => onApprove(shop.id)}>Approve Shop</button>
+                            <button className="btn-status-toggle is-deactivate" onClick={() => onReject(shop.id)}>Từ chối Shop</button>
+                            <button className="btn-status-toggle is-activate" onClick={() => onApprove(shop.id)}>Phê duyệt Shop</button>
                         </div>
                     )}
                 </div>

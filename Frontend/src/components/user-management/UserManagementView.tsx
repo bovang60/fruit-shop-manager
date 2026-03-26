@@ -88,12 +88,12 @@ export default function UserManagementView({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <div>
                         <nav className="breadcrumbs-modern">
-                            <Link to="/admin-dashboard">Dashboard</Link>
+                            <Link to="/admin-dashboard">Bảng điều khiển</Link>
                             <span className="material-symbols-outlined">chevron_right</span>
-                            <span className="current">User Management</span>
+                            <span className="current">Quản lý người dùng</span>
                         </nav>
-                        <h1>User Management</h1>
-                        <p>Monitor and manage platform users, roles, and account permissions.</p>
+                        <h1>Quản lý người dùng</h1>
+                        <p>Theo dõi và quản lý người dùng nền tảng, vai trò và quyền hạn tài khoản.</p>
                     </div>
                 </div>
             </div>
@@ -105,7 +105,7 @@ export default function UserManagementView({
                         <span className="material-symbols-outlined">search</span>
                         <input
                             type="text"
-                            placeholder="Search users by name or email..."
+                            placeholder="Tìm kiếm theo tên hoặc email..."
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
                         />
@@ -118,9 +118,9 @@ export default function UserManagementView({
                                 onChange={(e) => onRoleFilterChange(e.target.value)}
                                 className="modern-filter-select"
                             >
-                                <option value="">All Roles</option>
-                                <option value="CUSTOMER">Customer</option>
-                                <option value="SELLER">Seller</option>
+                                <option value="">Tất cả vai trò</option>
+                                <option value="CUSTOMER">Khách hàng</option>
+                                <option value="SELLER">Người bán</option>
                             </select>
                             <span className="material-symbols-outlined select-arrow">expand_more</span>
                         </div>
@@ -131,9 +131,9 @@ export default function UserManagementView({
                                 onChange={(e) => onStatusFilterChange(e.target.value)}
                                 className="modern-filter-select"
                             >
-                                <option value="">All Statuses</option>
-                                <option value="ACTIVE">Status: Active</option>
-                                <option value="INACTIVE">Status: Inactive</option>
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="ACTIVE">Trạng thái: Hoạt động</option>
+                                <option value="INACTIVE">Trạng thái: Khóa</option>
                             </select>
                             <span className="material-symbols-outlined select-arrow">expand_more</span>
                         </div>
@@ -143,10 +143,10 @@ export default function UserManagementView({
                         <div className="dropdown-container">
                             <button className="btn-utility">
                                 <span className="material-symbols-outlined">tune</span>
-                                Columns
+                                Cột hiển thị
                             </button>
                             <div className="column-toggle-dropdown">
-                                <div className="dropdown-header-title">Toggle columns</div>
+                                <div className="dropdown-header-title">Ẩn/Hiện cột</div>
                                 <div className="dropdown-body-options">
                                     <div
                                         className={`column-option-item ${visibleColumns.has('email') ? 'is-selected' : ''}`}
@@ -173,7 +173,7 @@ export default function UserManagementView({
                                         <div className="checkmark-indicator">
                                             <span className="material-symbols-outlined">check</span>
                                         </div>
-                                        <span className="option-label">Status</span>
+                                        <span className="option-label">Trạng thái</span>
                                     </div>
                                 </div>
                             </div>
@@ -189,7 +189,7 @@ export default function UserManagementView({
                         <tr>
                             <th onClick={() => onSort('name')} style={{ cursor: 'pointer' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    Name {renderSortIcon('name')}
+                                    Tên {renderSortIcon('name')}
                                 </div>
                             </th>
                             {visibleColumns.has('email') && (
@@ -202,28 +202,28 @@ export default function UserManagementView({
                             {visibleColumns.has('role') && (
                                 <th onClick={() => onSort('role')} style={{ cursor: 'pointer' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        Role {renderSortIcon('role')}
+                                        Vai trò {renderSortIcon('role')}
                                     </div>
                                 </th>
                             )}
                             {visibleColumns.has('status') && (
                                 <th onClick={() => onSort('status')} style={{ cursor: 'pointer' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        Status {renderSortIcon('status')}
+                                        Trạng thái {renderSortIcon('status')}
                                     </div>
                                 </th>
                             )}
-                            <th style={{ textAlign: 'center', width: '200px' }}>Actions</th>
+                            <th style={{ textAlign: 'center', width: '200px' }}>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>Loading users...</td>
+                                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>Đang tải người dùng...</td>
                             </tr>
                         ) : users.length === 0 ? (
                             <tr>
-                                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>No users found.</td>
+                                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>Không tìm thấy người dùng.</td>
                             </tr>
                         ) : (
                             users.map((u) => (
@@ -247,14 +247,14 @@ export default function UserManagementView({
                                     {visibleColumns.has('role') && (
                                         <td>
                                             <span className={`role-badge role-${u.role.toLowerCase()}`}>
-                                                {u.role}
+                                                {u.role === 'ADMIN' ? 'Quản trị' : u.role === 'SELLER' ? 'Người bán' : 'Khách hàng'}
                                             </span>
                                         </td>
                                     )}
                                     {visibleColumns.has('status') && (
                                         <td>
                                             <span className={`status-chip status-${u.status.toLowerCase()}`}>
-                                                {u.status}
+                                                {u.status === 'ACTIVE' ? 'Hoạt động' : 'Khóa'}
                                             </span>
                                         </td>
                                     )}
@@ -262,7 +262,7 @@ export default function UserManagementView({
                                         <div className="status-actions-group">
                                             <button
                                                 className="icon-btn-action"
-                                                title="View Detail"
+                                                title="Xem chi tiết"
                                                 onClick={() => onViewDetail(u)}
                                             >
                                                 <span className="material-symbols-outlined">visibility</span>
@@ -272,17 +272,17 @@ export default function UserManagementView({
                                                 <button
                                                     className="action-status-btn deactivate"
                                                     onClick={() => onStatusChange(u.id, 'INACTIVE')}
-                                                    title="Deactivate User"
+                                                    title="Khóa tài khoản"
                                                 >
-                                                    Inactive
+                                                    Khóa
                                                 </button>
                                             ) : (
                                                 <button
                                                     className="action-status-btn activate"
                                                     onClick={() => onStatusChange(u.id, 'ACTIVE')}
-                                                    title="Activate User"
+                                                    title="Kích hoạt tài khoản"
                                                 >
-                                                    Active
+                                                    Kích hoạt
                                                 </button>
                                             )}
                                         </div>
@@ -294,7 +294,7 @@ export default function UserManagementView({
                 </table>
                 <div className="table-footer">
                     <p className="footer-stats">
-                        Showing {users.length} of {totalElements} users
+                        Hiển thị {users.length} trên {totalElements} người dùng
                     </p>
                     <div className="pagination-group">
                         <button
@@ -333,8 +333,8 @@ export default function UserManagementView({
         <div className="admin-modal-overlay" onClick={onBackToList}>
             <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="admin-modal-header">
-                    <h2>User Details</h2>
-                    <button className="admin-modal-close-btn" onClick={onBackToList} title="Close">
+                    <h2>Chi tiết người dùng</h2>
+                    <button className="admin-modal-close-btn" onClick={onBackToList} title="Đóng">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -346,51 +346,51 @@ export default function UserManagementView({
                             <div className="identity-title-row">
                                 <h2 className="user-name-title">{user.fullname}</h2>
                                 <span className={`status-chip status-${user.status.toLowerCase()}`}>
-                                    {user.status}
+                                    {user.status === 'ACTIVE' ? 'Hoạt động' : 'Khóa'}
                                 </span>
                             </div>
                             <div className="user-role-meta">
                                 <span className="material-symbols-outlined">verified_user</span>
-                                <span>{user.role}</span>
+                                <span>{user.role === 'ADMIN' ? 'Quản trị' : user.role === 'SELLER' ? 'Người bán' : 'Khách hàng'}</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="detail-section-card" style={{ marginBottom: 0, padding: '1rem', boxShadow: 'none' }}>
                         <div className="section-header-row" style={{ marginBottom: '1.25rem', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>
-                            <h3 className="section-title-label" style={{ margin: 0, fontSize: '0.875rem', color: '#637381' }}>User Information</h3>
+                            <h3 className="section-title-label" style={{ margin: 0, fontSize: '0.875rem', color: '#637381' }}>Thông tin người dùng</h3>
                         </div>
                         <div className="section-content-body grid-info">
                             <div className="info-group">
-                                <label>Username</label>
+                                <label>Tên đăng nhập</label>
                                 <p>{user.username}</p>
                             </div>
                             <div className="info-group">
-                                <label>Full Name</label>
+                                <label>Họ và tên</label>
                                 <p>{user.fullname}</p>
                             </div>
                             <div className="info-group">
-                                <label>Email Address</label>
+                                <label>Địa chỉ Email</label>
                                 <p>{user.email}</p>
                             </div>
                             <div className="info-group">
-                                <label>Phone Number</label>
+                                <label>Số điện thoại</label>
                                 <p>{user.phone}</p>
                             </div>
                             <div className="info-group">
-                                <label>Account Role</label>
-                                <p>{user.role}</p>
+                                <label>Vai trò tài khoản</label>
+                                <p>{user.role === 'ADMIN' ? 'Quản trị' : user.role === 'SELLER' ? 'Người bán' : 'Khách hàng'}</p>
                             </div>
                             <div className="info-group">
-                                <label>Account Status</label>
-                                <p>{user.status}</p>
+                                <label>Trạng thái tài khoản</label>
+                                <p>{user.status === 'ACTIVE' ? 'Hoạt động' : 'Khóa'}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="admin-modal-footer">
-                    <button className="btn-cancel-action" onClick={onBackToList}>Close</button>
+                    <button className="btn-cancel-action" onClick={onBackToList}>Đóng</button>
                     <button
                         className={`btn-status-toggle ${user.status === 'ACTIVE' ? 'is-deactivate' : 'is-activate'}`}
                         onClick={() => {
@@ -398,7 +398,7 @@ export default function UserManagementView({
                             onBackToList();
                         }}
                     >
-                        {user.status === 'ACTIVE' ? 'Deactivate Account' : 'Activate Account'}
+                        {user.status === 'ACTIVE' ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'}
                     </button>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { SortConfig } from './CategoryManagement';
 import { AdminFrame, ADMIN_NAV_ITEMS } from '../common/admin-frame';
@@ -145,7 +145,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                                 </div>
                             </th>
                             <th>Trạng Thái</th>
-                            <th style={{ textAlign: 'center', width: '120px' }}>Actions</th>
+                            <th style={{ textAlign: 'center', width: '120px' }}>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -164,7 +164,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                                     <td>{cat.productCount} sản phẩm</td>
                                     <td>
                                         <span className={`status-chip status-${cat.status.toLowerCase()}`}>
-                                            {cat.status}
+                                            {cat.status === 'Active' ? 'Hoạt động' : 'Khóa'}
                                         </span>
                                     </td>
                                     <td>

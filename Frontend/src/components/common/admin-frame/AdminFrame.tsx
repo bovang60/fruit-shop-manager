@@ -36,7 +36,7 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
     sidebarItems,
     logoutTo = '/login',
     brandName = 'FruitShop Admin',
-    brandSubtext = 'Executive Portal',
+    brandSubtext = 'Cổng Điều Hành',
     userInitials = 'AS',
     activePath,
     isSidebarCollapsed: controlledIsCollapsed,
@@ -120,7 +120,7 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
                             <nav className="admin-nav">
                                 <Link to={logoutTo} className="nav-item" style={{ color: '#ef4444' }} title="Logout">
                                     <span className="material-symbols-outlined">logout</span>
-                                    <span className="nav-label">Logout</span>
+                                    <span className="nav-label">Đăng xuất</span>
                                 </Link>
                             </nav>
                         </div>
