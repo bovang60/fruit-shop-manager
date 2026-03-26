@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePopup } from '../common/popup';
 import { getUserOrders, type OrderDto } from '../../services/orderService';
+import { getUserFromStorage } from '../../services/authService';
 import OrderHistoryView from './OrderHistoryView';
 
 export default function OrderHistory() {
@@ -11,10 +12,17 @@ export default function OrderHistory() {
   const [orders, setOrders] = useState<OrderDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Match the mock userId pattern used in Cart and Checkout
-  const userId = 3;
+  const user = getUserFromStorage();
+  const userId = user?.userId;
 
   const fetchOrders = useCallback(async () => {
+      if (!userId) {
+        setLoading(false);
+        showError('Vui lòng đăng nhập để xem đơn hàng');
+        navigate('/login');
+        return;
+      }
+
       setLoading(true);
       try {
         const response = await getUserOrders(userId);

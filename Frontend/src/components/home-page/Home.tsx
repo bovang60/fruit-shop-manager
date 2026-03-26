@@ -9,9 +9,7 @@ import {
 import { addToCart } from '../../services/cartService'
 import type {
   Product,
-  FilterState,
-  mapProductToUI,
-  mapProductSummaryToUI
+  FilterState
 } from './Home.types'
 
 // Import mapper functions
@@ -21,6 +19,7 @@ import {
 } from './Home.types'
 
 import { usePopup } from '../common/popup'
+import { getUserFromStorage } from '../../services/authService'
 
 export default function Home() {
   const { showNotice, showError } = usePopup()
@@ -32,8 +31,8 @@ export default function Home() {
   const [error, setError] = useState('')
   const [addingToCartId, setAddingToCartId] = useState<number | null>(null)
 
-  // Mock userId (use auth context if available)
-  const userId = 3
+  const user = getUserFromStorage()
+  const userId = user?.userId || 0
 
   // Pagination state
   const [page, setPage] = useState(1)
@@ -158,6 +157,11 @@ export default function Home() {
    * Handle add to cart
    */
   const handleAddToCart = async (productId: number) => {
+    if (!userId) {
+      showError('Vui lòng đăng nhập để thêm vào giỏ hàng')
+      // optionally navigate('/login');
+      return
+    }
     setAddingToCartId(productId)
     try {
       const response = await addToCart(userId, productId, 1)

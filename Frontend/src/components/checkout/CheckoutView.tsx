@@ -20,6 +20,12 @@ export interface CheckoutViewProps {
   onPhoneChange: (value: string) => void;
   onSelectMethod: (methodId: number) => void;
   onSubmit: () => void;
+  nameError?: string;
+  addressError?: string;
+  phoneError?: string;
+  onNameBlur?: () => void;
+  onAddressBlur?: () => void;
+  onPhoneBlur?: () => void;
 }
 
 export default function CheckoutView({
@@ -38,6 +44,12 @@ export default function CheckoutView({
   onPhoneChange,
   onSelectMethod,
   onSubmit,
+  nameError,
+  addressError,
+  phoneError,
+  onNameBlur,
+  onAddressBlur,
+  onPhoneBlur,
 }: CheckoutViewProps) {
 
   const formatCurrency = (amount: number) => {
@@ -47,6 +59,10 @@ export default function CheckoutView({
   const totalItems = cart?.totalItems ?? cartItems?.length ?? 0;
   const totalPrice = cart?.totalPrice ?? 0;
   const hasItems = (cartItems?.length ?? 0) > 0;
+
+  const selectedMethod = shippingMethods?.find(m => m.methodId === selectedMethodId);
+  const shippingFee = selectedMethod?.fixedFee ?? 0;
+  const finalTotal = totalPrice + shippingFee;
 
   return (
     <div className="checkout-root">
@@ -80,12 +96,14 @@ export default function CheckoutView({
                   <input
                     id="checkout-fullname"
                     type="text"
-                    className="checkout-input"
+                    className={`checkout-input ${nameError ? 'checkout-input--error' : ''}`}
                     placeholder="Enter your full name"
                     value={fullName}
                     onChange={(e) => onFullNameChange(e.target.value)}
+                    onBlur={onNameBlur}
                     disabled={submitting}
                   />
+                  {nameError && <span className="checkout-error-text">{nameError}</span>}
                 </div>
 
                 <div className="checkout-form-group">
@@ -95,12 +113,14 @@ export default function CheckoutView({
                   <input
                     id="checkout-address"
                     type="text"
-                    className="checkout-input"
+                    className={`checkout-input ${addressError ? 'checkout-input--error' : ''}`}
                     placeholder="Enter your delivery address"
                     value={address}
                     onChange={(e) => onAddressChange(e.target.value)}
+                    onBlur={onAddressBlur}
                     disabled={submitting}
                   />
+                  {addressError && <span className="checkout-error-text">{addressError}</span>}
                 </div>
 
                 <div className="checkout-form-group">
@@ -110,12 +130,14 @@ export default function CheckoutView({
                   <input
                     id="checkout-phone"
                     type="tel"
-                    className="checkout-input"
+                    className={`checkout-input ${phoneError ? 'checkout-input--error' : ''}`}
                     placeholder="Enter your phone number"
                     value={phone}
                     onChange={(e) => onPhoneChange(e.target.value)}
+                    onBlur={onPhoneBlur}
                     disabled={submitting}
                   />
+                  {phoneError && <span className="checkout-error-text">{phoneError}</span>}
                 </div>
               </div>
 
@@ -205,8 +227,10 @@ export default function CheckoutView({
                     </div>
                   ))}
                 </div>
-                <div className="checkout-submit-section">
-                  <p className="checkout-section-title">Cart Total: {formatCurrency(totalPrice)}</p>
+                <div className="checkout-submit-section" style={{ textAlign: 'right' }}>
+                  <p className="checkout-shipping-desc" style={{ marginBottom: '4px' }}>Subtotal: {formatCurrency(totalPrice)}</p>
+                  <p className="checkout-shipping-desc" style={{ marginBottom: '12px' }}>Shipping Fee: {formatCurrency(shippingFee)}</p>
+                  <p className="checkout-section-title">Grand Total: {formatCurrency(finalTotal)}</p>
                 </div>
               </div>
 

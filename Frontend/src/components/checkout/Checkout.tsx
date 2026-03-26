@@ -4,6 +4,7 @@ import { usePopup } from '../common/popup';
 import { getShippingMethods, type ShippingMethodDto } from '../../services/shippingMethodService';
 import { createOrder } from '../../services/orderService';
 import { getCart, type CartDto } from '../../services/cartService';
+import { getUserFromStorage } from '../../services/authService';
 import CheckoutView from './CheckoutView';
 
 export default function Checkout() {
@@ -24,10 +25,21 @@ export default function Checkout() {
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  // Match userId pattern from Cart.tsx
-  const userId = 3;
+  // Error States inline
+  const [nameError, setNameError] = useState<string>('');
+  const [addressError, setAddressError] = useState<string>('');
+  const [phoneError, setPhoneError] = useState<string>('');
+
+  const user = getUserFromStorage();
+  const userId = user?.userId;
 
   useEffect(() => {
+    if (!userId) {
+      showError('Please login to checkout');
+      navigate('/login');
+      return;
+    }
+
     const loadCheckoutData = async () => {
       setLoading(true);
       try {
@@ -74,6 +86,49 @@ export default function Checkout() {
     loadCheckoutData();
   }, [showError, userId]);
 
+  const handleNameBlur = () => {
+    if (!fullName.trim()) {
+      setNameError('Please enter your full name');
+    } else if (!/^[\p{L}\s]+$/u.test(fullName.trim())) {
+      setNameError('Full name cannot contain numbers or special characters');
+    } else {
+      setNameError('');
+    }
+  };
+
+  const handleAddressBlur = () => {
+    if (!address.trim()) {
+      setAddressError('Please enter your address');
+    } else {
+      setAddressError('');
+    }
+  };
+
+  const handlePhoneBlur = () => {
+    if (!phone.trim()) {
+      setPhoneError('Please enter your phone number');
+    } else if (!/^(0[3|5|7|8|9])[0-9]{8}$/.test(phone.trim())) {
+      setPhoneError('Invalid phone number. Must be 10 digits starting with 0');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const onFullNameChange = (val: string) => {
+    setFullName(val);
+    if (nameError) setNameError('');
+  };
+
+  const onAddressChange = (val: string) => {
+    setAddress(val);
+    if (addressError) setAddressError('');
+  };
+
+  const onPhoneChange = (val: string) => {
+    setPhone(val);
+    if (phoneError) setPhoneError('');
+  };
+
   const cartItems = cart?.items || [];
   const isFormValid =
     fullName.trim() !== '' &&
@@ -92,12 +147,28 @@ export default function Checkout() {
       showError('Please enter your full name');
       return;
     }
+    
+    // Allow unicode letters and spaces, reject numbers and special characters
+    const nameRegex = /^[\p{L}\s]+$/u;
+    if (!nameRegex.test(fullName.trim())) {
+      showError('Full name cannot contain numbers or special characters');
+      return;
+    }
+
     if (!address.trim()) {
       showError('Please enter your address');
       return;
     }
+
     if (!phone.trim()) {
       showError('Please enter your phone number');
+      return;
+    }
+
+    // Valid Vietnamese phone number format (03, 05, 07, 08, 09) + 8 digits
+    const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      showError('Invalid phone number. Must be 10 digits starting with 0');
       return;
     }
     if (!selectedMethodId) {
@@ -106,6 +177,11 @@ export default function Checkout() {
     }
     if (cartItems.length === 0) {
       showError('Cart is empty');
+      return;
+    }
+    if (!userId) {
+      showError('Please login to checkout');
+      navigate('/login');
       return;
     }
 
@@ -146,11 +222,17 @@ export default function Checkout() {
       loading={loading}
       submitting={submitting}
       isFormValid={isFormValid}
-      onFullNameChange={setFullName}
-      onAddressChange={setAddress}
-      onPhoneChange={setPhone}
+      onFullNameChange={onFullNameChange}
+      onAddressChange={onAddressChange}
+      onPhoneChange={onPhoneChange}
       onSelectMethod={setSelectedMethodId}
       onSubmit={handleSubmit}
+      nameError={nameError}
+      addressError={addressError}
+      phoneError={phoneError}
+      onNameBlur={handleNameBlur}
+      onAddressBlur={handleAddressBlur}
+      onPhoneBlur={handlePhoneBlur}
     />
   );
 }

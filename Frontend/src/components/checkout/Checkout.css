@@ -128,6 +128,23 @@
   color: #9ea89c;
 }
 
+.checkout-error-text {
+  display: block;
+  font-size: 13px;
+  color: #e53935;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.checkout-input--error {
+  border-color: #e53935;
+}
+
+.checkout-input--error:focus {
+  border-color: #e53935;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15);
+}
+
 /* ---------- Shipping Methods ---------- */
 
 .checkout-shipping-section {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePopup } from '../common/popup'
 import CartView from './CartView'
+import { getUserFromStorage } from '../../services/authService'
 import {
   addToCart,
   clearCart,
@@ -16,10 +17,15 @@ export default function Cart() {
   const [loading, setLoading] = useState(true)
   const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
 
-  const userId = 3
+  const user = getUserFromStorage()
+  const userId = user?.userId || 0
 
   useEffect(() => {
     const fetchCart = async () => {
+      if (!userId) {
+        setLoading(false)
+        return // handled gracefully, or we could redirect
+      }
       setLoading(true)
       try {
         const response = await getCart(userId)
@@ -160,7 +166,7 @@ export default function Cart() {
   }
 
   const handleContinueShopping = () => {
-    navigate('/products')
+    navigate('/home')
   }
 
   const handleViewOrderHistory = () => {

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { usePopup } from '../common/popup';
 import { getOrderDetail, cancelOrder, completeOrder, type OrderDto } from '../../services/orderService';
+import { getUserFromStorage } from '../../services/authService';
 import OrderDetailView from './OrderDetailView';
 
 export default function OrderDetail() {
@@ -12,7 +13,8 @@ export default function OrderDetail() {
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
-  const userId = 3;
+  const user = getUserFromStorage();
+  const userId = user?.userId || 0; // Fallback so we don't crash, but auth should handle this
 
   const fetchOrderDetail = useCallback(async () => {
     if (!orderId) return;
