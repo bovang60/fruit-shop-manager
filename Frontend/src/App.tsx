@@ -18,6 +18,7 @@ import Checkout from './components/checkout/Checkout'
 import OrderHistory from './components/order-history/OrderHistory'
 import OrderDetail from './components/order-detail/OrderDetail'
 import SellerDashboard from './components/seller-dashboard/SellerDashboard'
+import ProductDetail from './components/product-detail/ProductDetail'
 function App() {
   return (
     <BrowserRouter>
@@ -46,6 +47,7 @@ function App() {
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
           <Route path="/seller-dashboard" element={<SellerDashboard />} />
+          <Route path="/product/:productId" element={<ProductDetail />} />
         </Routes>
       </PopupProvider>
     </BrowserRouter>

@@ -1,23 +1,117 @@
+import { useState, useEffect } from 'react';
 import Header from '../common/header/Header';
 import Footer from '../common/footer/Footer';
 import LoadingModal from '../common/loading/LoadingModal';
 import type { OrderDto } from '../../services/orderService';
+import type { FeedbackDto } from '../../services/feedbackService';
+import { usePopup } from '../common/popup';
 import './OrderDetail.css';
 
 export interface OrderDetailViewProps {
   order: OrderDto | null;
   loading: boolean;
   actionLoading: boolean;
+  feedbacks: Record<number, FeedbackDto>;
   onCancelOrder: () => void;
   onCompleteOrder: () => void;
+  onFeedbackSubmit: (productId: number, rating: number, comment: string, existingId?: number) => void;
+}
+
+// Inline component for the Feedback form
+function FeedbackSection({ 
+  productId, 
+  existingFeedback, 
+  onSubmit 
+}: { 
+  productId: number; 
+  existingFeedback?: FeedbackDto; 
+  onSubmit: (productId: number, rating: number, comment: string, existingId?: number) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [rating, setRating] = useState(existingFeedback?.rating || 0);
+  const [comment, setComment] = useState(existingFeedback?.comment || '');
+  const { showError } = usePopup();
+
+  useEffect(() => {
+    // Sync external feedback updates (like after submit)
+    if (existingFeedback && !isEditing) {
+       setRating(existingFeedback.rating);
+       setComment(existingFeedback.comment);
+    }
+  }, [existingFeedback, isEditing]);
+
+  const handleSubmit = () => {
+    if (rating < 1 || rating > 5) {
+      showError("Vui lòng chọn đánh giá từ 1 đến 5 sao", "Lỗi");
+      return;
+    }
+    onSubmit(productId, rating, comment, existingFeedback?.feedbackId);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setRating(existingFeedback?.rating || 0);
+    setComment(existingFeedback?.comment || '');
+  };
+
+  if (existingFeedback && !isEditing) {
+    return (
+      <div className="feedback-display-box">
+        <div className="feedback-stars">
+           {'★'.repeat(existingFeedback.rating || 0)}{'☆'.repeat(5 - (existingFeedback.rating || 0))}
+        </div>
+        <div className="feedback-comment">"{existingFeedback.comment}"</div>
+        <button className="feedback-btn-edit" onClick={() => setIsEditing(true)}>Sửa đánh giá</button>
+      </div>
+    );
+  }
+
+  if (!existingFeedback && !isEditing) {
+    return (
+      <div className="feedback-display-box">
+        <button className="feedback-btn-write" onClick={() => setIsEditing(true)}>⭐ Viết đánh giá</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="feedback-form-box">
+      <div className="feedback-stars-selector">
+         Đánh giá: 
+         {[1,2,3,4,5].map(star => (
+            <span 
+              key={star} 
+              className={star <= rating ? "star-active" : "star-inactive"}
+              onClick={() => setRating(star)}
+              style={{ cursor: 'pointer', fontSize: '1.5rem', marginLeft: '0.2rem' }}
+            >
+              {star <= rating ? '★' : '☆'}
+            </span>
+         ))}
+      </div>
+      <textarea 
+        className="feedback-textarea" 
+        placeholder="Nhận xét của bạn..." 
+        value={comment} 
+        onChange={e => setComment(e.target.value)}
+      />
+      <div className="feedback-form-actions">
+         <button className="feedback-btn-submit" onClick={handleSubmit}>Gửi đánh giá</button>
+         <button className="feedback-btn-cancel" onClick={handleCancel}>Hủy</button>
+      </div>
+    </div>
+  );
 }
 
 export default function OrderDetailView({
   order,
   loading,
   actionLoading,
+  feedbacks,
   onCancelOrder,
   onCompleteOrder,
+  onFeedbackSubmit,
 }: OrderDetailViewProps) {
 
   const formatCurrency = (amount: number) => {
@@ -52,9 +146,13 @@ export default function OrderDetailView({
   };
 
   const canComplete = (status: string) => {
+    // DELIVERED indicates it has arrived, user can mark it as COMPLETED to confirm closure.
+    // Or we consider DELIVERED as already completed state. Wait, the original code had:
     const s = status?.toUpperCase() || '';
     return s === 'SHIPPING' || s === 'DELIVERED';
   };
+
+  const isDelivered = order?.status?.toUpperCase() === 'DELIVERED' || order?.status?.toUpperCase() === 'COMPLETED';
 
   return (
     <div className="od-root">
@@ -123,11 +221,23 @@ export default function OrderDetailView({
                       <span className="od-col-subtotal">Subtotal</span>
                     </div>
                     {order.items?.map((item) => (
-                      <div key={item.orderItemId} className="od-item-row">
-                        <span className="od-col-product">{item.productName}</span>
-                        <span className="od-col-qty">{item.quantity}</span>
-                        <span className="od-col-price">{formatCurrency(item.price)}</span>
-                        <span className="od-col-subtotal">{formatCurrency(item.subtotal)}</span>
+                      <div key={item.orderItemId} className="od-item-container">
+                        <div className="od-item-row">
+                          <span className="od-col-product">{item.productName}</span>
+                          <span className="od-col-qty">{item.quantity}</span>
+                          <span className="od-col-price">{formatCurrency(item.price)}</span>
+                          <span className="od-col-subtotal">{formatCurrency(item.subtotal)}</span>
+                        </div>
+                        
+                        {isDelivered && (
+                          <div className="od-item-feedback-wrapper">
+                            <FeedbackSection 
+                               productId={item.productId}
+                               existingFeedback={feedbacks[item.productId]}
+                               onSubmit={onFeedbackSubmit}
+                            />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

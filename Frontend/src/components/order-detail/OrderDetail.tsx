@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { usePopup } from '../common/popup';
 import { getOrderDetail, cancelOrder, completeOrder, type OrderDto } from '../../services/orderService';
 import { getUserFromStorage } from '../../services/authService';
+import { createFeedback, updateFeedback, getFeedbackByProduct, type FeedbackDto } from '../../services/feedbackService';
 import OrderDetailView from './OrderDetailView';
 
 export default function OrderDetail() {
@@ -12,9 +13,12 @@ export default function OrderDetail() {
   const [order, setOrder] = useState<OrderDto | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
+  
+  // Feedback state: map of productId -> FeedbackDto
+  const [feedbacks, setFeedbacks] = useState<Record<number, FeedbackDto>>({});
 
   const user = getUserFromStorage();
-  const userId = user?.userId || 0; // Fallback so we don't crash, but auth should handle this
+  const userId = user?.userId || 0;
 
   const fetchOrderDetail = useCallback(async () => {
     if (!orderId) return;
@@ -37,6 +41,40 @@ export default function OrderDetail() {
   useEffect(() => {
     void fetchOrderDetail();
   }, [fetchOrderDetail]);
+
+  // Load existing feedbacks if DELIVERED or COMPLETED
+  useEffect(() => {
+    const status = order?.status?.toUpperCase();
+    if (order && (status === 'DELIVERED' || status === 'COMPLETED') && order.items) {
+      const loadFeedbacks = async () => {
+        const newFeedbacks: Record<number, FeedbackDto> = { ...feedbacks };
+        let hasUpdates = false;
+        
+        await Promise.all(
+          (order.items || []).map(async (item) => {
+            const res = await getFeedbackByProduct(item.productId);
+            if (res.resultCd === 0 && res.data) {
+              // Try to find a feedback that matches this order or user.
+              const existing = res.data.find(f => 
+                (f.orderId && f.orderId === order.orderId) || 
+                (!f.orderId && f.userName === user?.fullName) // Fallback heuristic
+              );
+              if (existing) {
+                newFeedbacks[item.productId] = existing;
+                hasUpdates = true;
+              }
+            }
+          })
+        );
+        
+        if (hasUpdates) {
+          setFeedbacks(newFeedbacks);
+        }
+      };
+      
+      void loadFeedbacks();
+    }
+  }, [order, user?.fullName]);
 
   const handleCancelOrder = () => {
     if (!order) return;
@@ -80,13 +118,52 @@ export default function OrderDetail() {
     });
   };
 
+  const handleFeedbackSubmit = async (productId: number, rating: number, comment: string, existingFeedbackId?: number) => {
+    if (!order || !userId) return;
+    
+    setActionLoading(true);
+    try {
+      const request = {
+        orderId: order.orderId,
+        productId,
+        rating,
+        comment
+      };
+      
+      let res;
+      if (existingFeedbackId) {
+        res = await updateFeedback(userId, existingFeedbackId, request);
+      } else {
+        res = await createFeedback(userId, request);
+      }
+      
+      if (res.resultCd === 0 && res.data) {
+        showNotice(existingFeedbackId ? 'Cập nhật đánh giá thành công' : 'Gửi đánh giá thành công');
+        setFeedbacks(prev => ({
+          ...prev,
+          [productId]: res.data!
+        }));
+      } else if (res.resultCd === 409) {
+        showError('Bạn đã đánh giá sản phẩm này cho đơn hàng này rồi.');
+      } else {
+        showError(res.message || 'Không thể gửi đánh giá');
+      }
+    } catch (e) {
+      showError('Đã xảy ra lỗi hệ thống khi gửi đánh giá.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   return (
     <OrderDetailView
       order={order}
       loading={loading}
       actionLoading={actionLoading}
+      feedbacks={feedbacks}
       onCancelOrder={handleCancelOrder}
       onCompleteOrder={handleCompleteOrder}
+      onFeedbackSubmit={handleFeedbackSubmit}
     />
   );
 }
