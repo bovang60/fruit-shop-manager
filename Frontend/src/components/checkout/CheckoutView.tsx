@@ -1,5 +1,6 @@
 import Header from '../common/header/Header';
 import Footer from '../common/footer/Footer';
+import LoadingModal from '../common/loading/LoadingModal';
 import type { ShippingMethodDto } from '../../services/shippingMethodService';
 import type { CartDto, CartItemDto } from '../../services/cartService';
 import './Checkout.css';
@@ -74,16 +75,11 @@ export default function CheckoutView({
         <section className="checkout-container">
           <h1 className="checkout-title">Checkout</h1>
 
-          {loading ? (
-            <div className="checkout-loading">
-              <div className="checkout-spinner"></div>
-              <p>Loading checkout information...</p>
-            </div>
-          ) : !hasItems ? (
+          {!hasItems && !loading ? (
             <div className="checkout-loading">
               <p>Your cart is empty.</p>
             </div>
-          ) : (
+          ) : !loading && (
             <div className="checkout-content">
               {/* Customer Info Form */}
               <div className="checkout-form-section">
@@ -254,6 +250,14 @@ export default function CheckoutView({
       <footer className="checkout-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal - hiển thị khi đang tải dữ liệu hoặc đặt hàng */}
+      <LoadingModal
+        isOpen={loading || submitting}
+        message={submitting ? 'Đang đặt hàng...' : 'Đang tải thông tin...'}
+        subMessage={submitting ? 'Vui lòng không đóng trang' : 'Vui lòng chờ trong giây lát'}
+        theme="green"
+      />
     </div>
   );
 }

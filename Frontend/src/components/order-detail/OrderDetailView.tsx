@@ -1,5 +1,6 @@
 import Header from '../common/header/Header';
 import Footer from '../common/footer/Footer';
+import LoadingModal from '../common/loading/LoadingModal';
 import type { OrderDto } from '../../services/orderService';
 import './OrderDetail.css';
 
@@ -63,18 +64,13 @@ export default function OrderDetailView({
 
       <main className="od-main">
         <section className="od-container">
-          {loading ? (
-            <div className="od-loading">
-              <div className="od-spinner"></div>
-              <p>Loading order details...</p>
-            </div>
-          ) : !order ? (
+          {!loading && !order ? (
             <div className="od-not-found">
               <div className="od-not-found-icon">🔍</div>
               <h2>Order Not Found</h2>
               <p>The order you are looking for does not exist or has been removed.</p>
             </div>
-          ) : (
+          ) : order && (
             <div className="od-content">
               {/* Order Header */}
               <div className="od-title-row">
@@ -189,6 +185,14 @@ export default function OrderDetailView({
       <footer className="od-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal
+        isOpen={loading || actionLoading}
+        message={actionLoading ? 'Đang xử lý...' : 'Đang tải đơn hàng...'}
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="blue"
+      />
     </div>
   );
 }

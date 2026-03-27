@@ -1,5 +1,6 @@
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 import type { CartDto } from '../../services/cartService'
 import './Cart.css'
 
@@ -42,9 +43,7 @@ export default function CartView({
         <section className="cart-container">
           <h1 className="cart-title">Your Cart</h1>
 
-          {loading && !cart ? (
-            <div className="cart-loading">Loading cart...</div>
-          ) : !hasItems ? (
+          {!hasItems ? (
             <div className="cart-empty-state">
               <div className="cart-empty-icon">CART</div>
               <p className="cart-empty-message">Your cart is currently empty</p>
@@ -198,6 +197,14 @@ export default function CartView({
       <footer className="cart-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal - hiển thị khi đang tải giỏ hàng hoặc xóa giỏ hàng */}
+      <LoadingModal
+        isOpen={loading}
+        message="Đang tải giỏ hàng..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
     </div>
   )
 }

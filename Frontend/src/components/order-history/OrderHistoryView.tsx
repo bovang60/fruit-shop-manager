@@ -1,5 +1,6 @@
 import Header from '../common/header/Header';
 import Footer from '../common/footer/Footer';
+import LoadingModal from '../common/loading/LoadingModal';
 import type { OrderDto } from '../../services/orderService';
 import './OrderHistory.css';
 
@@ -54,12 +55,7 @@ export default function OrderHistoryView({
         <section className="order-history-container">
           <h1 className="order-history-title">My Orders</h1>
 
-          {loading ? (
-            <div className="order-history-loading">
-              <div className="order-history-spinner"></div>
-              <p>Loading your orders...</p>
-            </div>
-          ) : orders?.length === 0 ? (
+          {!loading && orders?.length === 0 ? (
             <div className="order-history-empty">
               <div className="order-history-empty-icon">📦</div>
               <h2>No Orders Found</h2>
@@ -114,6 +110,14 @@ export default function OrderHistoryView({
       <footer className="order-history-footer">
         <Footer />
       </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal
+        isOpen={loading}
+        message="Đang tải đơn hàng..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="blue"
+      />
     </div>
   );
 }
