@@ -6,7 +6,12 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "feedbacks")
+@Table(name = "feedbacks", uniqueConstraints = {
+    @UniqueConstraint(
+        name = "UK_feedback_order_product_user",
+        columnNames = {"order_id", "product_id", "user_id"}
+    )
+})
 public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,5 +37,19 @@ public class Feedback {
     private String comment;
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

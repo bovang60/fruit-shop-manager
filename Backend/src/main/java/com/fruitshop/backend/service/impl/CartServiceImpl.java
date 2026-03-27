@@ -26,8 +26,12 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
 
     @Override
     @Transactional
-    public ApiResponse<CartDto> addToCart(Integer userId, AddToCartRequestDto dto) {
-        
+    public ApiResponse<CartDto> addToCart(AddToCartRequestDto dto) {
+        Integer userId = dto != null ? dto.getUserId() : null;
+        if (userId == null) {
+            return ApiResponse.error("User ID is required");
+        }
+
         // Find user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

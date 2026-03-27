@@ -22,8 +22,8 @@ public class Review {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "fruit_id", nullable = false, foreignKey = @ForeignKey(name = "FK_reviews_fruit"))
-    private Fruit fruit;
+    @JoinColumn(name = "product_id", nullable = false, foreignKey = @ForeignKey(name = "FK_reviews_product"))
+    private Product product;
 
     @Column(nullable = false)
     private Integer rating;
