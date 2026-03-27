@@ -61,4 +61,13 @@ public class ShopController {
         String message = exists ? "Tên cửa hàng đã tồn tại" : "Tên cửa hàng có thể sử dụng";
         return ResponseEntity.ok(ApiResponse.success(message, exists));
     }
+    @GetMapping("/check-status/{ownerId}")
+    public ResponseEntity<ApiResponse<ShopDto>> checkShopStatus(@PathVariable Integer ownerId) {
+        return ResponseEntity.ok(shopService.checkShopStatus(ownerId));
+    }
+
+    @GetMapping("/can-register/{ownerId}")
+    public ResponseEntity<ApiResponse<Boolean>> canRegister(@PathVariable Integer ownerId) {
+        return ResponseEntity.ok(shopService.canRegister(ownerId));
+    }
 }

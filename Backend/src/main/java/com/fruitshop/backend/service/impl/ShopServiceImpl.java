@@ -22,7 +22,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -63,8 +65,28 @@ public class ShopServiceImpl implements ShopService {
             return ApiResponse.error("Không tìm thấy thông tin chủ sở hữu");
         }
 
-        if (shopRepository.findByOwner_UserId(dto.getOwnerId()).isPresent()) {
-            return ApiResponse.error("Người dùng đã gửi đơn đăng ký mở cửa hàng trước đó rồi");
+        Optional<Shop> existingShopOpt = shopRepository.findByOwner_UserId(dto.getOwnerId());
+        if (existingShopOpt.isPresent()) {
+            Shop existingShop = existingShopOpt.get();
+            if (existingShop.getStatus() == Shop.ShopStatus.APPROVED) {
+                return ApiResponse.error("Bạn đã mở shop thành công rồi");
+            } else if (existingShop.getStatus() == Shop.ShopStatus.PENDING) {
+                return ApiResponse.error("Đơn đăng ký của bạn đang chờ phê duyệt");
+            } else if (existingShop.getStatus() == Shop.ShopStatus.SUSPENDED) {
+                return ApiResponse.error("Shop của bạn đang bị đình chỉ");
+            } else if (existingShop.getStatus() == Shop.ShopStatus.REJECTED) {
+                // Nếu bị từ chối, xóa đơn cũ để cho phép đăng ký lại
+                shopShippingConfigRepository.deleteByShop_ShopId(existingShop.getShopId());
+                shopRepository.delete(existingShop);
+            }
+        }
+
+        if (shopRepository.existsByShopName(dto.getShopName())) {
+            return ApiResponse.error("Tên cửa hàng đã tồn tại, vui lòng chọn tên khác");
+        }
+
+        if (dto.getTaxCode() != null && !dto.getTaxCode().isEmpty() && shopRepository.existsByTaxCode(dto.getTaxCode())) {
+            return ApiResponse.error("Mã số thuế đã được sử dụng, vui lòng kiểm tra lại");
         }
 
         Shop shop = new Shop();
@@ -172,6 +194,37 @@ public class ShopServiceImpl implements ShopService {
     @Override
     public boolean isShopNameExists(String shopName) {
         return shopRepository.existsByShopName(shopName);
+    }
+
+    @Override
+    public ApiResponse<ShopDto> checkShopStatus(Integer ownerId) {
+        return shopRepository.findByOwner_UserId(ownerId)
+                .map(shop -> ApiResponse.success("Đã tìm thấy thông tin shop của người dùng", convertToDto(shop)))
+                .orElse(ApiResponse.error("Người dùng chưa có shop hoặc đơn đăng ký"));
+    }
+
+    @Override
+    public ApiResponse<Boolean> canRegister(Integer ownerId) {
+        Optional<Shop> shopOpt = shopRepository.findByOwner_UserId(ownerId);
+        if (shopOpt.isEmpty()) {
+            return ApiResponse.success("Bạn có thể đăng ký mở shop", true);
+        }
+        
+        Shop shop = shopOpt.get();
+        if (shop.getStatus() == Shop.ShopStatus.REJECTED) {
+            return ApiResponse.success("Đơn đăng ký trước đó bị từ chối, bạn có thể đăng ký lại", true);
+        }
+        
+        String message;
+        if (shop.getStatus() == Shop.ShopStatus.APPROVED) {
+            message = "Bạn đã mở shop thành công rồi";
+        } else if (shop.getStatus() == Shop.ShopStatus.PENDING) {
+            message = "Đơn đăng ký của bạn đang chờ phê duyệt";
+        } else {
+            message = "Shop của bạn đang bị đình chỉ";
+        }
+        
+        return ApiResponse.success(message, false);
     }
 
     private ShopDto convertToDto(Shop shop) {

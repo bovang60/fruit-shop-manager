@@ -15,4 +15,6 @@ public interface ShopRepository extends JpaRepository<Shop, Integer> {
     long countByStatus(Shop.ShopStatus status);
     java.util.Optional<Shop> findByOwner_UserId(Integer ownerId);
     boolean existsByShopName(String shopName);
+    boolean existsByTaxCode(String taxCode);
+    boolean existsByAddress(String address);
 }

@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface ShopShippingConfigRepository extends JpaRepository<ShopShippingConfig, ShopShippingConfigId> {
     List<ShopShippingConfig> findByShop_ShopId(Integer shopId);
+    void deleteByShop_ShopId(Integer shopId);
 }
