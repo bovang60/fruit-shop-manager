@@ -24,5 +24,8 @@ public class Cart {
 
     @Column(name = "status")
     private Integer status;
+
+    @Column(name = "quantity")
+    private Integer quantity;
 }
 
