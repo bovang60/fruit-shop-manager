@@ -17,7 +17,7 @@ public interface ProductService {
             Integer page,
             Integer pageSize,
             String search,
-            Integer categoryId,
+            Integer category,
             BigDecimal minPrice,
             BigDecimal maxPrice,
             String origin,

@@ -23,30 +23,30 @@ public class ShopController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ShopDto>>> getShops(
-            @RequestParam(required = false) Shop.ShopStatus status,
+            @RequestParam(name = "status", required = false) Shop.ShopStatus status,
             Pageable pageable) {
         return ResponseEntity.ok(shopService.getShopsByStatus(status, pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ShopDto>> getShop(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<ShopDto>> getShop(@PathVariable(name = "id") Integer id) {
         return ResponseEntity.ok(shopService.getShopById(id));
     }
 
     @PutMapping("/{id}/approve")
-    public ResponseEntity<ApiResponse<ShopDto>> approveShop(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<ShopDto>> approveShop(@PathVariable(name = "id") Integer id) {
         return ResponseEntity.ok(shopService.approveShop(id));
     }
 
     @PutMapping("/{id}/reject")
     public ResponseEntity<ApiResponse<ShopDto>> rejectShop(
-            @PathVariable Integer id,
+            @PathVariable(name = "id") Integer id,
             @Valid @RequestBody ShopRejectDto rejectDto) {
         return ResponseEntity.ok(shopService.rejectShop(id, rejectDto));
     }
     
     @PutMapping("/{id}/suspend")
-    public ResponseEntity<ApiResponse<ShopDto>> suspendShop(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<ShopDto>> suspendShop(@PathVariable(name = "id") Integer id) {
         return ResponseEntity.ok(shopService.suspendShop(id));
     }
 
@@ -56,7 +56,7 @@ public class ShopController {
     }
 
     @GetMapping("/check-name")
-    public ResponseEntity<ApiResponse<Boolean>> checkShopName(@RequestParam String name) {
+    public ResponseEntity<ApiResponse<Boolean>> checkShopName(@RequestParam(name = "name") String name) {
         boolean exists = shopService.isShopNameExists(name);
         String message = exists ? "Tên cửa hàng đã tồn tại" : "Tên cửa hàng có thể sử dụng";
         return ResponseEntity.ok(ApiResponse.success(message, exists));

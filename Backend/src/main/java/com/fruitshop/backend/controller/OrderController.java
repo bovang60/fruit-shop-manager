@@ -9,6 +9,7 @@ import com.fruitshop.backend.dto.OrderStatusDto;
 import com.fruitshop.backend.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
 
     private final OrderService orderService;
@@ -42,6 +44,7 @@ public class OrderController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<List<OrderDto>>> getOrderHistory(
             @PathVariable("userId") Integer userId) {
+        log.info("GET /api/orders/user/{} - Fetching order history", userId);
         ApiResponse<List<OrderDto>> response = orderService.getOrderHistory(userId);
         return ResponseEntity.ok(response);
     }

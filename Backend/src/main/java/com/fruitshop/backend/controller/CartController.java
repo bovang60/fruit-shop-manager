@@ -18,9 +18,8 @@ public class CartController {
 
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<CartDto>> addToCart(
-            @RequestHeader("userId") Integer userId,
             @Valid @RequestBody AddToCartRequestDto dto) {
-        ApiResponse<CartDto> response = cartService.addToCart(userId, dto);
+        ApiResponse<CartDto> response = cartService.addToCart(dto);
         return ResponseEntity.ok(response);
     }
 
@@ -39,17 +38,17 @@ public class CartController {
 
     @PutMapping("/items/{cartItemId}")
     public ResponseEntity<ApiResponse<CartDto>> updateCartItem(
-            @RequestHeader("userId") Integer userId,
-            @PathVariable Integer cartItemId,
-            @RequestParam Integer quantity) {
+            @RequestHeader(name = "userId") Integer userId,
+            @PathVariable(name = "cartItemId") Integer cartItemId,
+            @RequestParam(name = "quantity") Integer quantity) {
         ApiResponse<CartDto> response = cartService.updateCartItem(userId, cartItemId, quantity);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/items/{cartItemId}")
     public ResponseEntity<ApiResponse<String>> removeCartItem(
-            @RequestHeader("userId") Integer userId,
-            @PathVariable Integer cartItemId) {
+            @RequestHeader(name = "userId") Integer userId,
+            @PathVariable(name = "cartItemId") Integer cartItemId) {
         ApiResponse<String> response = cartService.removeCartItem(userId, cartItemId);
         return ResponseEntity.ok(response);
     }
