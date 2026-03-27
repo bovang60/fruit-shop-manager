@@ -73,12 +73,11 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
         navigate('/admin-profile');
     };
 
-    const handleLogout = (e: React.MouseEvent) => {
-        // Prevent default navigation if we need to clean up first
+    const handleLogout = () => {
         setIsProfileOpen(false);
         localStorage.removeItem('user');
         localStorage.removeItem('token');
-        // navigate is called after cleanup
+        navigate(logoutTo);
     };
 
     const userName = user?.fullName || 'Admin';
@@ -119,13 +118,7 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
                         </div>
                         <div>
                             <nav className="admin-nav">
-                                <Link 
-                                    to={logoutTo} 
-                                    className="nav-item" 
-                                    style={{ color: '#ef4444' }} 
-                                    onClick={handleLogout}
-                                    title="Logout"
-                                >
+                                <Link to={logoutTo} className="nav-item" style={{ color: '#ef4444' }} title="Logout">
                                     <span className="material-symbols-outlined">logout</span>
                                     <span className="nav-label">Đăng xuất</span>
                                 </Link>
@@ -203,10 +196,7 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
 
                                         <div className="af-dropdown-divider"></div>
 
-                                        <button 
-                                            className="af-dropdown-item af-dropdown-item-danger" 
-                                            onClick={(e) => { handleLogout(e); navigate(logoutTo); }}
-                                        >
+                                        <button className="af-dropdown-item af-dropdown-item-danger" onClick={handleLogout}>
                                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>logout</span>
                                             <span>Đăng xuất</span>
                                         </button>
@@ -229,3 +219,4 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
 
 export default AdminFrame;
 export { AdminFrame };
+

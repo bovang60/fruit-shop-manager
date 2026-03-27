@@ -5,7 +5,7 @@ import type { RegistrationStep, ShopRegistrationData } from './ShopRegistrationV
 import { usePopup } from '../common/popup/PopupProvider';
 import { getUserFromStorage } from '../../services/authService';
 import { getShippingMethods, type ShippingMethodDto } from '../../services/shippingMethodService';
-import { checkShopNameExists, registerShop, getShopErrorMessage, checkCanRegisterShop, checkShopStatus, checkTaxCodeExists } from '../../services/shopService';
+import { checkShopNameExists, registerShop, getShopErrorMessage } from '../../services/shopService';
 
 const STEPS: RegistrationStep[] = [
     { id: 1, label: 'Thông tin Shop' },
@@ -30,48 +30,13 @@ const ShopRegistration: React.FC = () => {
     const { showNotice, showError, showWarning } = usePopup();
     const navigate = useNavigate();
 
-    const [rejectReason, setRejectReason] = useState<string | null>(null);
-
-    // Kiểm tra đăng nhập và quyền đăng ký
+    // Kiểm tra đăng nhập
     useEffect(() => {
-        const checkAuthAndStatus = async () => {
-            const user = getUserFromStorage();
-            if (!user) {
-                showNotice('Vui lòng đăng nhập để đăng ký trở thành người bán', 'Yêu cầu đăng nhập');
-                navigate('/login');
-                return;
-            }
-
-            const canRegisterRes = await checkCanRegisterShop(user.userId);
-            if (canRegisterRes.data === false) {
-                showNotice(canRegisterRes.message || 'Bạn không thể đăng ký thêm shop vào lúc này.', 'Thông báo');
-                navigate('/home');
-                return;
-            }
-
-            // Nếu được phép đăng ký, kiểm tra xem có shop nào đã bị từ chối không để pre-fill
-            const statusRes = await checkShopStatus(user.userId);
-            if (statusRes.resultCd === 0 && statusRes.data) {
-                const shop = statusRes.data;
-                if (shop.status === 'REJECTED') {
-                    setRejectReason(shop.rejectReason || 'Yêu cầu trước đó của bạn đã bị từ chối.');
-
-                    // Pre-fill form data từ shop cũ
-                    setFormData(prev => ({
-                        ...prev,
-                        shopName: shop.shopName,
-                        shopDescription: shop.description || '',
-                        pickupAddress: shop.pickupAddress || '',
-                        businessAddress: shop.businessAddress || '',
-                        taxCode: shop.taxCode || '',
-                        companyName: shop.businessName || '',
-                        businessType: shop.shopType === 'Cá nhân' ? 'personal' : (shop.shopType === 'Công ty' ? 'company' : 'household')
-                    }));
-                }
-            }
-        };
-
-        checkAuthAndStatus();
+        const user = getUserFromStorage();
+        if (!user) {
+            showNotice('Vui lòng đăng nhập để đăng ký trở thành người bán', 'Yêu cầu đăng nhập');
+            navigate('/login');
+        }
     }, [navigate, showNotice]);
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -79,11 +44,9 @@ const ShopRegistration: React.FC = () => {
     const [isLoadingShipping, setIsLoadingShipping] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [taxStatus, setTaxStatus] = useState<'' | 'checking' | 'INVALID' | 'VALID' | 'taken'>('');
-    const [taxErrorMessage, setTaxErrorMessage] = useState<string>('');
+    const [taxStatus, setTaxStatus] = useState<string>('');
     // '' | 'checking' | 'taken' | 'available'
     const [shopNameStatus, setShopNameStatus] = useState<'' | 'checking' | 'taken' | 'available'>('');
-    const [shopNameErrorMessage, setShopNameErrorMessage] = useState<string>('');
 
     const [formData, setFormData] = useState<ShopRegistrationData>(() => {
         const user = getUserFromStorage();
@@ -133,7 +96,6 @@ const ShopRegistration: React.FC = () => {
             const nextValue = type === 'checkbox' ? checked : value;
             if (name === 'businessType' && prev.businessType !== nextValue) {
                 setTaxStatus('');
-                setTaxErrorMessage('');
                 return {
                     ...prev,
                     [name]: nextValue as 'personal' | 'household' | 'company',
@@ -144,11 +106,6 @@ const ShopRegistration: React.FC = () => {
             }
             if (name === 'taxCode') {
                 setTaxStatus('');
-                setTaxErrorMessage('');
-            }
-            if (name === 'shopName') {
-                setShopNameStatus('');
-                setShopNameErrorMessage('');
             }
             return {
                 ...prev,
@@ -162,7 +119,7 @@ const ShopRegistration: React.FC = () => {
             const isSelected = prev.selectedShippingMethods.includes(methodId);
             return {
                 ...prev,
-                selectedShippingMethods: isSelected
+                selectedShippingMethods: isSelected 
                     ? prev.selectedShippingMethods.filter(id => id !== methodId)
                     : [...prev.selectedShippingMethods, methodId]
             };
@@ -194,7 +151,7 @@ const ShopRegistration: React.FC = () => {
 
                 // Check for NNT ngừng hoạt động
                 const statusCheckStr = `${apiName} ${apiStatusObj}`.toUpperCase();
-                if (statusCheckStr.includes('NNT NGỪNG HĐ') || statusCheckStr.includes('NNT NGUNG HD') ||
+                if (statusCheckStr.includes('NNT NGỪNG HĐ') || statusCheckStr.includes('NNT NGUNG HD') || 
                     statusCheckStr.includes('NNT NGỪNG HOẠT ĐỘNG') || statusCheckStr.includes('NNT NGUNG HOAT DONG')) {
                     setTaxStatus('INVALID');
                 } else {
@@ -236,23 +193,15 @@ const ShopRegistration: React.FC = () => {
 
     // Tự động điền dữ liệu khi ngừng nhập MST (debounce)
     useEffect(() => {
-        const timer = setTimeout(async () => {
+        const timer = setTimeout(() => {
             if (formData.taxCode && formData.businessType !== 'personal') {
                 if (isValidTaxCode(formData.taxCode, formData.businessType)) {
-                    // 1. Kiểm tra MST trùng trong hệ thống
-                    const res = await checkTaxCodeExists(formData.taxCode.trim());
-                    if (res.resultCd === 0 && res.data === true) {
-                        setTaxStatus('taken');
-                        setTaxErrorMessage('Mã số thuế này đã được đăng ký cho một cửa hàng khác. Vui lòng kiểm tra lại.');
-                    } else {
-                        // 2. Tra cứu VietQR
-                        checkTaxCode(formData.taxCode);
-                    }
+                    checkTaxCode(formData.taxCode);
                 }
             }
         }, 800);
         return () => clearTimeout(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formData.taxCode, formData.businessType]);
 
     // Kiểm tra tên shop trùng lặp (debounce 600ms)
@@ -338,25 +287,9 @@ const ShopRegistration: React.FC = () => {
                     'Yêu cầu mở cửa hàng của bạn đã được gửi thành công! Chúng tôi sẽ xét duyệt trong vòng 1–3 ngày làm việc.',
                     'Đăng ký thành công'
                 );
-                navigate('/home');
+                navigate('/');
             } else {
-                const apiMsg = res.message || '';
-                const displayMsg = getShopErrorMessage(apiMsg);
-
-                // Trả người dùng về đúng bước nếu lỗi liên quan đến trùng lặp dữ liệu
-                if (apiMsg.includes('Tên cửa hàng đã tồn tại') || apiMsg.includes('shopName')) {
-                    setShopNameStatus('taken');
-                    setShopNameErrorMessage(displayMsg);
-                    setCurrentStep(1);
-                    showWarning(displayMsg, 'Thông tin không hợp lệ');
-                } else if (apiMsg.includes('Mã số thuế đã được sử dụng') || apiMsg.includes('taxCode')) {
-                    setTaxStatus('taken');
-                    setTaxErrorMessage(displayMsg);
-                    setCurrentStep(3);
-                    showWarning(displayMsg, 'Thông tin không hợp lệ');
-                } else {
-                    showError(displayMsg, 'Lỗi đăng ký');
-                }
+                showError(getShopErrorMessage(res.message || 'Đăng ký thất bại'), 'Lỗi đăng ký');
             }
         } catch {
             showError('Lỗi kết nối. Vui lòng thử lại sau.', 'Lỗi');
@@ -365,14 +298,8 @@ const ShopRegistration: React.FC = () => {
         }
     };
 
-    const handleBackToHome = () => {
-        navigate('/home');
-    };
-
-    const handlePrev = () => {
-        if (currentStep > 1) {
-            setCurrentStep(prev => prev - 1);
-        }
+    const handleSaveDraft = () => {
+        showNotice('Lưu bản nháp thành công!', 'Thành công');
     };
 
     return (
@@ -385,15 +312,11 @@ const ShopRegistration: React.FC = () => {
             onInputChange={handleInputChange}
             onShippingMethodToggle={handleShippingMethodToggle}
             onNext={handleNext}
-            onPrev={handlePrev}
-            onBackToHome={handleBackToHome}
+            onSaveDraft={handleSaveDraft}
             isVerifying={isVerifying}
             isSubmitting={isSubmitting}
             taxStatus={taxStatus}
-            taxErrorMessage={taxErrorMessage}
             shopNameStatus={shopNameStatus}
-            shopNameErrorMessage={shopNameErrorMessage}
-            rejectReason={rejectReason}
         />
     );
 };

@@ -148,33 +148,11 @@
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
-.form-card-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 32px;
-    gap: 12px;
-}
-
-.btn-back-step-icon {
-    background: none;
-    border: none;
-    color: #ee4d2d;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border-radius: 50%;
-    transition: background 0.2s;
-}
-
-.btn-back-step-icon:hover {
-    background-color: #fff6f5;
-}
-
 .form-title {
     font-size: 20px;
     font-weight: 600;
+    margin-bottom: 32px;
+    text-align: center;
 }
 
 .form-group {
@@ -423,41 +401,13 @@ input:checked + .slider:before {
 .form-footer-actions {
     margin-top: 40px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
     border-top: 1px solid #f0f0f0;
     padding-top: 24px;
 }
 
-.form-nav-buttons {
-    display: flex;
-    gap: 12px;
-}
-
-.btn-prev-step {
-    padding: 10px 24px;
-    background-color: white;
-    border: 1px solid #dbdbdb;
-    color: #555;
-    font-size: 14px;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-prev-step:hover {
-    background-color: #f8f8f8;
-    border-color: #999;
-}
-
-.btn-prev-step .material-symbols-outlined {
-    font-size: 18px;
-}
-
-.form-footer-actions .btn-back-to-home {
+.form-footer-actions .btn-save-draft {
     padding: 10px 24px;
     background-color: white;
     border: 1px solid #dbdbdb;
@@ -468,7 +418,7 @@ input:checked + .slider:before {
     transition: background 0.2s;
 }
 
-.form-footer-actions .btn-back-to-home:hover {
+.form-footer-actions .btn-save-draft:hover {
     background-color: #f8f8f8;
 }
 
