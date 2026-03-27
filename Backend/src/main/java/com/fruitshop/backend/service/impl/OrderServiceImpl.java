@@ -53,7 +53,7 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         BigDecimal shippingFee = shippingMethod.getFixedFee() != null ? shippingMethod.getFixedFee() : BigDecimal.ZERO;
 
         // Fetch user's actual cart
-        Optional<Cart> cartOpt = cartRepository.findByUserUserId(userId);
+        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(userId);
         if (cartOpt.isEmpty()) {
             return ApiResponse.error("Cart not found. Cannot create order.");
         }
@@ -196,7 +196,7 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         User user = userOpt.get();
 
         // 2. Find cart and validate non-empty
-        Optional<Cart> cartOpt = cartRepository.findByUserUserId(dto.getUserId());
+        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(dto.getUserId());
         if (cartOpt.isEmpty()) {
             return ApiResponse.error("Cart not found");
         }
