@@ -1,11 +1,12 @@
-import { callApiWithMethod, type ApiResponse } from "../utils/apiClient";
+import { callApiWithMethod, getAuthToken, authHeader, type ApiResponse } from "../utils/apiClient";
 
 // ============= Types =============
 
 export const ShopStatus = {
     PENDING: 'PENDING',
     APPROVED: 'APPROVED',
-    REJECTED: 'REJECTED'
+    REJECTED: 'REJECTED',
+    SUSPENDED: 'SUSPENDED'
 } as const;
 
 export type ShopStatus = keyof typeof ShopStatus;
@@ -18,17 +19,22 @@ export interface ShopDto {
     ownerName: string;
     ownerEmail: string;
     ownerPhone: string;
-    businessAddress: string;
+    address: string;
     description: string;
     status: ShopStatus;
-    rejectReason?: string;
+    rejectReason?: string | null;
     createdAt: string;
     regDate?: string;
     taxCode?: string;
     shopType?: string;
     businessName?: string;
+    businessAddress?: string;
     pickupAddress?: string;
     documentUrls: string[];
+    // Stats fields from SPEC
+    totalOrders: number;
+    cancellationRate: number;
+    totalProducts: number;
 }
 
 export interface PageResponse<T> {
@@ -75,8 +81,11 @@ export async function getShops(filter: ShopFilter): Promise<ApiResponse<PageResp
     if (filter.sort) params.append("sort", filter.sort);
 
     const url = `/api/shops?${params.toString()}`;
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    
     try {
-        return await callApiWithMethod<undefined, ApiResponse<PageResponse<ShopDto>>>("GET", url);
+        return await callApiWithMethod<undefined, ApiResponse<PageResponse<ShopDto>>>("GET", url, undefined, headers);
     } catch (error) {
         console.error("Error fetching shops:", error);
         return { resultCd: 1, message: "Lỗi kết nối khi lấy danh sách cửa hàng", data: null };
@@ -84,11 +93,28 @@ export async function getShops(filter: ShopFilter): Promise<ApiResponse<PageResp
 }
 
 /**
+ * Get shop detail by ID
+ */
+export async function getShopById(shopId: number): Promise<ApiResponse<ShopDto>> {
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    
+    try {
+        return await callApiWithMethod<undefined, ApiResponse<ShopDto>>("GET", `/api/shops/${shopId}`, undefined, headers);
+    } catch (error) {
+        console.error("Error fetching shop detail:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi lấy chi tiết cửa hàng", data: null };
+    }
+}
+
+/**
  * Approve a shop
  */
 export async function approveShop(shopId: number): Promise<ApiResponse<ShopDto>> {
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
     try {
-        return await callApiWithMethod<undefined, ApiResponse<ShopDto>>("PUT", `/api/shops/${shopId}/approve`);
+        return await callApiWithMethod<undefined, ApiResponse<ShopDto>>("PUT", `/api/shops/${shopId}/approve`, undefined, headers);
     } catch (error) {
         console.error("Error approving shop:", error);
         return { resultCd: 1, message: "Lỗi kết nối khi phê duyệt cửa hàng", data: null };
@@ -100,8 +126,10 @@ export async function approveShop(shopId: number): Promise<ApiResponse<ShopDto>>
  * Reject a shop
  */
 export async function rejectShop(shopId: number, reason: string): Promise<ApiResponse<ShopDto>> {
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
     try {
-        return await callApiWithMethod<{ reason: string }, ApiResponse<ShopDto>>("PUT", `/api/shops/${shopId}/reject`, { reason });
+        return await callApiWithMethod<{ reason: string }, ApiResponse<ShopDto>>("PUT", `/api/shops/${shopId}/reject`, { reason }, headers);
     } catch (error) {
         console.error("Error rejecting shop:", error);
         return { resultCd: 1, message: "Lỗi kết nối khi từ chối cửa hàng", data: null };
@@ -112,25 +140,44 @@ export async function rejectShop(shopId: number, reason: string): Promise<ApiRes
  * Suspend a shop
  */
 export async function suspendShop(shopId: number): Promise<ApiResponse<ShopDto>> {
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
     try {
-        return await callApiWithMethod<undefined, ApiResponse<ShopDto>>("PUT", `/api/shops/${shopId}/suspend`);
+        return await callApiWithMethod<undefined, ApiResponse<ShopDto>>("PUT", `/api/shops/${shopId}/suspend`, undefined, headers);
     } catch (error) {
         console.error("Error suspending shop:", error);
         return { resultCd: 1, message: "Lỗi kết nối khi đình chỉ cửa hàng", data: null };
     }
 }
 
+/**
+ * Activate a suspended shop
+ */
+export async function activateShop(shopId: number): Promise<ApiResponse<ShopDto>> {
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    try {
+        return await callApiWithMethod<undefined, ApiResponse<ShopDto>>("PUT", `/api/shops/${shopId}/activate`, undefined, headers);
+    } catch (error) {
+        console.error("Error activating shop:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi kích hoạt lại cửa hàng", data: null };
+    }
+}
+
 
 /**
  * Check if a shop name already exists in the system
- * Returns true if the name is taken, false if it's available
  */
 export async function checkShopNameExists(name: string): Promise<ApiResponse<boolean>> {
     const trimmed = name.trim();
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
     try {
         return await callApiWithMethod<undefined, ApiResponse<boolean>>(
             'GET',
-            `/api/shops/check-name?name=${encodeURIComponent(trimmed)}`
+            `/api/shops/check-name?name=${encodeURIComponent(trimmed)}`,
+            undefined,
+            headers
         );
     } catch (error) {
         console.error('Lỗi khi kiểm tra tên shop:', error);
@@ -140,15 +187,18 @@ export async function checkShopNameExists(name: string): Promise<ApiResponse<boo
 
 /**
  * Check if a tax code already exists in the system
- * Returns true if the tax code is taken, false if it's available
  */
 export async function checkTaxCodeExists(taxCode: string): Promise<ApiResponse<boolean>> {
     const trimmed = taxCode.trim();
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
     if (!trimmed) return { resultCd: 1, message: 'Mã số thuế không hợp lệ', data: null };
     try {
         return await callApiWithMethod<undefined, ApiResponse<boolean>>(
             'GET',
-            `/api/shops/check-tax?taxCode=${encodeURIComponent(trimmed)}`
+            `/api/shops/check-tax?taxCode=${encodeURIComponent(trimmed)}`,
+            undefined,
+            headers
         );
     } catch (error) {
         console.error('Lỗi khi kiểm tra mã số thuế:', error);
@@ -159,13 +209,16 @@ export async function checkTaxCodeExists(taxCode: string): Promise<ApiResponse<b
 
 /**
  * Check if the user is allowed to register a shop
- * Returns true if can register, false if already has a shop/pending application
  */
 export async function checkCanRegisterShop(ownerId: number): Promise<ApiResponse<boolean>> {
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
     try {
         return await callApiWithMethod<undefined, ApiResponse<boolean>>(
             'GET', 
-            `/api/shops/can-register/${ownerId}`
+            `/api/shops/can-register/${ownerId}`,
+            undefined,
+            headers
         );
     } catch (error) {
         console.error('Lỗi khi kiểm tra quyền đăng ký:', error);
@@ -177,10 +230,14 @@ export async function checkCanRegisterShop(ownerId: number): Promise<ApiResponse
  * Get detailed shop status for a user
  */
 export async function checkShopStatus(ownerId: number): Promise<ApiResponse<ShopDto>> {
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
     try {
         return await callApiWithMethod<undefined, ApiResponse<ShopDto>>(
             'GET',
-            `/api/shops/check-status/${ownerId}`
+            `/api/shops/check-status/${ownerId}`,
+            undefined,
+            headers
         );
     } catch (error) {
         console.error('Lỗi khi lấy trạng thái shop:', error);
@@ -190,14 +247,17 @@ export async function checkShopStatus(ownerId: number): Promise<ApiResponse<Shop
 
 
 /**
- * Register a new shop (user becomes seller)
+ * Register a new shop
  */
 export async function registerShop(payload: RegisterShopRequest): Promise<ApiResponse<ShopDto>> {
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
     try {
         return await callApiWithMethod<RegisterShopRequest, ApiResponse<ShopDto>>(
             'POST',
             '/api/shops/register',
-            payload
+            payload,
+            headers
         );
     } catch (error) {
         console.error('Lỗi khi đăng ký cửa hàng:', error);
@@ -208,9 +268,6 @@ export async function registerShop(payload: RegisterShopRequest): Promise<ApiRes
 
 // ============= Helper Functions =============
 
-/**
- * Map API response to user-friendly messages if needed
- */
 export function getShopErrorMessage(message: string): string {
     const ERROR_MESSAGES: Record<string, string> = {
         'Shop not found': 'Không tìm thấy cửa hàng',

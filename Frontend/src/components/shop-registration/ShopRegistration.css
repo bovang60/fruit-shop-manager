@@ -403,11 +403,11 @@
     transition: .4s;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: #26b553;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(20px);
 }
 
@@ -488,7 +488,7 @@ input:checked + .slider:before {
     background-color: #d73211;
 }
 
-.form-footer-actions .btn-next-step:disabled, 
+.form-footer-actions .btn-next-step:disabled,
 .form-footer-actions .btn-next-step:disabled:hover {
     background-color: #f5f5f5;
     color: #ccc;

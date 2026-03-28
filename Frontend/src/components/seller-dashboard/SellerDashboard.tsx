@@ -1,8 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { usePopup } from '../common/popup';
-import { getUserOrders, confirmOrder, updateOrderStatus, type OrderDto } from '../../services/orderService';
-import SellerDashboardView from './SellerDashboardView';
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { usePopup } from "../common/popup";
+import {
+  getUserOrders,
+  confirmOrder,
+  updateOrderStatus,
+  type OrderDto,
+} from "../../services/orderService";
+import SellerDashboardView from "./SellerDashboardView";
+import { LoadingModal } from "../common/loading";
 
 export default function SellerDashboard() {
   const navigate = useNavigate();
@@ -21,11 +27,11 @@ export default function SellerDashboard() {
       if (response.resultCd === 0 && response.data) {
         setOrders(response.data);
       } else {
-        showError(response.message || 'Could not load orders');
+        showError(response.message || "Could not load orders");
       }
     } catch (error) {
-      console.error('Error fetching seller orders:', error);
-      showError('Connection error while loading orders');
+      console.error("Error fetching seller orders:", error);
+      showError("Connection error while loading orders");
     } finally {
       setLoading(false);
     }
@@ -36,19 +42,19 @@ export default function SellerDashboard() {
   }, [fetchOrders]);
 
   const handleConfirmOrder = (orderId: number) => {
-    showConfirm('Confirm this order?', async () => {
+    showConfirm("Confirm this order?", async () => {
       setActionLoading(true);
       try {
         const response = await confirmOrder(orderId, userId);
         if (response.resultCd === 0) {
-          showNotice('Order confirmed successfully');
+          showNotice("Order confirmed successfully");
           void fetchOrders();
         } else {
-          showError(response.message || 'Could not confirm order');
+          showError(response.message || "Could not confirm order");
         }
       } catch (error) {
-        console.error('Error confirming order:', error);
-        showError('Connection error while confirming order');
+        console.error("Error confirming order:", error);
+        showError("Connection error while confirming order");
       } finally {
         setActionLoading(false);
       }
@@ -61,14 +67,14 @@ export default function SellerDashboard() {
       try {
         const response = await updateOrderStatus(orderId, status, userId);
         if (response.resultCd === 0) {
-          showNotice('Order status updated successfully');
+          showNotice("Order status updated successfully");
           void fetchOrders();
         } else {
-          showError(response.message || 'Could not update order status');
+          showError(response.message || "Could not update order status");
         }
       } catch (error) {
-        console.error('Error updating order status:', error);
-        showError('Connection error while updating order status');
+        console.error("Error updating order status:", error);
+        showError("Connection error while updating order status");
       } finally {
         setActionLoading(false);
       }
@@ -80,13 +86,21 @@ export default function SellerDashboard() {
   };
 
   return (
-    <SellerDashboardView
-      orders={orders}
-      loading={loading}
-      actionLoading={actionLoading}
-      onConfirmOrder={handleConfirmOrder}
-      onUpdateStatus={handleUpdateStatus}
-      onOrderClick={handleOrderClick}
-    />
+    <>
+      <SellerDashboardView
+        orders={orders}
+        loading={loading}
+        actionLoading={actionLoading}
+        onConfirmOrder={handleConfirmOrder}
+        onUpdateStatus={handleUpdateStatus}
+        onOrderClick={handleOrderClick}
+      />
+      <LoadingModal
+        isOpen={loading || actionLoading}
+        message={actionLoading ? "Đang xử lý..." : "Đang tải đơn hàng..."}
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
+    </>
   );
 }

@@ -11,15 +11,17 @@ export interface Shop {
     description?: string;
     ownerPhone?: string;
     ownerEmail?: string;
+    address?: string;
     businessAddress?: string;
     documentUrls?: string[];
-    productCount?: number;
-    yearsInBusiness?: number;
-    locationType?: string;
-    staffCount?: number;
-    rejectReason?: string;
-    orderCount?: number;
-    cancelRate?: string;
+    rejectReason?: string | null;
+    orderCount: number;
+    cancelRate: number;
+    productCount: number;
+    taxCode?: string;
+    shopType?: string;
+    businessName?: string;
+    pickupAddress?: string;
 }
 
 interface ShopManagementViewProps {
@@ -36,6 +38,7 @@ interface ShopManagementViewProps {
     onApprove: (id: number) => void;
     onReject: (id: number) => void;
     onSuspend: (id: number) => void;
+    onActivate: (id: number) => void;
     setSelectedShop: (shop: Shop) => void;
 
     page: number;
@@ -59,6 +62,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
     onApprove,
     onReject,
     onSuspend,
+    onActivate,
     setSelectedShop,
 
     page,
@@ -157,7 +161,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                                                     {(s.status === 'APPROVED' || s.status === 'SUSPENDED') && (
                                                         <button
                                                             className={`action-status-btn ${s.status === 'SUSPENDED' ? 'activate' : 'deactivate'}`}
-                                                            onClick={() => onSuspend(s.id)}
+                                                            onClick={() => s.status === 'SUSPENDED' ? onActivate(s.id) : onSuspend(s.id)}
                                                         >
                                                             {s.status === 'SUSPENDED' ? 'Kích hoạt lại' : 'Đình chỉ'}
                                                         </button>
@@ -250,7 +254,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                             <div className="modern-stat-card" style={{ marginBottom: 0, padding: '1.25rem' }}>
                                 <div className="stat-card-info" style={{ flex: 1 }}>
                                     <p className="stat-card-label" style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#637381' }}>Số đơn hàng</p>
-                                    <h3 className="stat-card-value" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#212b36' }}>{shop.orderCount || '1,245'}</h3>
+                                    <h3 className="stat-card-value" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#212b36' }}>{shop.orderCount.toLocaleString()}</h3>
                                 </div>
                                 <div className="stat-card-icon" style={{ color: '#00a76f', backgroundColor: '#00a76f14' }}>
                                     <span className="material-symbols-outlined">shopping_bag</span>
@@ -259,7 +263,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                             <div className="modern-stat-card" style={{ marginBottom: 0, padding: '1.25rem' }}>
                                 <div className="stat-card-info" style={{ flex: 1 }}>
                                     <p className="stat-card-label" style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#637381' }}>Tỷ lệ hủy đơn</p>
-                                    <h3 className="stat-card-value" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#212b36' }}>{shop.cancelRate || '2.4%'}</h3>
+                                    <h3 className="stat-card-value" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#212b36' }}>{shop.cancelRate.toFixed(1)}%</h3>
                                 </div>
                                 <div className="stat-card-icon" style={{ color: '#ff5630', backgroundColor: '#ff563014' }}>
                                     <span className="material-symbols-outlined">cancel</span>
@@ -268,7 +272,7 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                             <div className="modern-stat-card" style={{ marginBottom: 0, padding: '1.25rem' }}>
                                 <div className="stat-card-info" style={{ flex: 1 }}>
                                     <p className="stat-card-label" style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#637381' }}>Số sản phẩm</p>
-                                    <h3 className="stat-card-value" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#212b36' }}>{shop.productCount || '156'}</h3>
+                                    <h3 className="stat-card-value" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#212b36' }}>{shop.productCount.toLocaleString()}</h3>
                                 </div>
                                 <div className="stat-card-icon" style={{ color: '#00b8d9', backgroundColor: '#00b8d914' }}>
                                     <span className="material-symbols-outlined">inventory_2</span>
@@ -293,12 +297,28 @@ const ShopManagementView: React.FC<ShopManagementViewProps> = ({
                                 <p>{shop.ownerEmail || 'N/A'}</p>
                             </div>
                             <div className="info-group">
+                                <label>Mã số thuế</label>
+                                <p>{shop.taxCode || 'N/A'}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Loại hình</label>
+                                <p>{shop.shopType || 'N/A'}</p>
+                            </div>
+                            <div className="info-group">
                                 <label>Ngày đăng ký</label>
                                 <p>{shop.regDate}</p>
                             </div>
                             <div className="info-group" style={{ gridColumn: 'span 2' }}>
+                                <label>Tên cơ sở kinh doanh</label>
+                                <p>{shop.businessName || 'N/A'}</p>
+                            </div>
+                            <div className="info-group" style={{ gridColumn: 'span 2' }}>
                                 <label>Địa chỉ kinh doanh</label>
                                 <p>{shop.businessAddress || 'N/A'}</p>
+                            </div>
+                            <div className="info-group" style={{ gridColumn: 'span 2' }}>
+                                <label>Địa chỉ lấy hàng</label>
+                                <p>{shop.pickupAddress || 'N/A'}</p>
                             </div>
                         </div>
                     </div>

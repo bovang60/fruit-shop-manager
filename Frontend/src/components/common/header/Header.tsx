@@ -5,7 +5,7 @@ import { checkCanRegisterShop } from "../../../services/shopService";
 import { usePopup } from "../popup/PopupProvider";
 import HeaderView from "./HeaderView";
 
-export default function Header() {
+export default function Header({ hideProfile = false }: { hideProfile?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { showNotice } = usePopup();
@@ -43,7 +43,9 @@ export default function Header() {
   const handleNavigateToHome = () => navigate("/home");
   const handleNavigateToProducts = () => navigate("/products");
   const handleNavigateToOrders = () => navigate("/order-history");
-  const handleNavigateToCustomers = () => navigate("/cart");
+  const handleNavigateToCart = () => {
+    navigate("/cart");
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -80,15 +82,18 @@ export default function Header() {
     }
   };
 
-  const handleNavigateToCart = () => {
-    navigate("/cart");
+  const handleNavigateToAdminDashboard = () => {
+    navigate("/admin-dashboard");
   };
+
+  const isAdmin = getUserFromStorage()?.role === "ADMIN";
 
   return (
     <HeaderView
       userAvatar={userAvatar}
       userName={userName}
       currentPath={location.pathname}
+      isAdmin={isAdmin}
       onNavigateToHome={handleNavigateToHome}
       onNavigateToProducts={handleNavigateToProducts}
       onNavigateToOrders={handleNavigateToOrders}
@@ -96,6 +101,8 @@ export default function Header() {
       onLogout={handleLogout}
       onNavigateToSellerRegistration={handleNavigateToSellerRegistration}
       onNavigateToCart={handleNavigateToCart}
+      onNavigateToAdminDashboard={handleNavigateToAdminDashboard}
+      hideProfile={hideProfile}
     />
   );
 }
