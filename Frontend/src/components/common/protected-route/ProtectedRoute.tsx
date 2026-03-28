@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { getUserFromStorage } from '../../../services/authService';
-import { usePopup } from '../popup/PopupProvider';
+import { usePopup } from '../popup';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;

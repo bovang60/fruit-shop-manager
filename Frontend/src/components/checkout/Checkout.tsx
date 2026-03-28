@@ -35,7 +35,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (!userId) {
-      showError('Please login to checkout');
+      showError('Vui lòng đăng nhập để thanh toán');
       navigate('/login');
       return;
     }
@@ -66,18 +66,18 @@ export default function Checkout() {
           });
         } else {
           setShippingMethods([]);
-          showError(shippingResponse.message || 'Could not load shipping methods');
+          showError(shippingResponse.message || 'Không thể tải phương thức vận chuyển');
         }
 
         if (cartResponse.resultCd === 0 && cartResponse.data) {
           setCart(cartResponse.data);
         } else {
           setCart(null);
-          showError(cartResponse.message || 'Could not load cart information');
+          showError(cartResponse.message || 'Không thể tải thông tin giỏ hàng');
         }
       } catch (error) {
         console.error('Error loading checkout data:', error);
-        showError('Connection error while loading checkout information');
+        showError('Lỗi kết nối khi tải thông tin thanh toán');
       } finally {
         setLoading(false);
       }
@@ -88,9 +88,9 @@ export default function Checkout() {
 
   const handleNameBlur = () => {
     if (!fullName.trim()) {
-      setNameError('Please enter your full name');
+      setNameError('Vui lòng nhập họ và tên');
     } else if (!/^[\p{L}\s]+$/u.test(fullName.trim())) {
-      setNameError('Full name cannot contain numbers or special characters');
+      setNameError('Họ và tên không được chứa số hoặc ký tự đặc biệt');
     } else {
       setNameError('');
     }
@@ -98,7 +98,7 @@ export default function Checkout() {
 
   const handleAddressBlur = () => {
     if (!address.trim()) {
-      setAddressError('Please enter your address');
+      setAddressError('Vui lòng nhập địa chỉ');
     } else {
       setAddressError('');
     }
@@ -106,9 +106,9 @@ export default function Checkout() {
 
   const handlePhoneBlur = () => {
     if (!phone.trim()) {
-      setPhoneError('Please enter your phone number');
+      setPhoneError('Vui lòng nhập số điện thoại');
     } else if (!/^(0[3|5|7|8|9])[0-9]{8}$/.test(phone.trim())) {
-      setPhoneError('Invalid phone number. Must be 10 digits starting with 0');
+      setPhoneError('Số điện thoại không hợp lệ. Phải có 10 chữ số và bắt đầu bằng 0');
     } else {
       setPhoneError('');
     }
@@ -144,43 +144,43 @@ export default function Checkout() {
 
     // Validation
     if (!fullName.trim()) {
-      showError('Please enter your full name');
+      showError('Vui lòng nhập họ và tên');
       return;
     }
     
     // Allow unicode letters and spaces, reject numbers and special characters
     const nameRegex = /^[\p{L}\s]+$/u;
     if (!nameRegex.test(fullName.trim())) {
-      showError('Full name cannot contain numbers or special characters');
+      showError('Họ và tên không được chứa số hoặc ký tự đặc biệt');
       return;
     }
 
     if (!address.trim()) {
-      showError('Please enter your address');
+      showError('Vui lòng nhập địa chỉ');
       return;
     }
 
     if (!phone.trim()) {
-      showError('Please enter your phone number');
+      showError('Vui lòng nhập số điện thoại');
       return;
     }
 
     // Valid Vietnamese phone number format (03, 05, 07, 08, 09) + 8 digits
     const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
     if (!phoneRegex.test(phone.trim())) {
-      showError('Invalid phone number. Must be 10 digits starting with 0');
+      showError('Số điện thoại không hợp lệ. Phải có 10 chữ số và bắt đầu bằng 0');
       return;
     }
     if (!selectedMethodId) {
-      showError('Please select a shipping method');
+      showError('Vui lòng chọn phương thức vận chuyển');
       return;
     }
     if (cartItems.length === 0) {
-      showError('Cart is empty');
+      showError('Giỏ hàng trống');
       return;
     }
     if (!userId) {
-      showError('Please login to checkout');
+      showError('Vui lòng đăng nhập để thanh toán');
       navigate('/login');
       return;
     }
@@ -197,14 +197,14 @@ export default function Checkout() {
       });
 
       if (response.resultCd === 0) {
-        showNotice('Order placed successfully');
+        showNotice('Đặt hàng thành công');
         navigate('/order-history');
       } else {
-        showError(response.message || 'Could not place order');
+        showError(response.message || 'Không thể đặt hàng');
       }
     } catch (error) {
       console.error('Error creating order:', error);
-      showError('Connection error while placing order');
+      showError('Lỗi kết nối khi đặt hàng');
     } finally {
       setSubmitting(false);
     }

@@ -10,8 +10,10 @@ import {
   toggleCategoryStatus,
   type CategoryDto,
 } from "../../services/categoryService";
-import { usePopup } from "../common/popup/PopupProvider";
+// import { usePopup } from "../common/popup/PopupProvider";
 import { LoadingModal } from "../common/loading";
+
+import { usePopup } from "../common/popup";
 
 export type SortDirection = "asc" | "desc" | null;
 

@@ -1,0 +1,43 @@
+@import "../seller/SellerPageShared.css";
+
+.seller-order-detail-card {
+    padding: 1.5rem;
+}
+
+.seller-order-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.seller-order-detail-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: #1c252e;
+}
+
+.seller-order-detail-subtitle {
+    margin: 0.4rem 0 0;
+    color: #637381;
+    font-size: 0.875rem;
+}
+
+.seller-order-action-btn {
+    min-width: 108px;
+    justify-content: center;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .seller-order-detail-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .seller-order-action-btn {
+        width: 100%;
+    }
+}

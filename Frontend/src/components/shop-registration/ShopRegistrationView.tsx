@@ -1,7 +1,7 @@
 import React from 'react';
 import './ShopRegistration.css';
 import type { ShippingMethodDto } from '../../services/shippingMethodService';
-import Header from '../common/header/Header'
+import Header from '../common/header/Header';
 
 export interface RegistrationStep {
     id: number;
@@ -62,6 +62,9 @@ const ShopRegistrationView: React.FC<Props> = ({
 }) => {
     return (
         <div className="shop-registration-container">
+            <header className="profile-header">
+                    <Header />
+                  </header>
             {/* Header */}
             <header className="login-header">
                 <Header />

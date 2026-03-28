@@ -1,16 +1,29 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getUserFromStorage } from "../../../services/authService";
+import { getSellerOrdersByShop } from "../../../services/sellerOrderService";
+import type { SellerOrderDto } from "../../../services/sellerOrderService";
+import HeaderView from "./HeaderView";
 import { checkCanRegisterShop } from "../../../services/shopService";
 import { usePopup } from "../popup/PopupProvider";
-import HeaderView from "./HeaderView";
+const SEEN_KEY = (shopId: number) => `notif_seen_${shopId}`;
 
-export default function Header({ hideProfile = false }: { hideProfile?: boolean }) {
+export default function Header({
+  hideProfile = false,
+}: {
+  hideProfile?: boolean;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { showNotice } = usePopup();
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined);
   const [userName, setUserName] = useState<string>("");
+  const [userRole, setUserRole] = useState<string>("");
+  const [isSeller, setIsSeller] = useState(false);
+  const [shopId, setShopId] = useState<number | null>(null);
+  const [pendingOrders, setPendingOrders] = useState<SellerOrderDto[]>([]);
+  const [newOrderCount, setNewOrderCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const { showNotice } = usePopup();
 
   // Load user info from localStorage
   useEffect(() => {
@@ -19,6 +32,16 @@ export default function Header({ hideProfile = false }: { hideProfile?: boolean 
       if (user) {
         setUserAvatar(user.image);
         setUserName(user.fullName);
+        setUserRole(user.role);
+        const normalizedRole = String(user.role || "").toUpperCase();
+        const hasSellerRole = normalizedRole.includes("SELLER");
+        // Some accounts may carry shopId before role normalization is finalized.
+        setIsSeller(hasSellerRole || Boolean(user.shopId));
+        setShopId(user.shopId ?? null);
+      } else {
+        setUserAvatar(undefined);
+        setUserName("");
+        setUserRole("");
       }
     };
 
@@ -45,6 +68,59 @@ export default function Header({ hideProfile = false }: { hideProfile?: boolean 
   const handleNavigateToOrders = () => navigate("/order-history");
   const handleNavigateToCart = () => {
     navigate("/cart");
+  };
+  // Poll for PENDING orders every 30 seconds when user is a seller with a shopId
+  useEffect(() => {
+    if (!isSeller || !shopId) return;
+
+    const fetchPendingOrders = async () => {
+      try {
+        const response = await getSellerOrdersByShop(shopId, "PENDING");
+        if (response.resultCd === 0 && response.data) {
+          const orders = response.data;
+          setPendingOrders(orders);
+
+          const seen: number[] = JSON.parse(
+            localStorage.getItem(SEEN_KEY(shopId)) || "[]",
+          );
+          const seenSet = new Set(seen);
+          setNewOrderCount(
+            orders.filter((o) => !seenSet.has(o.orderId)).length,
+          );
+        }
+      } catch {
+        // silently ignore - don't disrupt header on notification error
+      }
+    };
+
+    fetchPendingOrders();
+    const interval = setInterval(fetchPendingOrders, 30_000);
+    return () => clearInterval(interval);
+  }, [isSeller, shopId]);
+
+  const handleNotifToggle = () => setIsNotifOpen((prev) => !prev);
+
+  const handleMarkAllRead = () => {
+    if (!shopId) return;
+    const allIds = pendingOrders.map((o) => o.orderId);
+    localStorage.setItem(SEEN_KEY(shopId), JSON.stringify(allIds));
+    setNewOrderCount(0);
+    setIsNotifOpen(false);
+  };
+
+  const handleNotifOrderClick = (orderId: number) => {
+    if (shopId) {
+      const seen: number[] = JSON.parse(
+        localStorage.getItem(SEEN_KEY(shopId)) || "[]",
+      );
+      if (!seen.includes(orderId)) {
+        seen.push(orderId);
+        localStorage.setItem(SEEN_KEY(shopId), JSON.stringify(seen));
+        setNewOrderCount((prev) => Math.max(0, prev - 1));
+      }
+    }
+    setIsNotifOpen(false);
+    navigate("/seller/orders");
   };
 
   const handleLogout = () => {
@@ -88,10 +164,15 @@ export default function Header({ hideProfile = false }: { hideProfile?: boolean 
 
   const isAdmin = getUserFromStorage()?.role === "ADMIN";
 
+  const handleNavigateToSellerPortal = () => {
+    navigate("/seller/dashboard");
+  };
+
   return (
     <HeaderView
       userAvatar={userAvatar}
       userName={userName}
+      userRole={userRole}
       currentPath={location.pathname}
       isAdmin={isAdmin}
       onNavigateToHome={handleNavigateToHome}
@@ -103,6 +184,14 @@ export default function Header({ hideProfile = false }: { hideProfile?: boolean 
       onNavigateToCart={handleNavigateToCart}
       onNavigateToAdminDashboard={handleNavigateToAdminDashboard}
       hideProfile={hideProfile}
+      onNavigateToSellerPortal={handleNavigateToSellerPortal}
+      isSeller={isSeller}
+      newOrderCount={newOrderCount}
+      pendingOrders={pendingOrders}
+      isNotifOpen={isNotifOpen}
+      onNotifToggle={handleNotifToggle}
+      onMarkAllRead={handleMarkAllRead}
+      onNotifOrderClick={handleNotifOrderClick}
     />
   );
 }

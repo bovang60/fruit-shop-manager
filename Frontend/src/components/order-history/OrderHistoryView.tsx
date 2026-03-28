@@ -17,17 +17,17 @@ export default function OrderHistoryView({
 }: OrderHistoryViewProps) {
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    return `₫${amount.toLocaleString('vi-VN')}`;
   };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
     try {
       const date = new Date(dateString);
-      return new Intl.DateTimeFormat('en-US', {
+      return new Intl.DateTimeFormat('vi-VN', {
         year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
       }).format(date);
@@ -42,7 +42,23 @@ export default function OrderHistoryView({
     if (s === 'SHIPPING' || s === 'PROCESSING') return 'order-badge--processing';
     if (s === 'COMPLETED' || s === 'DELIVERED') return 'order-badge--completed';
     if (s === 'CANCELLED') return 'order-badge--cancelled';
+    if (s === 'REJECTED') return 'order-badge--cancelled';
     return '';
+  };
+
+  const translateStatus = (status: string) => {
+    const s = status?.toUpperCase() || '';
+    switch (s) {
+      case 'PENDING': return 'Chờ xác nhận';
+      case 'CONFIRMED': return 'Đã xác nhận';
+      case 'PROCESSING': return 'Đang xử lý';
+      case 'SHIPPING': return 'Đang giao';
+      case 'DELIVERED': return 'Đã giao';
+      case 'COMPLETED': return 'Hoàn thành';
+      case 'CANCELLED': return 'Đã hủy';
+      case 'REJECTED': return 'Từ chối';
+      default: return status || 'KHÔNG RÕ';
+    }
   };
 
   return (
@@ -53,13 +69,13 @@ export default function OrderHistoryView({
 
       <main className="order-history-main">
         <section className="order-history-container">
-          <h1 className="order-history-title">My Orders</h1>
+          <h1 className="order-history-title">Đơn hàng của tôi</h1>
 
           {!loading && orders?.length === 0 ? (
             <div className="order-history-empty">
               <div className="order-history-empty-icon">📦</div>
-              <h2>No Orders Found</h2>
-              <p>You haven't placed any orders yet.</p>
+              <h2>Không tìm thấy đơn hàng</h2>
+              <p>Bạn chưa có đơn hàng nào.</p>
             </div>
           ) : (
             <div className="order-history-list">
@@ -78,19 +94,19 @@ export default function OrderHistoryView({
                   }}
                 >
                   <div className="order-card-header">
-                    <span className="order-card-id">Order #{order.orderId}</span>
+                    <span className="order-card-id">Đơn hàng #{order.orderId}</span>
                     <span className={`order-card-badge ${getStatusBadgeClass(order.status)}`}>
-                      {order.status || 'UNKNOWN'}
+                      {translateStatus(order.status)}
                     </span>
                   </div>
                   
                   <div className="order-card-body">
                     <div className="order-card-info-row">
-                      <span className="order-card-label">Date:</span>
+                      <span className="order-card-label">Ngày đặt:</span>
                       <span className="order-card-value">{formatDate(order.createdAt)}</span>
                     </div>
                     <div className="order-card-info-row">
-                      <span className="order-card-label">Total:</span>
+                      <span className="order-card-label">Tổng tiền:</span>
                       <span className="order-card-value order-card-total">
                         {order.totalPrice != null ? formatCurrency(order.totalPrice) : 'N/A'}
                       </span>
@@ -98,7 +114,7 @@ export default function OrderHistoryView({
                   </div>
                   
                   <div className="order-card-footer">
-                    <span className="order-card-action">View Details &rarr;</span>
+                    <span className="order-card-action">Xem chi tiết &rarr;</span>
                   </div>
                 </div>
               ))}
