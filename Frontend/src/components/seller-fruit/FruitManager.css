@@ -1,7 +1,7 @@
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
+@import "../seller/SellerPageShared.css";
+
+.seller-fruit-table td input {
+    width: 100%;
 }
 
 .product-card.discontinued {

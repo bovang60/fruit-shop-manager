@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { callApi } from '../../utils/apiClient'; // Giả sử path này
-import SellerDashboardView, { type DashboardStats, type RecentOrder } from './SellerDashboardView';
+import { useEffect, useState } from "react";
+import { usePopup } from "../common/popup";
+import SellerDashboardView, {
+    type DashboardStats,
+    type RecentOrder,
+} from "./SellerDashboardView";
+import {
+    getSellerDashboardData,
+    getSellerDashboardMessage,
+} from "../../services/sellerDashboardService";
 
 const SellerDashboard = ({ shopId }: { shopId: number }) => {
     const [stats, setStats] = useState<DashboardStats>({
@@ -11,23 +18,27 @@ const SellerDashboard = ({ shopId }: { shopId: number }) => {
     });
     const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { showError } = usePopup();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             setIsLoading(true);
             try {
-                // Sử dụng callApi đã được cung cấp thay vì fetch thuần
-                const statsRes = await callApi<null, { resultCd: number, data: DashboardStats }>(
-                    `/api/seller/reports/${shopId}`
-                );
-                const ordersRes = await callApi<null, { resultCd: number, data: RecentOrder[] }>(
-                    `/api/seller/orders/shop/${shopId}?limit=5`
-                );
-
-                if (statsRes.resultCd === 0) setStats(statsRes.data);
-                if (ordersRes.resultCd === 0) setRecentOrders(ordersRes.data);
+                const response = await getSellerDashboardData(shopId);
+                if (response.resultCd === 0 && response.data) {
+                    setStats(response.data.stats);
+                    setRecentOrders(response.data.recentOrders);
+                } else {
+                    showError(
+                        getSellerDashboardMessage(
+                            response.message || "Không thể tải dữ liệu bảng điều khiển",
+                        ),
+                        "Lỗi",
+                    );
+                }
             } catch (error) {
                 console.error("Dashboard load failed", error);
+                showError("Không thể kết nối đến hệ thống. Vui lòng thử lại.", "Lỗi");
             } finally {
                 // Giả lập delay 600ms theo checklist
                 setTimeout(() => setIsLoading(false), 600);

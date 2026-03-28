@@ -2,10 +2,14 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import SellerLayoutView from './SellerLayoutView'; // Import View chuẩn
 
-const SellerLayout = () => {
+type Props = {
+    children?: React.ReactNode;
+};
+
+const SellerLayout: React.FC<Props> = ({ children }) => {
     return (
         <SellerLayoutView>
-            <Outlet /> {/* Để hiển thị các route con như Dashboard, Fruits... */}
+            {children ?? <Outlet />} {/* Hỗ trợ cả children prop và nested routes */}
         </SellerLayoutView>
     );
 };
