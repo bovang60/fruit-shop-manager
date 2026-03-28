@@ -57,7 +57,7 @@ export default function Login({ onSuccess, onGoToRegister }: LoginProps = {}) {
           if (result.data.role === 'ADMIN') {
             navigate('/admin-dashboard')
           } else if (result.data.role === 'SELLER') {
-            navigate('/seller-dashboard')
+            navigate('/seller/dashboard')
           } else{
             navigate('/home')
           }
