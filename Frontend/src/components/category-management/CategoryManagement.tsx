@@ -1,102 +1,79 @@
 import React, { useState } from 'react';
-import { Space, Tag, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import type { MenuProps } from 'antd';
-import {
-    EditOutlined,
-    DeleteOutlined
-} from '@ant-design/icons';
-import CategoryManagementView, { Category } from './CategoryManagementView';
+import CategoryManagementView from './CategoryManagementView';
+import type { Category } from './CategoryManagementView';
 
-const { Text } = Typography;
+export type SortDirection = 'asc' | 'desc' | null
+
+export type SortConfig = {
+    key: string | null
+    direction: SortDirection
+}
 
 const CategoryManagement: React.FC = () => {
+    // UI State
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        return localStorage.getItem('sidebar-collapsed') === 'true'
+    })
+    const [searchQuery, setSearchQuery] = useState('')
+    const [statusFilter, setStatusFilter] = useState<string>('')
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: null })
+    const [viewMode, setViewMode] = useState<'LIST' | 'CREATE' | 'EDIT'>('LIST');
+
+    const handleToggleSidebar = () => {
+        setIsSidebarCollapsed((prev) => {
+            const next = !prev
+            localStorage.setItem('sidebar-collapsed', String(next))
+            return next
+        })
+    }
+
     // Mock Data
     const initialCategories: Category[] = [
-        { id: 1, icon: '🍊', iconBg: '#fff7e6', name: 'Citrus Fruits', productCount: 1245, status: 'Active' },
-        { id: 2, icon: '🍒', iconBg: '#fff1f0', name: 'Berries & Cherries', productCount: 892, status: 'Active' },
-        { id: 3, icon: '☀️', iconBg: '#feffe6', name: 'Exotic Tropicals', productCount: 456, status: 'Active' },
-        { id: 4, icon: '📦', iconBg: '#f0f2f5', name: 'Specialty Seeds', productCount: 0, status: 'Inactive' },
+        { id: 1, name: 'Citrus Fruits', productCount: 1245, status: 'Active' },
+        { id: 2, name: 'Berries & Cherries', productCount: 892, status: 'Active' },
+        { id: 3, name: 'Exotic Tropicals', productCount: 456, status: 'Active' },
+        { id: 4, name: 'Specialty Seeds', productCount: 0, status: 'Inactive' },
     ];
 
-    const [categories] = useState<Category[]>(initialCategories);
+    const [allCategories] = useState<Category[]>(initialCategories);
 
-    const columns: ColumnsType<Category> = [
-        {
-            title: 'ICON',
-            dataIndex: 'icon',
-            key: 'icon',
-            render: (text: string, record: Category) => (
-                <div
-                    className="category-icon-box"
-                    style={{ background: record.iconBg }}
-                >
-                    {text}
-                </div>
-            ),
-        },
-        {
-            title: 'CATEGORY NAME',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text: string) => <Text strong>{text}</Text>,
-        },
-        {
-            title: 'PRODUCT COUNT',
-            dataIndex: 'productCount',
-            key: 'productCount',
-            render: (count: number) => `${count} Items`,
-        },
-        {
-            title: 'STATUS',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status: 'Active' | 'Inactive') => (
-                <Tag
-                    color={status === 'Active' ? 'success' : 'default'}
-                    className="status-tag"
-                    style={{
-                        background: status === 'Active' ? '#f6ffed' : '#f5f5f5',
-                        color: status === 'Active' ? '#52c41a' : '#00000040',
-                    }}
-                >
-                    {status}
-                </Tag>
-            ),
-        },
-        {
-            title: 'ACTIONS',
-            key: 'actions',
-            render: () => (
-                <Space size="middle">
-                    <EditOutlined className="action-icon" />
-                    <DeleteOutlined className="action-icon" />
-                </Space>
-            ),
-        },
-    ];
+    // Filtered data logic
+    const filteredCategories = allCategories.filter(cat => {
+        const matchesSearch = cat.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = statusFilter === '' || cat.status.toUpperCase() === statusFilter.toUpperCase();
+        return matchesSearch && matchesStatus;
+    });
 
-    const filterMenu: MenuProps = {
-        items: [
-            { key: '1', label: 'All Categories' },
-            { key: '2', label: 'Active Only' },
-            { key: '3', label: 'Inactive Only' },
-        ],
-    };
+    const handleSort = (key: string) => {
+        setSortConfig((prev) => {
+            if (prev.key === key) {
+                if (prev.direction === 'asc') return { key, direction: 'desc' }
+                if (prev.direction === 'desc') return { key: null, direction: null }
+            }
+            return { key, direction: 'asc' }
+        })
+    }
 
-    const sortMenu: MenuProps = {
-        items: [
-            { key: '1', label: 'Name (A-Z)' },
-            { key: '2', label: 'Product Count (High-Low)' },
-        ],
+    const handleSaveCategory = (values: { name: string, status: 'Active' | 'Inactive' }) => {
+        console.log('Saving Category:', values);
+        // Here you would typically call an API
+        setViewMode('LIST');
     };
 
     return (
         <CategoryManagementView
-            categories={categories}
-            columns={columns}
-            filterMenu={filterMenu}
-            sortMenu={sortMenu}
+            categories={filteredCategories}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={handleToggleSidebar}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            onSave={handleSaveCategory}
         />
     );
 };

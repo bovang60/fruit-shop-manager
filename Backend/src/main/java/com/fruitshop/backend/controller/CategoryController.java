@@ -18,6 +18,11 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    @GetMapping("/filter-list")
+    public ResponseEntity<ApiResponse<java.util.List<CategoryDto>>> getActiveCategoriesForFilter() {
+        return ResponseEntity.ok(categoryService.getActiveCategoriesForFilter());
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<Page<CategoryDto>>> getCategories(
             @RequestParam(name = "search", required = false) String search,

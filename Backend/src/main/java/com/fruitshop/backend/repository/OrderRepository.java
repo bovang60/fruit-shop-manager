@@ -13,15 +13,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
         List<Order> findByShop_ShopIdOrderByCreatedAtDesc(Integer shopId);
 
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId")
-    long countByShopId(@Param("shopId") Integer shopId);
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId")
+        long countByShopId(@Param("shopId") Integer shopId);
 
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = :status")
-    long countByShopIdAndStatus(@Param("shopId") Integer shopId, @Param("status") Order.OrderStatus status);
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = :status")
+        long countByShopIdAndStatus(@Param("shopId") Integer shopId, @Param("status") Order.OrderStatus status);
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId")
+        long countByShop_ShopId(Integer shopId);
+
+        // @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = :status")
+        // Integer countByShopIdAndStatus(@Param("shopId") Integer shopId, @Param("status") Order.OrderStatus status);
 
         // Tinh tong doanh thu theo shop (chi tinh don da hoan thanh)
         @Query("SELECT SUM(o.subTotal) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = 'COMPLETED'")
@@ -82,4 +90,14 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         @Transactional
         @Query("UPDATE Order o SET o.status = 'CANCELLED' WHERE o.shop.shopId = :shopId AND o.status = 'PENDING'")
         int cancelPendingOrdersByShopId(@Param("shopId") Integer shopId);
+        @Query("SELECT o FROM Order o WHERE o.shop.shopId = :shopId AND o.status = 'PENDING' AND (:since IS NULL OR o.createdAt > :since) ORDER BY o.createdAt DESC")
+        List<Order> findNewPendingOrdersByShop(
+                @Param("shopId") Integer shopId,
+                @Param("since") java.time.LocalDateTime since,
+                Pageable pageable);
+
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = 'PENDING' AND (:since IS NULL OR o.createdAt > :since)")
+        Integer countNewPendingOrdersByShop(
+                @Param("shopId") Integer shopId,
+                @Param("since") java.time.LocalDateTime since);
 }

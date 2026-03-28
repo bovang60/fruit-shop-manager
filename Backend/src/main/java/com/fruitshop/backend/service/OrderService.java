@@ -4,7 +4,8 @@ import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.CheckoutRequestDto;
 import com.fruitshop.backend.dto.OrderDto;
 import com.fruitshop.backend.dto.OrderStatusDto;
-
+import com.fruitshop.backend.dto.SalesReportDto;
+import com.fruitshop.backend.model.Order;
 import java.util.List;
 
 public interface OrderService {
@@ -16,4 +17,8 @@ public interface OrderService {
     ApiResponse<String> cancelOrder(Integer orderId, Integer userId);
     ApiResponse<String> completeOrder(Integer orderId, Integer userId);
     ApiResponse<com.fruitshop.backend.dto.OrderResponse> createOrder(Integer userId, com.fruitshop.backend.dto.OrderRequest request);
+    List<Order> getOrdersByShop(Integer shopId);
+    Order getOrderDetail(Integer orderId);
+    Order updateOrderStatus(Integer orderId, Order.OrderStatus status);
+    SalesReportDto getShopSalesReport(Integer shopId);
 }

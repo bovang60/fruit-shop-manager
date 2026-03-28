@@ -1,0 +1,6 @@
+@import "../seller/SellerPageShared.css";
+
+.seller-dashboard-table td,
+.seller-dashboard-table th {
+    white-space: nowrap;
+}

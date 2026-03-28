@@ -24,6 +24,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
@@ -35,26 +36,35 @@ public class FeedbackServiceImpl implements FeedbackService {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
 
-        // 1. Validate order exists
-        Order order = orderRepository.findById(request.getOrderId())
-                .orElseThrow(() -> new FeedbackNotFoundException("Order not found with id: " + request.getOrderId()));
-
-        // 2. Validate order belongs to current user (OWNERSHIP CHECK)
-        if (!order.getUser().getUserId().equals(userId)) {
-            throw new UnauthorizedFeedbackAccessException("You are not authorized to give feedback for this order");
-        }
-
-        // 3. Validate order status = DELIVERED or COMPLETED
-        if (order.getStatus() != Order.OrderStatus.DELIVERED && order.getStatus() != Order.OrderStatus.COMPLETED) {
-            throw new OrderNotDeliveredException(
-                    "Order must be delivered or completed before giving feedback. Current status: " + order.getStatus());
+        if (request.getOrderId() == null) {
+            throw new IllegalArgumentException("orderId is required");
         }
 
         // 4. Validate product exists
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new FeedbackNotFoundException("Product not found with id: " + request.getProductId()));
 
-        // 5. Validate product belongs to this order (PRODUCT-IN-ORDER CHECK)
+        Feedback feedback = new Feedback();
+        feedback.setProduct(product);
+        feedback.setRating(request.getRating());
+        feedback.setComment(request.getComment() != null ? request.getComment() : "");
+
+        // ===== ORDER-BASED FEEDBACK (legacy flow) =====
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new FeedbackNotFoundException("Order not found with id: " + request.getOrderId()));
+
+        // Validate ownership
+        if (!order.getUser().getUserId().equals(userId)) {
+            throw new UnauthorizedFeedbackAccessException("You are not authorized to give feedback for this order");
+        }
+
+        // Validate status = DELIVERED or COMPLETED
+        if (order.getStatus() != Order.OrderStatus.DELIVERED && order.getStatus() != Order.OrderStatus.COMPLETED) {
+            throw new OrderNotDeliveredException(
+                    "Order must be delivered or completed before giving feedback. Current status: " + order.getStatus());
+        }
+
+        // Validate product belongs to this order
         List<OrderItem> orderItems = orderItemRepository.findByOrderOrderId(order.getOrderId());
         boolean productInOrder = orderItems.stream()
                 .anyMatch(item -> item.getProduct() != null
@@ -63,7 +73,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             throw new IllegalArgumentException("Product is not part of this order");
         }
 
-        // 6. Validate feedback does NOT already exist (DUPLICATE CHECK)
+        // Duplicate check for order-based feedback
         Optional<Feedback> existingFeedback = feedbackRepository
                 .findByOrder_OrderIdAndProduct_ProductIdAndUser_UserId(
                         request.getOrderId(), request.getProductId(), userId);
@@ -72,17 +82,13 @@ public class FeedbackServiceImpl implements FeedbackService {
                     "You have already reviewed this product for this order");
         }
 
-        // 7. Save feedback
-        Feedback feedback = new Feedback();
         feedback.setUser(order.getUser());
-        feedback.setProduct(product);
         feedback.setOrder(order);
-        feedback.setRating(request.getRating());
-        feedback.setComment(request.getComment() != null ? request.getComment() : "");
 
+        // Save feedback
         feedbackRepository.save(feedback);
 
-        // 8. Recalculate product rating from DB (ALWAYS AVG + COUNT)
+        // Recalculate product rating from DB (ALWAYS AVG + COUNT)
         recalculateProductRating(product.getProductId());
 
         return ApiResponse.success("Feedback submitted successfully", toDto(feedback));
@@ -105,13 +111,23 @@ public class FeedbackServiceImpl implements FeedbackService {
             throw new UnauthorizedFeedbackAccessException("You are not authorized to update this feedback");
         }
 
-        // 3. ONLY update rating + comment (NEVER orderId or productId)
+        // 3. Removed Cart logic
+
+        // 4. Verify order is still delivered/completed
+        if (feedback.getOrder() != null) {
+            Order order = feedback.getOrder();
+            if (order.getStatus() != Order.OrderStatus.DELIVERED && order.getStatus() != Order.OrderStatus.COMPLETED) {
+                throw new OrderNotDeliveredException("Order must be delivered or completed to update feedback");
+            }
+        }
+
+        // 5. ONLY update rating + comment (NEVER orderId/cartId or productId)
         feedback.setRating(request.getRating());
         feedback.setComment(request.getComment() != null ? request.getComment() : feedback.getComment());
 
         feedbackRepository.save(feedback);
 
-        // 4. Recalculate product rating from DB (ALWAYS AVG + COUNT)
+        // 6. Recalculate product rating from DB (ALWAYS AVG + COUNT)
         recalculateProductRating(feedback.getProduct().getProductId());
 
         return ApiResponse.success("Feedback updated successfully", toDto(feedback));
@@ -166,4 +182,3 @@ public class FeedbackServiceImpl implements FeedbackService {
         return dto;
     }
 }
-

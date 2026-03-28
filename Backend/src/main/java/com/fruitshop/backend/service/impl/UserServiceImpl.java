@@ -11,6 +11,7 @@ import com.fruitshop.backend.dto.UserDto;
 import com.fruitshop.backend.dto.VerifyOtpDto;
 import com.fruitshop.backend.model.PasswordResetOtp;
 import com.fruitshop.backend.model.PendingRegistration;
+import com.fruitshop.backend.model.Shop;
 import com.fruitshop.backend.model.User;
 import com.fruitshop.backend.repository.PasswordResetOtpRepository;
 import com.fruitshop.backend.repository.PendingRegistrationRepository;
@@ -270,6 +271,12 @@ public class UserServiceImpl implements UserService {
 
         // Login thành công - Return user info
         UserDto userDto = convertToDto(user);
+        if (user.getRole() == User.Role.SELLER) {
+            Shop shop = shopRepository.findByOwner_UserId(user.getUserId()).orElse(null);
+            if (shop != null) {
+                userDto.setShopId(shop.getShopId());
+            }
+        }
         return ApiResponse.success("Login successful", userDto);
     }
 
@@ -460,3 +467,5 @@ public class UserServiceImpl implements UserService {
         return dto;
     }
 }
+
+

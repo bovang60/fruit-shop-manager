@@ -19,10 +19,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
+    List<Product> findByShop_ShopId(Integer shopId);
+
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Product p WHERE p.productId = :productId")
     Optional<Product> findByIdForUpdate(@Param("productId") Integer productId);
+
+    /** Batch lock multiple products sorted by ID to prevent deadlock */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.productId IN :ids ORDER BY p.productId ASC")
+    List<Product> findByIdsForUpdate(@Param("ids") List<Integer> ids);
 
     // Search and filter products
     @Query("SELECT p FROM Product p LEFT JOIN p.category c WHERE " +

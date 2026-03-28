@@ -7,14 +7,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ShopRepository extends JpaRepository<Shop, Integer> {
     List<Shop> findByStatus(Shop.ShopStatus status);
     Page<Shop> findByStatus(Shop.ShopStatus status, Pageable pageable);
     long countByStatus(Shop.ShopStatus status);
-    java.util.Optional<Shop> findByOwner_UserId(Integer ownerId);
+    Optional<Shop> findByOwner_UserId(Integer ownerId);
     boolean existsByShopName(String shopName);
     boolean existsByTaxCode(String taxCode);
     boolean existsByAddress(String address);
 }
+
