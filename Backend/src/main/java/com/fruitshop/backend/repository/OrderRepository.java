@@ -11,22 +11,13 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
         long countByStatus(Order.OrderStatus status);
 
-        @org.springframework.data.jpa.repository.Query("SELECT new com.fruitshop.backend.dto.DashboardDto$MonthlyOrderDto("
-                        +
-                        "CONCAT(YEAR(o.createdAt), '-', MONTH(o.createdAt)), COUNT(o)) " +
-                        "FROM Order o GROUP BY YEAR(o.createdAt), MONTH(o.createdAt) " +
-                        "ORDER BY YEAR(o.createdAt) DESC, MONTH(o.createdAt) DESC")
-        java.util.List<com.fruitshop.backend.dto.DashboardDto.MonthlyOrderDto> countOrdersByMonth();
-
-        @org.springframework.data.jpa.repository.Query("SELECT new com.fruitshop.backend.dto.DashboardDto$MonthlyPerformanceDto("
-                        +
-                        "CONCAT(YEAR(o.createdAt), '-', MONTH(o.createdAt)), " +
-                        "COUNT(o), " +
-                        "SUM(CASE WHEN o.status = 'CANCELLED' THEN 1 ELSE 0 END), " +
-                        "SUM(CASE WHEN o.status = 'COMPLETED' THEN (o.subTotal + o.shippingFee) ELSE 0 END)) " +
-                        "FROM Order o GROUP BY YEAR(o.createdAt), MONTH(o.createdAt) " +
-                        "ORDER BY YEAR(o.createdAt) DESC, MONTH(o.createdAt) DESC")
-        java.util.List<com.fruitshop.backend.dto.DashboardDto.MonthlyPerformanceDto> findMonthlyPerformance();
+        @org.springframework.data.jpa.repository.Query("SELECT new com.fruitshop.backend.dto.DashboardDto$DailyOrderDto(" +
+                        "CAST(o.createdAt AS date), COUNT(o)) " +
+                        "FROM Order o WHERE o.createdAt >= :startDate " +
+                        "GROUP BY CAST(o.createdAt AS date) " +
+                        "ORDER BY CAST(o.createdAt AS date) ASC")
+        java.util.List<com.fruitshop.backend.dto.DashboardDto.DailyOrderDto> countOrdersLast7Days(
+                        @org.springframework.data.repository.query.Param("startDate") java.time.LocalDateTime startDate);
 
         @org.springframework.data.jpa.repository.Query("SELECT new com.fruitshop.backend.dto.DashboardDto$TopSellerDto(s.shopName, "
                         +
@@ -39,4 +30,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
                         org.springframework.data.domain.Pageable pageable);
 
         java.util.List<Order> findByUser_UserIdOrderByCreatedAtDesc(Integer userId);
+
+        long countByShop_ShopId(Integer shopId);
+        long countByShop_ShopIdAndStatus(Integer shopId, Order.OrderStatus status);
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,28 @@ public class DashboardServiceImpl implements DashboardService {
         long canceledOrders = orderRepository.countByStatus(Order.OrderStatus.CANCELLED);
         double cancellationRate = (totalOrders > 0) ? ((double) canceledOrders / totalOrders) * 100.0 : 0.0;
 
+        // Xử lý thống kê 7 ngày gần nhất, kể cả ngày không có đơn
+        LocalDateTime sevenDaysAgoStart = LocalDate.now().minusDays(6).atStartOfDay();
+        List<DashboardDto.DailyOrderDto> rawOrders = orderRepository.countOrdersLast7Days(sevenDaysAgoStart);
+        
+        // Tạo Map để tra cứu nhanh từ kết quả DB
+        java.util.Map<String, Long> orderMap = new java.util.HashMap<>();
+        for (DashboardDto.DailyOrderDto dto : rawOrders) {
+            String dateKey = dto.getDate().toString(); // Thường là YYYY-MM-DD
+            orderMap.put(dateKey, dto.getOrderCount());
+        }
+
+        // Tạo danh sách đầy đủ 7 ngày
+        List<DashboardDto.DailyOrderDto> filledOrders = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            LocalDate date = LocalDate.now().minusDays(6 - i);
+            String dateStr = date.toString();
+            filledOrders.add(DashboardDto.DailyOrderDto.builder()
+                    .date(dateStr)
+                    .orderCount(orderMap.getOrDefault(dateStr, 0L))
+                    .build());
+        }
+
         DashboardDto dashboard = DashboardDto.builder()
                 .activeUsers(activeUsers)
                 .totalOrders(totalOrders)
@@ -47,12 +70,10 @@ public class DashboardServiceImpl implements DashboardService {
                 .totalRevenue(totalRevenue)
                 .totalActiveSellers(activeSellers)
                 .pendingShopApprovals(pendingApprovals)
-                .ordersByMonth(orderRepository.countOrdersByMonth())
+                .ordersLast7Days(filledOrders)
                 .topSellers(orderRepository.findTopSellersByRevenue(PageRequest.of(0, 5)))
-                .shopPerformanceMonthly(orderRepository.findMonthlyPerformance())
                 .build();
 
         return ApiResponse.success("Dashboard stats retrieved successfully", dashboard);
     }
-
-    }
+}

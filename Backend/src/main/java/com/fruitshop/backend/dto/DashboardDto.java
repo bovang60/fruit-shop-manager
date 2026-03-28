@@ -23,16 +23,15 @@ public class DashboardDto {
     private long pendingShopApprovals;
 
     // Charts & Lists
-    private List<MonthlyOrderDto> ordersByMonth;
+    private List<DailyOrderDto> ordersLast7Days;
     private List<TopSellerDto> topSellers;
-    private List<MonthlyPerformanceDto> shopPerformanceMonthly;
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class MonthlyOrderDto {
-        private String month;
+    public static class DailyOrderDto {
+        private Object date;
         private long orderCount;
     }
 
@@ -45,16 +44,5 @@ public class DashboardDto {
         private long totalUnitsSold;
         private BigDecimal totalRevenue;
         private String status;
-    }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Builder
-    public static class MonthlyPerformanceDto {
-        private String month;
-        private long totalOrders;
-        private long canceledOrders;
-        private BigDecimal totalRevenue;
     }
 }
