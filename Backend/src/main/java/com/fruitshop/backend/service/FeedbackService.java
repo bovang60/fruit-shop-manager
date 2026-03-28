@@ -7,6 +7,7 @@ import com.fruitshop.backend.dto.FeedbackRequestDto;
 import java.util.List;
 
 public interface FeedbackService {
-    ApiResponse<String> createFeedback(Integer userId, FeedbackRequestDto request);
+    ApiResponse<FeedbackDto> createFeedback(Integer userId, FeedbackRequestDto request);
+    ApiResponse<FeedbackDto> updateFeedback(Integer userId, Integer feedbackId, FeedbackRequestDto request);
     ApiResponse<List<FeedbackDto>> getFeedbackByProduct(Integer productId);
 }

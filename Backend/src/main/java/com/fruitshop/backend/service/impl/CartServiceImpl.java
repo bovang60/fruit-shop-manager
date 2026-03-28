@@ -26,8 +26,12 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
 
     @Override
     @Transactional
-    public ApiResponse<CartDto> addToCart(Integer userId, AddToCartRequestDto dto) {
-        
+    public ApiResponse<CartDto> addToCart(AddToCartRequestDto dto) {
+        Integer userId = dto != null ? dto.getUserId() : null;
+        if (userId == null) {
+            return ApiResponse.error("User ID is required");
+        }
+
         // Find user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -52,11 +56,11 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
         System.out.println("addToCart -> userId: " + userId);
 
         // Find or create cart
-        Cart cart = cartRepository.findByUserUserId(userId).orElse(null);
+        Cart cart = cartRepository.findByShellerUserId(userId).orElse(null);
         System.out.println("cart before save: " + (cart != null ? cart.getCartId() : "null"));
         if (cart == null) {
             cart = new Cart();
-            cart.setUser(user);
+            cart.setSheller(user);
             cart = cartRepository.save(cart);
             cartRepository.flush();
             log.info("Created new cart with ID: {} for user: {}", cart.getCartId(), userId);
@@ -112,7 +116,7 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
     @Transactional(readOnly = true)
     public ApiResponse<CartDto> getCart(Integer userId) {
         System.out.println("getCart -> userId: " + userId);
-        Optional<Cart> cartOpt = cartRepository.findByUserUserId(userId);
+        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(userId);
         if (cartOpt.isEmpty()) {
             System.out.println("getCart -> Number of cart items: 0");
             CartDto emptyCart = new CartDto();
@@ -128,7 +132,7 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
     @Override
     @Transactional
     public ApiResponse<CartDto> updateCartItem(Integer userId, Integer cartItemId, Integer quantity) {
-        Optional<Cart> cartOpt = cartRepository.findByUserUserId(userId);
+        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(userId);
         if (cartOpt.isEmpty()) {
             return ApiResponse.error("Cart not found");
         }
@@ -170,7 +174,7 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
     @Override
     @Transactional
     public ApiResponse<String> removeCartItem(Integer userId, Integer cartItemId) {
-        Optional<Cart> cartOpt = cartRepository.findByUserUserId(userId);
+        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(userId);
         if (cartOpt.isEmpty()) {
             return ApiResponse.error("Cart not found");
         }
@@ -193,7 +197,7 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
     @Override
     @Transactional
     public ApiResponse<String> clearCart(Integer userId) {
-        Optional<Cart> cartOpt = cartRepository.findByUserUserId(userId);
+        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(userId);
         if (cartOpt.isEmpty()) {
             return ApiResponse.error("Cart not found");
         }
@@ -204,7 +208,7 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
     @Override
     @Transactional(readOnly = true)
     public List<java.util.Map<String, Object>> getCartDebug(Integer userId) {
-        Optional<Cart> cartOpt = cartRepository.findByUserUserId(userId); 
+        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(userId); 
         if (cartOpt.isEmpty()) {
             return new ArrayList<>();
         }
@@ -247,7 +251,7 @@ public class CartServiceImpl implements com.fruitshop.backend.service.CartServic
 
         CartDto cartDto = new CartDto();
         cartDto.setCartId(cart.getCartId());
-        cartDto.setUserId(cart.getUser().getUserId());
+        cartDto.setUserId(cart.getSheller().getUserId());
         cartDto.setTotalItems(items.size());
         cartDto.setTotalPrice(totalPrice);
         cartDto.setItems(itemDtos);

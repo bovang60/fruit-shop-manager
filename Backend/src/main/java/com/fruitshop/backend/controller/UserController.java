@@ -50,38 +50,38 @@ public class UserController {
     }
 
     @GetMapping("/verify-email")
-    public ResponseEntity<ApiResponse<String>> verifyEmail(@RequestParam String token) {
+    public ResponseEntity<ApiResponse<String>> verifyEmail(@RequestParam(name = "token") String token) {
         ApiResponse<String> response = userService.verifyEmail(token);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/list")
     public ResponseEntity<ApiResponse<Page<UserDto>>> getUsers(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) User.UserStatus status,
-            @RequestParam(required = false) User.Role role,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "status", required = false) User.UserStatus status,
+            @RequestParam(name = "role", required = false) User.Role role,
             Pageable pageable) {
         ApiResponse<Page<UserDto>> response = userService.getUsers(search, status, role, pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable(name = "id") Integer id) {
         ApiResponse<UserDto> response = userService.getUserById(id);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<UserDto>> updateUserStatus(
-            @PathVariable Integer id,
-            @RequestParam User.UserStatus status) {
+            @PathVariable(name = "id") Integer id,
+            @RequestParam(name = "status") User.UserStatus status) {
         ApiResponse<UserDto> response = userService.updateUserStatus(id, status);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/profile")
     public ResponseEntity<ApiResponse<UserDto>> updateProfile(
-            @PathVariable Integer id,
+            @PathVariable(name = "id") Integer id,
             @Valid @RequestBody UpdateProfileDto updateProfileDto) {
         ApiResponse<UserDto> response = userService.updateProfile(id, updateProfileDto);
         return ResponseEntity.ok(response);
@@ -89,7 +89,7 @@ public class UserController {
 
     @PutMapping("/{id}/change-password")
     public ResponseEntity<ApiResponse<String>> changePassword(
-            @PathVariable Integer id,
+            @PathVariable(name = "id") Integer id,
             @Valid @RequestBody ChangePasswordDto changePasswordDto) {
         ApiResponse<String> response = userService.changePassword(id, changePasswordDto);
         return ResponseEntity.ok(response);
