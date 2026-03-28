@@ -97,12 +97,12 @@ const OrderManagerView: React.FC<Props> = ({
                 <div className="filter-tabs-container">
                     {ORDER_FILTERS.map((filter) => (
                         <button
-                            key={status}
+                            key={filter.value}
                             type="button"
-                            className={`tab ${currentFilter === status ? 'active' : ''}`}
-                            onClick={() => onFilterChange(status)}
+                            className={`tab ${currentFilter === filter.value ? 'active' : ''}`}
+                            onClick={() => onFilterChange(filter.value)}
                         >
-                            {status === 'ALL' ? 'Tất cả' : status}
+                            {filter.label}
                         </button>
                     ))}
                 </div>
@@ -219,7 +219,7 @@ const OrderManagerView: React.FC<Props> = ({
                                             {order.status === 'PENDING' && (
                                                 <button
                                                     type="button"
-                                                    className="primary"
+                                                    className="btn-primary-admin seller-order-action-btn"
                                                     onClick={() => onUpdateStatus(order.orderId, 'CONFIRMED')}
                                                 >
                                                     Xác nhận
@@ -228,7 +228,7 @@ const OrderManagerView: React.FC<Props> = ({
                                             {order.status === 'CONFIRMED' && (
                                                 <button
                                                     type="button"
-                                                    className="primary"
+                                                    className="btn-primary-admin seller-order-action-btn"
                                                     onClick={() => onUpdateStatus(order.orderId, 'SHIPPING')}
                                                 >
                                                     Giao hàng
@@ -237,7 +237,7 @@ const OrderManagerView: React.FC<Props> = ({
                                             {order.status === 'SHIPPING' && (
                                                 <button
                                                     type="button"
-                                                    className="btn-primary-admin"
+                                                    className="btn-primary-admin seller-order-action-btn"
                                                     onClick={() => onUpdateStatus(order.orderId, 'COMPLETED')}
                                                 >
                                                     Hoàn tất
