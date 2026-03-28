@@ -77,6 +77,7 @@ export async function callApiWithMethod<TRequest = any, TResponse = any>(
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
   url: string,
   requestDto?: TRequest,
+  customHeaders?: Record<string, string>,
 ): Promise<TResponse> {
   const fullUrl = `${API_BASE_URL}${url}`;
 
@@ -85,6 +86,7 @@ export async function callApiWithMethod<TRequest = any, TResponse = any>(
       method,
       headers: {
         "Content-Type": "application/json",
+        ...customHeaders,
       },
       body:
         requestDto && method !== "GET" ? JSON.stringify(requestDto) : undefined,

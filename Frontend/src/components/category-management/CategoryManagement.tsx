@@ -3,7 +3,7 @@ import CategoryManagementView from './CategoryManagementView';
 import type { Category } from './CategoryManagementView';
 import { getCategories, createCategory, getCategoryById, updateCategory, deleteCategory, type CategoryDto } from '../../services/categoryService';
 
-import { usePopup } from '../common/popup/PopupProvider';
+import { usePopup } from '../common/popup';
 
 
 export type SortDirection = 'asc' | 'desc' | null
@@ -55,7 +55,7 @@ const CategoryManagement: React.FC = () => {
                 if (sortConfig.key === 'name') {
                     filter.sort = `categoryName,${sortConfig.direction}`;
                 } else if (sortConfig.key === 'productCount') {
-                    filter.sortByFruitCount = true;
+                    filter.sortByProductCount = true;
                 }
             }
 
@@ -66,7 +66,7 @@ const CategoryManagement: React.FC = () => {
                     id: dto.categoryId,
                     name: dto.categoryName,
                     description: dto.description,
-                    productCount: dto.fruitCount,
+                    productCount: dto.productCount,
                     status: dto.status === 'ACTIVE' ? 'Active' : 'Inactive'
                 }));
 
@@ -107,7 +107,7 @@ const CategoryManagement: React.FC = () => {
                     id: response.data.categoryId,
                     name: response.data.categoryName,
                     description: response.data.description,
-                    productCount: response.data.fruitCount,
+                    productCount: response.data.productCount,
                     status: response.data.status === 'ACTIVE' ? 'Active' : 'Inactive'
                 };
                 setCurrentCategory(category);
@@ -190,7 +190,7 @@ const CategoryManagement: React.FC = () => {
                         } else {
                             // Trường hợp trả về data là object -> Backend chỉ đổi INACTIVE.
                             setAllCategories(allCategories => allCategories.map(c => 
-                                c.id === id ? { ...c, status: 'Inactive', productCount: response.data!.fruitCount } : c
+                                c.id === id ? { ...c, status: 'Inactive', productCount: response.data!.productCount } : c
                             ));
                         }
                     } else {

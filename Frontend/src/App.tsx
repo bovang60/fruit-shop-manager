@@ -20,35 +20,35 @@ import OrderDetail from './components/order-detail/OrderDetail'
 import SellerDashboard from './components/seller-dashboard/SellerDashboard'
 function App() {
   return (
-      <BrowserRouter>
-        <PopupProvider>
-          <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            {/* Public Routes */}
-            <Route path="/home" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+    <BrowserRouter>
+      <PopupProvider>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Public Routes */}
+          <Route path="/home" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Private Routes - Required Login */}
-            <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
-
-            {/* Admin Routes - Required ADMIN role */}
-            <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/category-management" element={<ProtectedRoute requiredRole="ADMIN"><CategoryManagement /></ProtectedRoute>} />
-            <Route path="/shop-management" element={<ProtectedRoute requiredRole="ADMIN"><ShopManagement /></ProtectedRoute>} />
-            <Route path="/user-management" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
-            {/*Cart Routes*/}
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order-history" element={<OrderHistory />} />
-            <Route path="/order-detail/:orderId" element={<OrderDetail />} />
-            <Route path="/seller-dashboard" element={<SellerDashboard />} />
-          </Routes>
-        </PopupProvider>
-      </BrowserRouter>
+          {/* Private Routes - Required Login */}
+          <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
+            
+          {/* Admin Routes - Required ADMIN role */}
+          <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/category-management" element={<ProtectedRoute requiredRole="ADMIN"><CategoryManagement /></ProtectedRoute>} />
+          <Route path="/shop-management" element={<ProtectedRoute requiredRole="ADMIN"><ShopManagement /></ProtectedRoute>} />
+          <Route path="/user-management" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
+          {/*Cart Routes*/}
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/order-detail/:orderId" element={<OrderDetail />} />
+          <Route path="/seller-dashboard" element={<SellerDashboard />} />
+        </Routes>
+      </PopupProvider>
+    </BrowserRouter>
   )
 }
 

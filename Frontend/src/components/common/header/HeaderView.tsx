@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './Header.css'
 
 export type Props = {
@@ -12,13 +12,23 @@ export type Props = {
   onNavigateToProfile: () => void
   onLogout: () => void
   onNavigateToSellerRegistration: () => void
+  onNavigateToCart: () => void
 }
 
-export default function HeaderView({ userAvatar, userName, currentPath, onNavigateToHome, onNavigateToProducts, onNavigateToOrders, onNavigateToCustomers, onNavigateToProfile, onLogout }: Props) {
+export default function HeaderView({
+  userAvatar,
+  userName,
+  currentPath,
+  onNavigateToHome,
+  onNavigateToProducts,
+  onNavigateToProfile,
+  onLogout,
+  onNavigateToSellerRegistration,
+  onNavigateToCart,
+}: Props) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -63,16 +73,16 @@ export default function HeaderView({ userAvatar, userName, currentPath, onNaviga
           Sản phẩm
         </button>
         <button
-          className={`tab${currentPath === '/orders' ? ' active' : ''}`}
-          onClick={onNavigateToOrders}
+          className={`tab${currentPath === '/cart' ? ' active' : ''}`}
+          onClick={onNavigateToCart}
         >
           Đơn hàng
         </button>
         <button
-          className={`tab${currentPath === '/customers' ? ' active' : ''}`}
-          onClick={onNavigateToCustomers}
+          className={`tab${currentPath === '/register-shop' ? ' active' : ''}`}
+          onClick={onNavigateToSellerRegistration}
         >
-          Khách hàng
+          Trở thành người bán
         </button>
       </nav>
       <div className="header-actions">
@@ -81,7 +91,7 @@ export default function HeaderView({ userAvatar, userName, currentPath, onNaviga
             className="profile-icon-btn"
             onClick={toggleDropdown}
             aria-label="User menu"
-            title={userName || "User menu"}
+            title={userName || 'User menu'}
             aria-expanded={isDropdownOpen}
           >
             {userAvatar ? (
@@ -90,10 +100,11 @@ export default function HeaderView({ userAvatar, userName, currentPath, onNaviga
                 alt={userName}
                 className="profile-avatar-image"
                 onError={(e) => {
-                  // Fallback to SVG icon if image fails to load
                   e.currentTarget.style.display = 'none'
                   const svg = e.currentTarget.nextElementSibling as HTMLElement
-                  if (svg) svg.style.display = 'block'
+                  if (svg) {
+                    svg.style.display = 'block'
+                  }
                 }}
               />
             ) : null}

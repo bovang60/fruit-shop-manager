@@ -15,7 +15,7 @@ export interface CategoryDto {
     categoryName: string;
     description: string;
     status: CategoryStatus;
-    fruitCount: number;
+    productCount: number;
 }
 
 export interface PageResponse<T> {
@@ -32,7 +32,7 @@ export interface PageResponse<T> {
 export interface CategoryFilter {
     search?: string;
     status?: string;
-    sortByFruitCount?: boolean;
+    sortByProductCount?: boolean;
     page?: number;
     size?: number;
     sort?: string;
@@ -60,7 +60,7 @@ export async function getCategories(filter: CategoryFilter): Promise<ApiResponse
     const params = new URLSearchParams();
     if (filter.search) params.append("search", filter.search);
     if (filter.status) params.append("status", filter.status);
-    if (filter.sortByFruitCount !== undefined) params.append("sortByFruitCount", filter.sortByFruitCount.toString());
+    if (filter.sortByProductCount !== undefined) params.append("sortByProductCount", filter.sortByProductCount.toString());
     if (filter.page !== undefined) params.append("page", filter.page.toString());
     if (filter.size !== undefined) params.append("size", filter.size.toString());
     if (filter.sort) params.append("sort", filter.sort);

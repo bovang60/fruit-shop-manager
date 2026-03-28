@@ -1,5 +1,5 @@
 /* =============================================
-   SELLER DASHBOARD - Class-based CSS
+   ORDER HISTORY - Class-based CSS
    Design System:
      Primary: #33f20d
      Text: #121811
@@ -7,7 +7,7 @@
      Border: #dde6db
    ============================================= */
 
-.sd-root {
+.order-history-root {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -15,17 +15,17 @@
   color: #121811;
 }
 
-.sd-main {
+.order-history-main {
   flex: 1;
   padding: 32px 16px;
 }
 
-.sd-container {
-  max-width: 900px;
+.order-history-container {
+  max-width: 800px;
   margin: 0 auto;
 }
 
-.sd-title {
+.order-history-title {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 28px;
@@ -34,7 +34,7 @@
 
 /* ---------- Loading ---------- */
 
-.sd-loading {
+.order-history-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -44,16 +44,16 @@
   color: #6b7a66;
 }
 
-.sd-spinner {
+.order-history-spinner {
   width: 40px;
   height: 40px;
   border: 4px solid #dde6db;
   border-top-color: #33f20d;
   border-radius: 50%;
-  animation: sd-spin 0.8s linear infinite;
+  animation: oh-spin 0.8s linear infinite;
 }
 
-@keyframes sd-spin {
+@keyframes oh-spin {
   to {
     transform: rotate(360deg);
   }
@@ -61,7 +61,7 @@
 
 /* ---------- Empty State ---------- */
 
-.sd-empty {
+.order-history-empty {
   text-align: center;
   background-color: #ffffff;
   border: 1px solid #dde6db;
@@ -69,33 +69,33 @@
   padding: 64px 24px;
 }
 
-.sd-empty-icon {
+.order-history-empty-icon {
   font-size: 48px;
   margin-bottom: 16px;
   opacity: 0.8;
 }
 
-.sd-empty h2 {
+.order-history-empty h2 {
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 8px;
   color: #121811;
 }
 
-.sd-empty p {
+.order-history-empty p {
   color: #6b7a66;
   font-size: 15px;
 }
 
 /* ---------- Order List & Cards ---------- */
 
-.sd-order-list {
+.order-history-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.sd-order-card {
+.order-history-card {
   background-color: #ffffff;
   border: 1px solid #dde6db;
   border-radius: 12px;
@@ -107,14 +107,14 @@
   gap: 16px;
 }
 
-.sd-order-card:hover {
+.order-history-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(18, 24, 17, 0.05);
   border-color: #33f20d;
 }
 
 /* Card Header */
-.sd-card-header {
+.order-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -122,15 +122,13 @@
   padding-bottom: 12px;
 }
 
-.sd-card-id {
+.order-card-id {
   font-size: 16px;
   font-weight: 700;
   color: #121811;
 }
 
-/* ---------- Status Badges ---------- */
-
-.sd-badge {
+.order-card-badge {
   font-size: 12px;
   font-weight: 600;
   padding: 4px 10px;
@@ -141,161 +139,81 @@
   color: #6b7a66;
 }
 
-.sd-badge--pending {
+.order-badge--pending {
   background-color: #fff3cd;
   color: #856404;
 }
 
-.sd-badge--confirmed {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
-
-.sd-badge--processing {
+.order-badge--processing {
   background-color: #cce5ff;
   color: #004085;
 }
 
-.sd-badge--shipping {
-  background-color: #e2d6f3;
-  color: #4a2d7a;
-}
-
-.sd-badge--delivered {
+.order-badge--completed {
   background-color: #d4edda;
   color: #155724;
 }
 
-.sd-badge--completed {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.sd-badge--cancelled {
+.order-badge--cancelled {
   background-color: #f8d7da;
   color: #721c24;
 }
 
 /* Card Body */
-.sd-card-body {
+.order-card-body {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.sd-card-row {
+.order-card-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
 }
 
-.sd-card-label {
+.order-card-label {
   color: #6b7a66;
 }
 
-.sd-card-value {
+.order-card-value {
   color: #121811;
   font-weight: 500;
 }
 
-.sd-card-total {
+.order-card-total {
   font-size: 15px;
   font-weight: 600;
   color: #33f20d;
 }
 
 /* Card Footer */
-.sd-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.order-card-footer {
   padding-top: 12px;
   border-top: 1px dashed #f0f4f0;
+  text-align: right;
 }
 
-.sd-card-detail-link {
+.order-card-action {
   font-size: 14px;
   font-weight: 600;
   color: #33f20d;
 }
 
-/* ---------- Action Buttons ---------- */
-
-.sd-btn {
-  padding: 8px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
-}
-
-.sd-btn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.sd-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.sd-btn-confirm {
-  background-color: #33f20d;
-  color: #121811;
-}
-
-.sd-btn-confirm:hover:not(:disabled) {
-  background-color: #2cd60b;
-}
-
-.sd-btn-shipping {
-  background-color: #cce5ff;
-  color: #004085;
-}
-
-.sd-btn-shipping:hover:not(:disabled) {
-  background-color: #b8daff;
-}
-
-.sd-btn-delivered {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.sd-btn-delivered:hover:not(:disabled) {
-  background-color: #c3e6cb;
-}
-
 /* ---------- Responsive ---------- */
 
 @media (max-width: 600px) {
-  .sd-main {
+  .order-history-main {
     padding: 20px 12px;
   }
 
-  .sd-title {
+  .order-history-title {
     font-size: 22px;
     margin-bottom: 20px;
   }
 
-  .sd-order-card {
+  .order-history-card {
     padding: 16px;
-  }
-
-  .sd-card-footer {
-    flex-direction: column;
-    gap: 12px;
-    align-items: stretch;
-  }
-
-  .sd-btn {
-    width: 100%;
-    text-align: center;
-  }
-
-  .sd-card-detail-link {
-    text-align: right;
   }
 }
