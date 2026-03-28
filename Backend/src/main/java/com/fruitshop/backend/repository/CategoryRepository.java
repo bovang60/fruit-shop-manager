@@ -13,11 +13,11 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     Page<Category> findByStatus(Category.CategoryStatus status, Pageable pageable);
     Page<Category> findByCategoryNameContainingIgnoreCaseAndStatus(String keyword, Category.CategoryStatus status, Pageable pageable);
     
-    @Query("SELECT c FROM Category c LEFT JOIN c.fruits f WHERE (:status IS NULL OR c.status = :status) GROUP BY c ORDER BY COUNT(f) DESC")
-    Page<Category> findAllOrderByFruitCountDesc(Category.CategoryStatus status, Pageable pageable);
+    @Query("SELECT c FROM Category c LEFT JOIN c.products p WHERE (:status IS NULL OR c.status = :status) GROUP BY c ORDER BY COUNT(p) DESC")
+    Page<Category> findAllOrderByProductCountDesc(Category.CategoryStatus status, Pageable pageable);
     
-    @Query("SELECT c FROM Category c LEFT JOIN c.fruits f WHERE (:status IS NULL OR c.status = :status) GROUP BY c ORDER BY COUNT(f) ASC")
-    Page<Category> findAllOrderByFruitCountAsc(Category.CategoryStatus status, Pageable pageable);
+    @Query("SELECT c FROM Category c LEFT JOIN c.products p WHERE (:status IS NULL OR c.status = :status) GROUP BY c ORDER BY COUNT(p) ASC")
+    Page<Category> findAllOrderByProductCountAsc(Category.CategoryStatus status, Pageable pageable);
 
     boolean existsByCategoryNameIgnoreCase(String categoryName);
 }

@@ -22,9 +22,9 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<Page<CategoryDto>>> getCategories(
             @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "status", required = false) com.fruitshop.backend.model.Category.CategoryStatus status,
-            @RequestParam(name = "sortByFruitCount", defaultValue = "false") Boolean sortByFruitCount,
+            @RequestParam(name = "sortByProductCount", defaultValue = "false") Boolean sortByProductCount,
             Pageable pageable) {
-        return ResponseEntity.ok(categoryService.getCategories(search, status, sortByFruitCount, pageable));
+        return ResponseEntity.ok(categoryService.getCategories(search, status, sortByProductCount, pageable));
     }
 
     @GetMapping("/{id}")

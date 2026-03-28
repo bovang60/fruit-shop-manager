@@ -14,6 +14,9 @@ import com.fruitshop.backend.model.PendingRegistration;
 import com.fruitshop.backend.model.User;
 import com.fruitshop.backend.repository.PasswordResetOtpRepository;
 import com.fruitshop.backend.repository.PendingRegistrationRepository;
+import com.fruitshop.backend.repository.OrderRepository;
+import com.fruitshop.backend.repository.ProductRepository;
+import com.fruitshop.backend.repository.ShopRepository;
 import com.fruitshop.backend.repository.UserRepository;
 import com.fruitshop.backend.service.EmailService;
 import com.fruitshop.backend.service.FileStorageService;
@@ -34,6 +37,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PendingRegistrationRepository pendingRegistrationRepository;
     private final PasswordResetOtpRepository passwordResetOtpRepository;
+    private final ShopRepository shopRepository;
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
     private final EmailService emailService;
     private final FileStorageService fileStorageService;
 
@@ -89,9 +95,22 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setStatus(status);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return ApiResponse.success("User status updated successfully", convertToDto(user));
+        if (savedUser.getRole() == User.Role.SELLER) {
+            shopRepository.findByOwner_UserId(savedUser.getUserId()).ifPresent(shop -> {
+                if (status == User.UserStatus.INACTIVE) {
+                    // Khi seller INACTIVE: ẩn sản phẩm và hủy các đơn PENDING
+                    productRepository.hideAllByShopId(shop.getShopId());
+                    orderRepository.cancelPendingOrdersByShopId(shop.getShopId());
+                } else if (status == User.UserStatus.ACTIVE) {
+                    // Khi seller ACTIVE: kích hoạt lại toàn bộ sản phẩm của shop
+                    productRepository.activateAllByShopId(shop.getShopId());
+                }
+            });
+        }
+
+        return ApiResponse.success("User status updated successfully", convertToDto(savedUser));
     }
 
     @Override

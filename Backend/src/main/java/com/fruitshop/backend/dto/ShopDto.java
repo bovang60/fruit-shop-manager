@@ -24,4 +24,9 @@ public class ShopDto {
     private String businessName;
     private String businessAddress;
     private String pickupAddress;
+
+    // Quản lý thống kê
+    private Long totalOrders;
+    private Double cancellationRate;
+    private Long totalProducts;
 }

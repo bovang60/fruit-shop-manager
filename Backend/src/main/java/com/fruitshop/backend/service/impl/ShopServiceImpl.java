@@ -11,7 +11,10 @@ import com.fruitshop.backend.model.ShopShippingConfigId;
 import com.fruitshop.backend.model.ShippingMethod;
 import com.fruitshop.backend.repository.ShopRepository;
 import com.fruitshop.backend.repository.UserRepository;
-import com.fruitshop.backend.repository.FruitRepository;
+import com.fruitshop.backend.repository.ProductRepository;
+import com.fruitshop.backend.repository.OrderRepository;
+import com.fruitshop.backend.model.Order;
+import com.fruitshop.backend.model.Product;
 import com.fruitshop.backend.repository.ShopShippingConfigRepository;
 import com.fruitshop.backend.repository.ShippingMethodRepository;
 import com.fruitshop.backend.service.ShopService;
@@ -32,9 +35,10 @@ public class ShopServiceImpl implements ShopService {
 
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
-    private final FruitRepository fruitRepository;
+    private final ProductRepository productRepository;
     private final ShopShippingConfigRepository shopShippingConfigRepository;
     private final ShippingMethodRepository shippingMethodRepository;
+    private final OrderRepository orderRepository;
 
     @Override
     public ApiResponse<Page<ShopDto>> getShopsByStatus(Shop.ShopStatus status, Pageable pageable) {
@@ -172,23 +176,48 @@ public class ShopServiceImpl implements ShopService {
         shop.setRejectReason("Cửa hàng bị đình chỉ hoạt động bởi quản trị viên");
         Shop savedShop = shopRepository.save(shop);
         
-        // Hủy quyền SELLER của user khi bị đình chỉ
+        // Đặt trạng thái INACTIVE cho user khi bị đình chỉ (giữ nguyên quyền SELLER)
         User owner = savedShop.getOwner();
         if (owner != null && owner.getRole() == User.Role.SELLER) {
-            owner.setRole(User.Role.CUSTOMER);
+            owner.setStatus(User.UserStatus.INACTIVE);
             userRepository.save(owner);
         }
         
-        // Ẩn toàn bộ sản phẩm của Shop
-        java.util.List<Fruit> fruits = fruitRepository.findByShopShopId(id);
-        if (fruits != null && !fruits.isEmpty()) {
-            for (Fruit fruit : fruits) {
-                fruit.setStatus(Fruit.FruitStatus.HIDDEN);
-            }
-            fruitRepository.saveAll(fruits);
-        }
+        // Ẩn toàn bộ sản phẩm của Shop (dùng model Product) - Dùng @Modifying để tối ưu
+        productRepository.hideAllByShopId(id);
+
+        // Hủy các đơn đang PENDING, giữ nguyên các trạng thái đơn khác
+        orderRepository.cancelPendingOrdersByShopId(id);
         
         return ApiResponse.success("Đã đình chỉ cửa hàng thành công", convertToDto(savedShop));
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<ShopDto> activateShop(Integer id) {
+        Shop shop = shopRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Không tìm thấy cửa hàng"));
+        
+        if (shop.getStatus() != Shop.ShopStatus.SUSPENDED) {
+            return ApiResponse.error("Chỉ có thể kích hoạt lại cửa hàng đang bị đình chỉ");
+        }
+
+        shop.setStatus(Shop.ShopStatus.APPROVED);
+        shop.setRejectReason(null);
+        Shop savedShop = shopRepository.save(shop);
+        
+        // Cập nhật trạng thái ACTIVE cho user
+        User owner = savedShop.getOwner();
+        if (owner != null) {
+            owner.setStatus(User.UserStatus.ACTIVE);
+            owner.setRole(User.Role.SELLER); // Đảm bảo role là SELLER
+            userRepository.save(owner);
+        }
+        
+        // Kích hoạt lại toàn bộ sản phẩm
+        productRepository.activateAllByShopId(id);
+        
+        return ApiResponse.success("Đã kích hoạt lại cửa hàng thành công", convertToDto(savedShop));
     }
 
     @Override
@@ -252,6 +281,16 @@ public class ShopServiceImpl implements ShopService {
         dto.setBusinessName(shop.getBusinessName());
         dto.setBusinessAddress(shop.getBusinessAddress());
         dto.setPickupAddress(shop.getPickupAddress());
+        
+        // Quản lý thống kê
+        long totalOrders = orderRepository.countByShopId(shop.getShopId());
+        long canceledOrders = orderRepository.countByShopIdAndStatus(shop.getShopId(), Order.OrderStatus.CANCELLED);
+        double cancellationRate = (totalOrders > 0) ? ((double) canceledOrders / totalOrders) * 100.0 : 0.0;
+        long totalProducts = productRepository.countByShopId(shop.getShopId());
+
+        dto.setTotalOrders(totalOrders);
+        dto.setCancellationRate(Math.round(cancellationRate * 100.0) / 100.0);
+        dto.setTotalProducts(totalProducts);
 
         return dto;
     }

@@ -46,5 +46,17 @@ public class DatabaseMigrationRunner implements CommandLineRunner {
         } catch (Exception e) {
             System.out.println("Failed to migrate old transaction payment statuses: " + e.getMessage());
         }
+
+        try {
+            String dropShopStatusConstraintSql = "DECLARE @ConstraintName nvarchar(200)\n" +
+                    "DECLARE @Sql nvarchar(500)\n" +
+                    "SELECT @ConstraintName = Name FROM sys.check_constraints WHERE parent_object_id = OBJECT_ID('shops') AND parent_column_id = COLUMNPROPERTY(OBJECT_ID('shops'), 'status', 'ColumnId')\n" +
+                    "IF @ConstraintName IS NOT NULL BEGIN SET @Sql = N'ALTER TABLE shops DROP CONSTRAINT [' + @ConstraintName + N']'; EXEC sp_executesql @Sql END";
+            jdbcTemplate.execute(dropShopStatusConstraintSql);
+            jdbcTemplate.execute("ALTER TABLE shops ADD CONSTRAINT CK_shops_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'))");
+            System.out.println("Updated shops.status constraint to allow SUSPENDED SUCCESS");
+        } catch (Exception e) {
+            System.out.println("Failed to update shops.status constraint: " + e.getMessage());
+        }
     }
 }

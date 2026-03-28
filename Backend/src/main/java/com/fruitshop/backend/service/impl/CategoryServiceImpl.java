@@ -18,7 +18,7 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryRepository categoryRepository;
 
     @Override
-    public ApiResponse<Page<CategoryDto>> getCategories(String search, Category.CategoryStatus status, Boolean sortByFruitCount, Pageable pageable) {
+    public ApiResponse<Page<CategoryDto>> getCategories(String search, Category.CategoryStatus status, Boolean sortByProductCount, Pageable pageable) {
         Page<Category> categories;
         if (search != null && !search.isEmpty()) {
             if (status != null) {
@@ -26,8 +26,8 @@ public class CategoryServiceImpl implements CategoryService {
             } else {
                 categories = categoryRepository.findByCategoryNameContainingIgnoreCase(search, pageable);
             }
-        } else if (Boolean.TRUE.equals(sortByFruitCount)) {
-            categories = categoryRepository.findAllOrderByFruitCountDesc(status, pageable);
+        } else if (Boolean.TRUE.equals(sortByProductCount)) {
+            categories = categoryRepository.findAllOrderByProductCountDesc(status, pageable);
         } else if (status != null) {
             categories = categoryRepository.findByStatus(status, pageable);
         } else {
@@ -131,7 +131,7 @@ public class CategoryServiceImpl implements CategoryService {
             return ApiResponse.error("Category not found");
         }
         
-        if (category.getFruitCount() != null && category.getFruitCount() > 0) {
+        if (category.getProductCount() != null && category.getProductCount() > 0) {
             category.setStatus(Category.CategoryStatus.INACTIVE);
             Category updatedCategory = categoryRepository.save(category);
             return ApiResponse.success("Đổi trạng thái về Inactive vì danh mục này đang có sản phẩm", convertToDto(updatedCategory));
@@ -147,7 +147,8 @@ public class CategoryServiceImpl implements CategoryService {
         dto.setCategoryName(category.getCategoryName());
         dto.setDescription(category.getDescription());
         dto.setStatus(category.getStatus());
-        dto.setFruitCount(category.getFruitCount() != null ? category.getFruitCount() : 0L);
+        dto.setProductCount(category.getProductCount() != null ? category.getProductCount() : 0L);
+        dto.setTotalStock(category.getTotalStock() != null ? category.getTotalStock() : 0L);
         dto.setCreatedAt(category.getCreatedAt());
         return dto;
     }

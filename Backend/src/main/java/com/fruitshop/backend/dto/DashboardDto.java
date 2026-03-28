@@ -45,4 +45,24 @@ public class DashboardDto {
         private BigDecimal totalRevenue;
         private String status;
     }
+
+     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class MonthlyOrderDto {
+        private String month;
+        private long orderCount;
+    }
+
+     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class MonthlyPerformanceDto {
+        private String month;
+        private long totalOrders;
+        private long canceledOrders;
+        private BigDecimal totalRevenue;
+    }
 }

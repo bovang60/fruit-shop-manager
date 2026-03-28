@@ -14,6 +14,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
@@ -49,4 +52,20 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("SELECT p FROM Product p WHERE p.isActive = true " +
             "ORDER BY (p.soldCount * 0.7 + p.viewCount * 0.3) DESC")
     List<Product> findTrendingProducts(Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.shop.shopId = :shopId")
+    long countByShopId(@Param("shopId") Integer shopId);
+
+    @Query("SELECT p FROM Product p WHERE p.shop.shopId = :shopId")
+    List<Product> findByShopId(@Param("shopId") Integer shopId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Product p SET p.isActive = false WHERE p.shop.shopId = :shopId")
+    void hideAllByShopId(@Param("shopId") Integer shopId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Product p SET p.isActive = true WHERE p.shop.shopId = :shopId")
+    void activateAllByShopId(@Param("shopId") Integer shopId);
 }

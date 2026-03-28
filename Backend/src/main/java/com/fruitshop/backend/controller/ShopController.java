@@ -50,6 +50,11 @@ public class ShopController {
         return ResponseEntity.ok(shopService.suspendShop(id));
     }
 
+    @PutMapping("/{id}/activate")
+    public ResponseEntity<ApiResponse<ShopDto>> activateShop(@PathVariable(name = "id") Integer id) {
+        return ResponseEntity.ok(shopService.activateShop(id));
+    }
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<ShopDto>> registerSeller(@Valid @RequestBody com.fruitshop.backend.dto.RegisterShopDto registerShopDto) {
         return ResponseEntity.ok(shopService.registerSeller(registerShopDto));

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CategoryService {
-    ApiResponse<Page<CategoryDto>> getCategories(String search, com.fruitshop.backend.model.Category.CategoryStatus status, Boolean sortByFruitCount, Pageable pageable);
+    ApiResponse<Page<CategoryDto>> getCategories(String search, com.fruitshop.backend.model.Category.CategoryStatus status, Boolean sortByProductCount, Pageable pageable);
     ApiResponse<CategoryDto> getCategoryById(Integer id);
     ApiResponse<CategoryDto> createCategory(CategoryDto categoryDto);
     ApiResponse<CategoryDto> updateCategory(Integer id, CategoryDto categoryDto);

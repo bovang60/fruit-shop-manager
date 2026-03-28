@@ -13,6 +13,7 @@ public interface ShopService {
     ApiResponse<ShopDto> approveShop(Integer id);
     ApiResponse<ShopDto> rejectShop(Integer id, ShopRejectDto rejectDto);
     ApiResponse<ShopDto> suspendShop(Integer id); // Toggle suspend/active
+    ApiResponse<ShopDto> activateShop(Integer id); 
     ApiResponse<ShopDto> registerSeller(com.fruitshop.backend.dto.RegisterShopDto registerShopDto);
     boolean isShopNameExists(String shopName);
     ApiResponse<ShopDto> checkShopStatus(Integer ownerId);

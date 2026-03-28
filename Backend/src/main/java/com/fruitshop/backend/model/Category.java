@@ -24,10 +24,13 @@ public class Category {
     private CategoryStatus status = CategoryStatus.ACTIVE;
 
     @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM products p WHERE p.category_id = category_id)")
-    private Long fruitCount;
+    private Long productCount;
+
+    @org.hibernate.annotations.Formula("(SELECT COALESCE(SUM(p.stock), 0) FROM products p WHERE p.category_id = category_id)")
+    private Long totalStock;
 
     @OneToMany(mappedBy = "category")
-    private List<Fruit> fruits;
+    private List<Product> products;
 
     @Column(name = "created_at", updatable = false)
     private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();

@@ -9,6 +9,7 @@ public class CategoryDto {
     private String categoryName;
     private String description;
     private Category.CategoryStatus status;
-    private Long fruitCount;
+    private Long productCount;
+    private Long totalStock;
     private java.time.LocalDateTime createdAt;
 }
