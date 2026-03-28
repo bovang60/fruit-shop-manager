@@ -24,7 +24,7 @@ export type Seller = {
     img: string
 }
 
-interface MonthlyPoint {
+interface WeeklyPoint {
     label: string
     value: string
     x: number
@@ -34,34 +34,34 @@ interface MonthlyPoint {
 interface Props {
     stats: Stat[]
     sellers: Seller[]
-    monthlyOrders: MonthlyPoint[]
-    isLoading: boolean
-    isSidebarCollapsed: boolean
-    onToggleSidebar: () => void
+    weeklyOrders: WeeklyPoint[]
+    isLoading: boolean;
+    isSidebarCollapsed: boolean;
+    onToggleSidebar: () => void;
 }
 
 export default function AdminDashboardView({
     stats,
     sellers,
-    monthlyOrders,
+    weeklyOrders,
     isLoading,
     isSidebarCollapsed,
     onToggleSidebar
 }: Props) {
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
-    const maxVal = monthlyOrders.length > 0 
-        ? Math.max(...monthlyOrders.map(o => {
+    const maxVal = weeklyOrders.length > 0 
+        ? Math.max(...weeklyOrders.map(o => {
             const num = parseFloat(o.value.replace(/[^0-9.]/g, ''));
             return isNaN(num) ? 0 : num;
           }))
-        : 1000;
+        : 100;
 
     const yLabels = [
-        `${(maxVal * 1.5 / 1000).toFixed(0)}k`,
-        `${(maxVal * 1.0 / 1000).toFixed(0)}k`,
-        `${(maxVal * 0.5 / 1000).toFixed(0)}k`,
-        '0k'
+        `${(maxVal * 1.5).toFixed(0)}`,
+        `${(maxVal * 1.0).toFixed(0)}`,
+        `${(maxVal * 0.5).toFixed(0)}`,
+        '0'
     ];
 
     if (isLoading) {
@@ -104,7 +104,7 @@ export default function AdminDashboardView({
                         <div className="card-with-header overview-card">
                             <div className="card-header-row" style={{ padding: '1.5rem 1.5rem 0' }}>
                                 <div className="card-title-group">
-                                    <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Xu hướng doanh thu (7 ngày qua)</h3>
+                                    <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Xu hướng đơn hàng (7 ngày qua)</h3>
                                 </div>
                             </div>
                             <div className="overview-chart-container" style={{ padding: '0 1.5rem 1.5rem 2.5rem' }}>
@@ -128,16 +128,25 @@ export default function AdminDashboardView({
                                         <line x1="0" y1="146" x2="800" y2="146" stroke="#f1f5f9" strokeDasharray="4 4" />
                                         <line x1="0" y1="220" x2="800" y2="220" stroke="#f1f5f9" />
 
-                                        {monthlyOrders.map((pt, i) => {
+                                        {weeklyOrders.map((pt, i) => {
                                             const barWidth = 35;
+                                            const minBarHeight = 10; // Increased from 4 for better visibility
+                                            const rawHeight = 220 - pt.y;
+                                            const displayHeight = Math.max(rawHeight, minBarHeight);
+                                            const displayY = 220 - displayHeight;
+                                            
+                                            // Determine color: slightly more transparent if it's the minimum height (zero value)
+                                            const isZero = rawHeight < 1;
+                                            const barColor = hoverIdx === i ? '#1e40af' : (isZero ? '#94a3b8' : '#2563eb');
+                                            
                                             return (
                                                 <g key={i} onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(null)}>
                                                     <rect 
                                                         x={pt.x - barWidth/2} 
-                                                        y={pt.y} 
+                                                        y={displayY} 
                                                         width={barWidth} 
-                                                        height={220 - pt.y} 
-                                                        fill={hoverIdx === i ? '#1e40af' : '#2563eb'} 
+                                                        height={displayHeight} 
+                                                        fill={barColor} 
                                                         rx="4" 
                                                         ry="4"
                                                         style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', cursor: 'pointer' }}
@@ -155,7 +164,7 @@ export default function AdminDashboardView({
                                     </svg>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.65rem', fontWeight: 700, padding: '0 4px', marginTop: '1.25rem' }}>
-                                    {monthlyOrders.map((pt, i) => (
+                                    {weeklyOrders.map((pt, i) => (
                                         <span
                                             key={i}
                                             onMouseEnter={() => setHoverIdx(i)}

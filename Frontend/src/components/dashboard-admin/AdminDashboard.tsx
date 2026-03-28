@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import AdminDashboardView from './AdminDashboardView'
 import type { Stat, Seller } from './AdminDashboardView'
-import { getDashboardStats } from '../../services/adminService'
+import { getDashboardStats, type DashboardDto } from '../../services/adminService'
 import { usePopup } from '../common/popup'
 
 export default function AdminDashboard() {
@@ -12,7 +12,7 @@ export default function AdminDashboard() {
     
     const [stats, setStats] = useState<Stat[]>([])
     const [sellers, setSellers] = useState<Seller[]>([])
-    const [monthlyOrders, setMonthlyOrders] = useState<any[]>([])
+    const [weeklyOrders, setWeeklyOrders] = useState<any[]>([])
     
     const { showError } = usePopup()
 
@@ -26,12 +26,10 @@ export default function AdminDashboard() {
 
     const loadData = useCallback(async () => {
         setIsLoading(true)
-        console.log("DEBUG: AdminDashboard loadData started");
         try {
             const response = await getDashboardStats()
-            console.log("DEBUG: AdminDashboard API response", response);
             if (response.resultCd === 0 && response.data) {
-                const data = response.data
+                const data: DashboardDto = response.data
 
                 // 1. Transform Stats
                 const transformedStats: Stat[] = [
@@ -41,7 +39,7 @@ export default function AdminDashboard() {
                         value: formatCurrency(data.totalRevenue),
                         trend: '+0%',
                         trendDir: 'up',
-                        footer: 'vs last month',
+                        footer: 'Doanh thu hệ thống',
                         icon: 'payments',
                         color: '#00a76f'
                     },
@@ -51,7 +49,7 @@ export default function AdminDashboard() {
                         value: formatNumber(data.activeUsers),
                         trend: '+0%',
                         trendDir: 'up',
-                        footer: 'vs last month',
+                        footer: 'Người dùng tích cực',
                         icon: 'person',
                         color: '#00b8d9'
                     },
@@ -61,7 +59,7 @@ export default function AdminDashboard() {
                         value: formatNumber(data.totalOrders),
                         trend: '+0%',
                         trendDir: 'up',
-                        footer: 'vs last month',
+                        footer: 'Tổng đơn hàng',
                         icon: 'shopping_cart',
                         color: '#ffab00'
                     },
@@ -79,11 +77,11 @@ export default function AdminDashboard() {
                 setStats(transformedStats)
 
                 // 2. Transform Sellers
-                const transformedSellers: Seller[] = data.topSellers.map((s, idx) => ({
+                const transformedSellers: Seller[] = data.topSellers.map((s: any, idx: number) => ({
                     id: idx + 1,
                     name: s.shopName,
                     rating: 5.0,
-                    orders: formatNumber(s.totalUnitsSold) + ' sales',
+                    orders: formatNumber(s.totalUnitsSold) + ' đơn vị',
                     revenue: formatCurrency(s.totalRevenue),
                     trend: '0%',
                     trendDir: 'up',
@@ -91,26 +89,25 @@ export default function AdminDashboard() {
                 }))
                 setSellers(transformedSellers)
 
-                // 3. Transform Revenue Trend (for the main chart)
-                const maxRevenue = Math.max(...data.shopPerformanceMonthly.map(m => m.totalRevenue), 1)
+                // 3. Transform Order Trend (Last 7 Days)
+                const maxOrders = Math.max(...data.ordersLast7Days.map((d: any) => d.orderCount), 1)
                 
-                const transformedRevenue = data.shopPerformanceMonthly.slice(0, 12).reverse().map((m, i) => {
-                    const [year, month] = m.month.split('-')
+                const transformedOrders = data.ordersLast7Days.map((d: any, i: number) => {
+                    const [, month, day] = d.date.split('-')
                     return {
-                        label: `${month}/${year.slice(2)}`,
-                        value: formatCurrency(m.totalRevenue),
-                        x: 40 + (i / (data.shopPerformanceMonthly.length - 1 || 1)) * 720,
-                        y: 220 - (m.totalRevenue / (maxRevenue * 1.2)) * 220
+                        label: `${day}/${month}`,
+                        value: `${d.orderCount} đơn`,
+                        x: 40 + (i / (data.ordersLast7Days.length - 1 || 1)) * 720,
+                        y: 220 - (d.orderCount / (maxOrders * 1.2)) * 220
                     }
                 })
-                setMonthlyOrders(transformedRevenue.length > 0 ? transformedRevenue : [{ label: 'N/A', value: '0 đ', x: 0, y: 110 }])
+                setWeeklyOrders(transformedOrders.length > 0 ? transformedOrders : [{ label: 'N/A', value: '0 đơn', x: 0, y: 110 }])
 
             } else {
-                console.error("DEBUG: AdminDashboard API returned error", response);
                 showError(response.message || 'Không thể tải dữ liệu thống kê từ hệ thống')
             }
         } catch (error) {
-            console.error('DEBUG: AdminDashboard Fetch error:', error)
+            console.error('AdminDashboard Fetch error:', error)
             showError('Lỗi kết nối máy chủ khi tải dữ liệu dashboard')
         } finally {
             setIsLoading(false)
@@ -133,7 +130,7 @@ export default function AdminDashboard() {
         <AdminDashboardView
             stats={stats}
             sellers={sellers}
-            monthlyOrders={monthlyOrders}
+            weeklyOrders={weeklyOrders}
             isLoading={isLoading}
             isSidebarCollapsed={isSidebarCollapsed}
             onToggleSidebar={handleToggleSidebar}

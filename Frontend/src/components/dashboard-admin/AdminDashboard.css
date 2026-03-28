@@ -95,10 +95,59 @@
 }
 
 
-/* Stat Cards */
+/* Stat Cards Grid */
+.modern-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    padding: 1.5rem 2.5rem;
+}
+
+.modern-stat-card {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+    transition: transform 0.2s;
+}
+
+.modern-stat-card:hover {
+    transform: translateY(-4px);
+}
+
+.stat-card-label {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #637381;
+}
+
+.stat-card-value {
+    margin: 0.25rem 0 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #212b36;
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-card-icon .material-symbols-outlined {
+    font-size: 24px;
+}
+
 .dashboard-grid-main {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1.5fr 1fr;
     gap: 1.5rem;
     padding: 0 2.5rem 2.5rem;
 }
@@ -274,7 +323,6 @@
 .overview-chart-container {
     padding: 1.5rem;
     flex: 1;
-    min-height: 350px;
     display: flex;
     flex-direction: column;
 }
