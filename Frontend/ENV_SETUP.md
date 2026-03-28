@@ -22,8 +22,8 @@ Khuyến nghị: sử dụng nvm-windows để dễ quản lý nhiều phiên b�
 ```powershell
 # Cài nvm-windows theo hướng dẫn trên: https://github.com/coreybutler/nvm-windows/releases
 # Ví dụ: cài Node LTS 20.x và chuyển sang phiên bản đó
-nvm install 20.24.1
-nvm use 20.24.1
+npm install 20.24.1
+npm use 20.24.1
 # Kiểm tra
 node -v
 npm -v

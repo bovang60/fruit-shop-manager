@@ -1,92 +1,60 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { usePopup } from '../common/popup';
-import { getUserOrders, confirmOrder, updateOrderStatus, type OrderDto } from '../../services/orderService';
-import SellerDashboardView from './SellerDashboardView';
+import { useEffect, useState } from "react";
+import { usePopup } from "../common/popup";
+import SellerDashboardView, {
+    type DashboardStats,
+    type RecentOrder,
+} from "./SellerDashboardView";
+import {
+    getSellerDashboardData,
+    getSellerDashboardMessage,
+} from "../../services/sellerDashboardService";
 
-export default function SellerDashboard() {
-  const navigate = useNavigate();
-  const { showNotice, showError, showConfirm } = usePopup();
-
-  const [orders, setOrders] = useState<OrderDto[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [actionLoading, setActionLoading] = useState<boolean>(false);
-
-  const userId = 3;
-
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await getUserOrders(userId);
-      if (response.resultCd === 0 && response.data) {
-        setOrders(response.data);
-      } else {
-        showError(response.message || 'Could not load orders');
-      }
-    } catch (error) {
-      console.error('Error fetching seller orders:', error);
-      showError('Connection error while loading orders');
-    } finally {
-      setLoading(false);
-    }
-  }, [showError, userId]);
-
-  useEffect(() => {
-    void fetchOrders();
-  }, [fetchOrders]);
-
-  const handleConfirmOrder = (orderId: number) => {
-    showConfirm('Confirm this order?', async () => {
-      setActionLoading(true);
-      try {
-        const response = await confirmOrder(orderId, userId);
-        if (response.resultCd === 0) {
-          showNotice('Order confirmed successfully');
-          void fetchOrders();
-        } else {
-          showError(response.message || 'Could not confirm order');
-        }
-      } catch (error) {
-        console.error('Error confirming order:', error);
-        showError('Connection error while confirming order');
-      } finally {
-        setActionLoading(false);
-      }
+const SellerDashboard = ({ shopId }: { shopId: number }) => {
+    const [stats, setStats] = useState<DashboardStats>({
+        totalRevenue: 0,
+        totalOrders: 0,
+        pendingOrders: 0,
+        lowStockItems: 0
     });
-  };
+    const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { showError } = usePopup();
 
-  const handleUpdateStatus = (orderId: number, status: string) => {
-    showConfirm(`Update order status to ${status}?`, async () => {
-      setActionLoading(true);
-      try {
-        const response = await updateOrderStatus(orderId, status, userId);
-        if (response.resultCd === 0) {
-          showNotice('Order status updated successfully');
-          void fetchOrders();
-        } else {
-          showError(response.message || 'Could not update order status');
-        }
-      } catch (error) {
-        console.error('Error updating order status:', error);
-        showError('Connection error while updating order status');
-      } finally {
-        setActionLoading(false);
-      }
-    });
-  };
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            setIsLoading(true);
+            try {
+                const response = await getSellerDashboardData(shopId);
+                if (response.resultCd === 0 && response.data) {
+                    setStats(response.data.stats);
+                    setRecentOrders(response.data.recentOrders);
+                } else {
+                    showError(
+                        getSellerDashboardMessage(
+                            response.message || "Không thể tải dữ liệu bảng điều khiển",
+                        ),
+                        "Lỗi",
+                    );
+                }
+            } catch (error) {
+                console.error("Dashboard load failed", error);
+                showError("Không thể kết nối đến hệ thống. Vui lòng thử lại.", "Lỗi");
+            } finally {
+                // Giả lập delay 600ms theo checklist
+                setTimeout(() => setIsLoading(false), 600);
+            }
+        };
 
-  const handleOrderClick = (orderId: number) => {
-    navigate(`/order-detail/${orderId}`);
-  };
+        if (shopId) fetchDashboardData();
+    }, [shopId]);
 
-  return (
-    <SellerDashboardView
-      orders={orders}
-      loading={loading}
-      actionLoading={actionLoading}
-      onConfirmOrder={handleConfirmOrder}
-      onUpdateStatus={handleUpdateStatus}
-      onOrderClick={handleOrderClick}
-    />
-  );
-}
+    return (
+        <SellerDashboardView
+            stats={stats}
+            recentOrders={recentOrders}
+            isLoading={isLoading}
+        />
+    );
+};
+
+export default SellerDashboard;

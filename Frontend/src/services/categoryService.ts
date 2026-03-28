@@ -18,6 +18,14 @@ export interface CategoryDto {
     productCount: number;
 }
 
+export interface CategoryFilterItemDto {
+    categoryId: number;
+    categoryName: string;
+    description: string;
+    status: CategoryStatus;
+    fruitCount: number;
+}
+
 export interface PageResponse<T> {
     content: T[];
     totalElements: number;
@@ -71,6 +79,18 @@ export async function getCategories(filter: CategoryFilter): Promise<ApiResponse
     } catch (error) {
         console.error("Error fetching categories:", error);
         return { resultCd: 1, message: "Lỗi kết nối khi lấy danh sách danh mục", data: null };
+    }
+}
+
+/**
+ * Get active categories for storefront filters
+ */
+export async function getCategoryFilterList(): Promise<ApiResponse<CategoryFilterItemDto[]>> {
+    try {
+        return await callApi<undefined, ApiResponse<CategoryFilterItemDto[]>>("/api/categories/filter-list");
+    } catch (error) {
+        console.error("Error fetching category filter list:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi lấy bộ lọc danh mục", data: null };
     }
 }
 

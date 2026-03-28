@@ -3,7 +3,7 @@ import CategoryManagementView from './CategoryManagementView';
 import type { Category } from './CategoryManagementView';
 import { getCategories, createCategory, getCategoryById, updateCategory, deleteCategory, type CategoryDto } from '../../services/categoryService';
 
-import { usePopup } from '../common/popup/PopupProvider';
+import { usePopup } from '../common/popup';
 
 
 export type SortDirection = 'asc' | 'desc' | null

@@ -19,6 +19,30 @@ import OrderHistory from './components/order-history/OrderHistory'
 import OrderDetail from './components/order-detail/OrderDetail'
 import SellerDashboard from './components/seller-dashboard/SellerDashboard'
 import ProductDetail from './components/product-detail/ProductDetail'
+import SellerLayout from './components/seller/SellerLayout'
+import FruitManager from './components/seller-fruit/FruitManager'
+import OrderManager from './components/seller-order/OrderManager'
+import Voucher from './components/seller-voucher/Voucher'
+import Report from './components/seller-report/Report'
+import { getUserFromStorage } from './services/authService'
+
+function SellerRouteContent() {
+  const user = getUserFromStorage()
+  const shopId = user?.shopId ?? Number(localStorage.getItem('shopId') || 0)
+
+  return (
+    <Routes>
+      <Route index element={<Navigate to="dashboard" replace />} />
+      <Route path="dashboard" element={<SellerDashboard shopId={shopId} />} />
+      <Route path="fruits" element={<FruitManager shopId={shopId} />} />
+      <Route path="orders" element={<OrderManager shopId={shopId} />} />
+      <Route path="vouchers" element={<Voucher shopId={shopId} />} />
+      <Route path="reports" element={<Report shopId={shopId} />} />
+      <Route path="profile" element={<Profile />} />
+    </Routes>
+  )
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -35,7 +59,7 @@ function App() {
           <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
-            
+
           {/* Admin Routes - Required ADMIN role */}
           <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/category-management" element={<ProtectedRoute requiredRole="ADMIN"><CategoryManagement /></ProtectedRoute>} />
@@ -48,6 +72,17 @@ function App() {
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
           <Route path="/seller-dashboard" element={<SellerDashboard />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
+          <Route
+            path="/seller/*"
+            element={
+              <ProtectedRoute requiredRole="SELLER">
+                <SellerLayout>
+                  <SellerRouteContent />
+                </SellerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/seller-dashboard" element={<Navigate to="/seller/dashboard" replace />} />
         </Routes>
       </PopupProvider>
     </BrowserRouter>
