@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
     Page<Category> findByCategoryNameContainingIgnoreCase(String keyword, Pageable pageable);
     Page<Category> findByStatus(Category.CategoryStatus status, Pageable pageable);
+    java.util.List<Category> findByStatus(Category.CategoryStatus status);
     Page<Category> findByCategoryNameContainingIgnoreCaseAndStatus(String keyword, Category.CategoryStatus status, Pageable pageable);
     
     @Query("SELECT c FROM Category c LEFT JOIN c.fruits f WHERE (:status IS NULL OR c.status = :status) GROUP BY c ORDER BY COUNT(f) DESC")

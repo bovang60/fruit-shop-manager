@@ -47,6 +47,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public ApiResponse<java.util.List<CategoryDto>> getActiveCategoriesForFilter() {
+        java.util.List<Category> categories = categoryRepository.findByStatus(Category.CategoryStatus.ACTIVE);
+        java.util.List<CategoryDto> dtos = categories.stream().map(this::convertToDto).collect(java.util.stream.Collectors.toList());
+        return ApiResponse.success("Categories retrieved successfully", dtos);
+    }
+
+    @Override
     @Transactional
     public ApiResponse<CategoryDto> createCategory(CategoryDto categoryDto) {
         // Validate categoryName
