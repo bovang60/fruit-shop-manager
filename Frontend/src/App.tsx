@@ -1,78 +1,62 @@
-import { useState } from 'react';
-import AdminDashboard from "./components/admin-dashboard/AdminDashboard";
-import UserManagement from "./components/user-management/UserManagement";
-import ShopManagement from "./components/shop-management/ShopManagement";
-import CategoryManagement from "./components/category-management/CategoryManagement";
-import SystemSettings from "./components/system-settings/SystemSettings";
-import Home from './components/home-page/Home';
-import './App.css';
-import { Layout, Menu, Button } from 'antd';
-import {
-  DashboardOutlined,
-  UserOutlined,
-  ShopOutlined,
-  AppstoreOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
-
-const { Content, Sider } = Layout;
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import Home from './components/home-page/Home'
+import Login from './components/login/Login'
+import Register from './components/register/Register'
+import ForgotPassword from './components/forgot-password/ForgotPassword'
+import ChangePassword from './components/change-password/ChangePassword'
+import CategoryManagement from './components/category-management/CategoryManagement'
+import AdminDashboard from './components/dashboard-admin/AdminDashboard'
+import ShopManagement from './components/shop-management/ShopManagement'
+import UserManagement from './components/user-management/UserManagement'
+import Profile from './components/profile/Profile'
+import SellerLayout from './components/seller/SellerLayout'
+import SellerDashboard from './components/seller-dashboard/SellerDashboard'
+import FruitManager from './components/seller-fruit/FruitManager'
+import OrderManager from './components/seller-order/OrderManager'
+import Report from './components/seller-report/Report'
+import Voucher from './components/seller-voucher/Voucher'
+import { PopupProvider } from './components/common/popup'
+import { getUserFromStorage } from './services/authService'
+import { useState } from 'react'
+import './App.css'
 
 function App() {
-  const [view, setView] = useState('dashboard');
-  const [collapsed, setCollapsed] = useState(false);
+  const [user, setUser] = useState(() => getUserFromStorage())
+  const shopId = Number(user?.shopId || 0)
 
-  const renderView = () => {
-    switch (view) {
-      case 'dashboard': return <AdminDashboard onNavigate={setView} />;
-      case 'users': return <UserManagement />;
-      case 'shops': return <ShopManagement />;
-      case 'categories': return <CategoryManagement />;
-      case 'settings': return <SystemSettings />;
-      default: return <Home />;
-    }
-  };
+  const handleLoginSuccess = () => {
+    setUser(getUserFromStorage())
+  }
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: !collapsed ? 'space-between' : 'center', padding: '16px 24px', height: 64, borderBottom: '1px solid #f0f0f0' }}>
-          {!collapsed && (
-            <div style={{ fontWeight: 'bold', fontSize: 18, color: '#52c41a', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-              FruitShop
-            </div>
-          )}
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 32,
-              height: 32,
-              color: '#333'
-            }}
-          />
-        </div>
-        <Menu theme="light" defaultSelectedKeys={['dashboard']} mode="inline" onClick={(e) => setView(e.key)}
-          style={{ borderRight: 0 }}
-          items={[
-            { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
-            { key: 'users', icon: <UserOutlined />, label: 'User Management' },
-            { key: 'shops', icon: <ShopOutlined />, label: 'Shop Management' },
-            { key: 'categories', icon: <AppstoreOutlined />, label: 'Category Management' },
-            { key: 'settings', icon: <SettingOutlined />, label: 'System Settings' },
-          ]}
-        />
-      </Sider>
-      <Layout>
-        <Content style={{ margin: 0 }}>
-          {renderView()}
-        </Content>
-      </Layout>
-    </Layout>
-  );
+    <BrowserRouter>
+      <PopupProvider>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login onSuccess={handleLoginSuccess} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/category-management" element={<CategoryManagement />} />
+          <Route path="/shop-management" element={<ShopManagement />} />
+          <Route path="/user-management" element={<UserManagement />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/seller/profile" element={<SellerLayout><Profile embedded /></SellerLayout>} />
+          <Route path="/seller/dashboard" element={<SellerLayout><SellerDashboard shopId={shopId} /></SellerLayout>} />
+          <Route path="/seller/fruits" element={<SellerLayout><FruitManager shopId={shopId} /></SellerLayout>} />
+          <Route path="/seller/orders" element={<SellerLayout><OrderManager shopId={shopId} /></SellerLayout>} />
+          <Route path="/seller/reports" element={<SellerLayout><Report shopId={shopId} /></SellerLayout>} />
+          <Route path="/seller/vouchers" element={<SellerLayout><Voucher shopId={shopId} /></SellerLayout>} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </PopupProvider>
+    </BrowserRouter>
+  )
 }
 
 export default App;
+
+
+
