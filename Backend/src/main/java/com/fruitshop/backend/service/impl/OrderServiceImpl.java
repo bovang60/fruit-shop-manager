@@ -514,7 +514,7 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
             return ApiResponse.error("Invalid order status: " + dto.getStatus());
         }
 
-        // SELLER only valid flow: SHIPPING -> DELIVERED
+        // SELLER valid flow 1: SHIPPING -> DELIVERED
         if (currentStatus == Order.OrderStatus.SHIPPING && newStatus == Order.OrderStatus.DELIVERED) {
             order.setStatus(newStatus);
             if (order.getTransaction() != null && order.getTransaction().getPaymentMethod() == Transaction.PaymentMethod.COD) {
@@ -523,6 +523,22 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
             }
             orderRepository.save(order);
             return ApiResponse.success("Order status updated successfully", null);
+        }
+
+        // SELLER valid flow 2: PENDING -> REJECTED (auto restore stock)
+        if (currentStatus == Order.OrderStatus.PENDING && newStatus == Order.OrderStatus.REJECTED) {
+            // Restore stock (same logic as cancelOrder)
+            List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
+            for (OrderItem item : items) {
+                Product product = productRepository.findByIdForUpdate(item.getProduct().getProductId())
+                        .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProduct().getProductId()));
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+            order.setStatus(Order.OrderStatus.REJECTED);
+            orderRepository.save(order);
+            log.info("Seller {} rejected order {} -> stock restored", userId, orderId);
+            return ApiResponse.success("Order rejected and stock restored successfully", null);
         }
 
         return ApiResponse.error("Cannot transition order status from " + currentStatus + " to " + newStatus);
