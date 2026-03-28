@@ -1,180 +1,113 @@
-import Header from '../common/header/Header';
-import Footer from '../common/footer/Footer';
-import type { OrderDto } from '../../services/orderService';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import './SellerDashboard.css';
 
-export interface SellerDashboardViewProps {
-  orders: OrderDto[];
-  loading: boolean;
-  actionLoading: boolean;
-  onConfirmOrder: (orderId: number) => void;
-  onUpdateStatus: (orderId: number, status: string) => void;
-  onOrderClick: (orderId: number) => void;
-}
+export type RecentOrder = {
+    orderId: number;
+    receiverName: string;
+    subTotal: number;
+    status: string;
+};
 
-export default function SellerDashboardView({
-  orders,
-  loading,
-  actionLoading,
-  onConfirmOrder,
-  onUpdateStatus,
-  onOrderClick,
-}: SellerDashboardViewProps) {
+export type DashboardStats = {
+    totalRevenue: number;
+    totalOrders: number;
+    pendingOrders: number;
+    lowStockItems: number;
+};
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-  };
+export type Props = {
+    stats: DashboardStats;
+    recentOrders: RecentOrder[];
+    isLoading: boolean;
+};
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
-    try {
-      return new Intl.DateTimeFormat('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(new Date(dateString));
-    } catch {
-      return dateString;
-    }
-  };
+const ORDER_STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Chờ xác nhận',
+    CONFIRMED: 'Đã xác nhận',
+    SHIPPING: 'Đang giao',
+    COMPLETED: 'Hoàn tất',
+    CANCELLED: 'Đã hủy',
+};
 
-  const getStatusBadgeClass = (status: string) => {
-    const s = status?.toUpperCase() || '';
-    if (s === 'PENDING') return 'sd-badge--pending';
-    if (s === 'CONFIRMED') return 'sd-badge--confirmed';
-    if (s === 'PROCESSING') return 'sd-badge--processing';
-    if (s === 'SHIPPING') return 'sd-badge--shipping';
-    if (s === 'DELIVERED') return 'sd-badge--delivered';
-    if (s === 'COMPLETED') return 'sd-badge--completed';
-    if (s === 'CANCELLED') return 'sd-badge--cancelled';
-    return '';
-  };
+const getOrderStatusLabel = (status: string) => ORDER_STATUS_LABELS[status] || status;
+const getStatusClassName = (status: string) => `seller-status-chip is-${status.toLowerCase()}`;
 
-  const renderActionButton = (order: OrderDto) => {
-    const s = order.status?.toUpperCase() || '';
+const SellerDashboardView: React.FC<Props> = ({ stats, recentOrders, isLoading }) => {
+    if (isLoading) return <div className="loading">Đang tải bảng điều khiển...</div>;
 
-    if (s === 'PENDING') {
-      return (
-        <button
-          id={`sd-btn-confirm-${order.orderId}`}
-          type="button"
-          className="sd-btn sd-btn-confirm"
-          onClick={(e) => { e.stopPropagation(); onConfirmOrder(order.orderId); }}
-          disabled={actionLoading}
-        >
-          {actionLoading ? 'Processing...' : 'Confirm Order'}
-        </button>
-      );
-    }
+    return (
+        <div className="home-root">
+            <header className="home-actions">
+                <h2>Bảng điều khiển Người bán</h2>
+            </header>
 
-    if (s === 'CONFIRMED' || s === 'PROCESSING') {
-      return (
-        <button
-          id={`sd-btn-shipping-${order.orderId}`}
-          type="button"
-          className="sd-btn sd-btn-shipping"
-          onClick={(e) => { e.stopPropagation(); onUpdateStatus(order.orderId, 'SHIPPING'); }}
-          disabled={actionLoading}
-        >
-          {actionLoading ? 'Processing...' : 'Mark as Shipping'}
-        </button>
-      );
-    }
+            <section className="seller-summary-grid">
+                <article className="seller-summary-card">
+                    <span className="seller-summary-card-label">Tổng doanh thu</span>
+                    <span className="seller-summary-card-value">{stats.totalRevenue.toLocaleString('vi-VN')}đ</span>
+                    <span className="seller-summary-card-note">Doanh thu tích lũy của cửa hàng</span>
+                </article>
+                <article className="seller-summary-card">
+                    <span className="seller-summary-card-label">Tổng đơn hàng</span>
+                    <span className="seller-summary-card-value">{stats.totalOrders}</span>
+                    <span className="seller-summary-card-note">Số đơn đã phát sinh</span>
+                </article>
+                <article className="seller-summary-card">
+                    <span className="seller-summary-card-label">Đơn chờ xác nhận</span>
+                    <span className="seller-summary-card-value">{stats.pendingOrders}</span>
+                    <span className="seller-summary-card-note">Cần xử lý sớm</span>
+                </article>
+                <article className="seller-summary-card">
+                    <span className="seller-summary-card-label">Sản phẩm sắp hết hàng</span>
+                    <span className="seller-summary-card-value">{stats.lowStockItems}</span>
+                    <span className="seller-summary-card-note">Nên bổ sung tồn kho</span>
+                </article>
+            </section>
 
-    if (s === 'SHIPPING') {
-      return (
-        <button
-          id={`sd-btn-delivered-${order.orderId}`}
-          type="button"
-          className="sd-btn sd-btn-delivered"
-          onClick={(e) => { e.stopPropagation(); onUpdateStatus(order.orderId, 'DELIVERED'); }}
-          disabled={actionLoading}
-        >
-          {actionLoading ? 'Processing...' : 'Mark as Delivered'}
-        </button>
-      );
-    }
-
-    return null;
-  };
-
-  return (
-    <div className="sd-root">
-      <header className="sd-header">
-        <Header />
-      </header>
-
-      <main className="sd-main">
-        <section className="sd-container">
-          <h1 className="sd-title">Seller Dashboard</h1>
-
-          {loading ? (
-            <div className="sd-loading">
-              <div className="sd-spinner"></div>
-              <p>Loading orders...</p>
-            </div>
-          ) : orders?.length === 0 ? (
-            <div className="sd-empty">
-              <div className="sd-empty-icon">📋</div>
-              <h2>No Orders Found</h2>
-              <p>There are no orders to manage at this time.</p>
-            </div>
-          ) : (
-            <div className="sd-order-list">
-              {orders?.map((order) => (
-                <div
-                  key={order.orderId}
-                  className="sd-order-card"
-                  onClick={() => onOrderClick(order.orderId)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onOrderClick(order.orderId);
-                    }
-                  }}
-                >
-                  <div className="sd-card-header">
-                    <span className="sd-card-id">Order #{order.orderId}</span>
-                    <span className={`sd-badge ${getStatusBadgeClass(order.status)}`}>
-                      {order.status || 'UNKNOWN'}
-                    </span>
-                  </div>
-
-                  <div className="sd-card-body">
-                    <div className="sd-card-row">
-                      <span className="sd-card-label">Customer</span>
-                      <span className="sd-card-value">{order.fullName || 'N/A'}</span>
+            <section className="table-card">
+                <div className="seller-form-card-header seller-form-card">
+                    <div>
+                        <h3>Đơn hàng gần đây</h3>
+                        <p>Danh sách các đơn mới nhất để theo dõi tiến độ xử lý.</p>
                     </div>
-                    <div className="sd-card-row">
-                      <span className="sd-card-label">Date</span>
-                      <span className="sd-card-value">{formatDate(order.createdAt)}</span>
-                    </div>
-                    <div className="sd-card-row">
-                      <span className="sd-card-label">Total</span>
-                      <span className="sd-card-value sd-card-total">
-                        {order.totalPrice != null ? formatCurrency(order.totalPrice) : 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="sd-card-footer">
-                    {renderActionButton(order)}
-                    <span className="sd-card-detail-link">View Details &rarr;</span>
-                  </div>
+                    <Link to="/seller/orders" className="seller-secondary-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+                        Xem tất cả đơn hàng
+                    </Link>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </main>
+                <table className="admin-table seller-dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {recentOrders.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} className="seller-empty-state">Chưa có đơn hàng nào.</td>
+                            </tr>
+                        ) : (
+                            recentOrders.map((order) => (
+                                <tr key={order.orderId}>
+                                    <td>#{order.orderId}</td>
+                                    <td>{order.receiverName}</td>
+                                    <td>{order.subTotal.toLocaleString('vi-VN')}đ</td>
+                                    <td>
+                                        <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                            {order.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    );
+};
 
-      <footer className="sd-footer">
-        <Footer />
-      </footer>
-    </div>
-  );
-}
+export default SellerDashboardView;

@@ -100,6 +100,38 @@ export async function callApiWithMethod<TRequest = any, TResponse = any>(
   }
 }
 
+export async function get<TResponse = any>(
+  url: string,
+  params?: Record<string, string | number | boolean | undefined>,
+): Promise<TResponse> {
+  const query = params
+    ? Object.entries(params)
+        .filter(([, value]) => value !== undefined)
+        .map(
+          ([key, value]) =>
+            `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`,
+        )
+        .join("&")
+    : "";
+
+  const requestUrl = query ? `${url}?${query}` : url;
+  return callApiWithMethod<never, TResponse>("GET", requestUrl);
+}
+
+export async function post<TRequest = any, TResponse = any>(
+  url: string,
+  requestDto: TRequest,
+): Promise<TResponse> {
+  return callApiWithMethod<TRequest, TResponse>("POST", url, requestDto);
+}
+
+export async function put<TRequest = any, TResponse = any>(
+  url: string,
+  requestDto: TRequest,
+): Promise<TResponse> {
+  return callApiWithMethod<TRequest, TResponse>("PUT", url, requestDto);
+}
+
 // ============= Helper Functions =============
 
 /**

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ShopRegistrationView from './ShopRegistrationView';
 import type { RegistrationStep, ShopRegistrationData } from './ShopRegistrationView';
-import { usePopup } from '../common/popup/PopupProvider';
+import { usePopup } from '../common/popup';
 import { getUserFromStorage } from '../../services/authService';
 import { getShippingMethods, type ShippingMethodDto } from '../../services/shippingMethodService';
 import { checkShopNameExists, registerShop, getShopErrorMessage } from '../../services/shopService';

@@ -6,10 +6,12 @@ import {
   getTrendingProducts,
   getErrorMessage
 } from '../../services/productService'
+import { getCategoryFilterList } from '../../services/categoryService'
 import { addToCart } from '../../services/cartService'
 import type {
   Product,
-  FilterState
+  FilterState,
+  HomeCategory
 } from './Home.types'
 
 // Import mapper functions
@@ -27,6 +29,7 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
   const [newArrivals, setNewArrivals] = useState<Product[]>([])
   const [trending, setTrending] = useState<Product[]>([])
+  const [categories, setCategories] = useState<HomeCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [addingToCartId, setAddingToCartId] = useState<number | null>(null)
@@ -57,6 +60,7 @@ export default function Home() {
   useEffect(() => {
     loadNewArrivals()
     loadTrending()
+    loadCategories()
   }, [])
 
   /**
@@ -127,6 +131,27 @@ export default function Home() {
       }
     } catch (err) {
       console.error('Error loading trending products:', err)
+    }
+  }
+
+  /**
+   * Load categories for sidebar filter
+   */
+  const loadCategories = async () => {
+    try {
+      const response = await getCategoryFilterList()
+
+      if (response.resultCd === 0 && response.data) {
+        setCategories(
+          response.data.map((category) => ({
+            id: String(category.categoryId),
+            name: category.categoryName
+          }))
+        )
+      }
+    } catch (err) {
+      console.error('Error loading category filters:', err)
+      setCategories([])
     }
   }
 
@@ -231,6 +256,7 @@ export default function Home() {
       displayed={displayedProducts}
       newArrivals={newArrivals}
       trending={trending}
+      categories={categories}
       page={page}
       totalPages={totalPages}
       onPageChange={handlePageChange}
