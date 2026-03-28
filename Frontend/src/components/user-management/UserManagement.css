@@ -1,74 +1,167 @@
-.user-mgmt-container {
-    padding: 24px;
-    background: #fff;
-    min-height: 100%;
+@import "../common/AdminShared.css";
+
+/* User Management - Page Specific Content */
+.user-management-root {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
 }
 
-.user-info-cell {
+/* User Management Content Styles */
+.user-name-cell {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #e5e7eb;
+}
+
+.role-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 0.25rem;
+    display: inline-block;
+}
+
+.role-admin {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.role-customer {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.role-seller {
+    background: #fef9c3;
+    color: #a16207;
+}
+
+.status-chip {
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Data Table */
+
+/* User Detail View Styles */
+.user-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem 0 3rem;
+}
+
+.user-identity-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(145, 158, 171, 0.12);
 }
 
-.user-detail-text {
+.user-avatar-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 20px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #e5e7eb;
+}
+
+.detail-section-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(145, 158, 171, 0.12);
+}
+
+.grid-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.info-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: #637381;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.info-group p {
+    font-size: 0.875rem;
+    color: #212b36;
+    font-weight: 600;
+    margin: 0;
+}
+
+.detail-action-footer {
     display: flex;
-    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1rem;
 }
 
-.user-email-text {
-    font-size: 12px;
-    color: #999;
-}
-
-.role-tag {
-    border-radius: 12px;
-    font-weight: 500;
-}
-
-.status-tag-user {
-    border-radius: 12px;
-    border: none;
-    font-weight: 500;
-}
-
-.action-icon-user {
-    color: #999;
-    font-size: 18px;
+.btn-cancel-action {
+    padding: 0.625rem 1.5rem;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    color: #637381;
+    font-weight: 700;
     cursor: pointer;
 }
 
-.footer-banner-user {
-    margin-top: 32px;
-    background: #e6f7ff;
-    border: 1px solid #91d5ff;
+.btn-status-toggle {
+    padding: 0.625rem 1.5rem;
     border-radius: 8px;
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
 }
 
-.info-icon-circle-user {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: #1890ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.btn-status-toggle.is-deactivate {
+    background: #fee2e2;
+    color: #dc2626;
 }
 
-.banner-btn-user {
-    color: #1890ff;
-    border-color: #91d5ff;
-    background: #fff;
-    font-weight: 600;
+.btn-status-toggle.is-activate {
+    background: #d1fae5;
+    color: #065f46;
 }
 
-.add-btn-user {
-    background: #73d13d !important;
-    border-color: #73d13d !important;
-    border-radius: 6px !important;
-    height: 40px !important;
-    font-weight: 600 !important;
+@media (max-width: 768px) {
+    .grid-info {
+        grid-template-columns: 1fr;
+    }
 }

@@ -1,0 +1,6 @@
+@import "../seller/SellerPageShared.css";
+
+.seller-fruit-table td:last-child,
+.seller-fruit-table th:last-child {
+    text-align: right;
+}

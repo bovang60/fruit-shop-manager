@@ -1,0 +1,39 @@
+@import "../AdminShared.css";
+
+.admin-frame-root {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.admin-frame-root.sidebar-collapsed .admin-sidebar {
+    width: var(--sidebar-collapsed-w);
+}
+
+.admin-frame-root.sidebar-collapsed .sidebar-inner {
+    width: var(--sidebar-collapsed-w);
+    padding: 1.5rem 0.75rem;
+}
+
+.admin-frame-root.sidebar-collapsed .brand-text {
+    opacity: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
+    position: absolute;
+}
+
+.admin-frame-root.sidebar-collapsed .admin-brand {
+    justify-content: center;
+    gap: 0;
+}
+
+.admin-frame-root.sidebar-collapsed .nav-item span.nav-label {
+    opacity: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
+}
+
+.admin-frame-root.sidebar-collapsed .nav-item {
+    padding: 0.625rem 0.875rem;
+}

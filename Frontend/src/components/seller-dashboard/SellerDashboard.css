@@ -1,0 +1,12 @@
+@import "../seller/SellerPageShared.css";
+
+.seller-dashboard-table td,
+.seller-dashboard-table th {
+    white-space: nowrap;
+}
+
+.seller-link-btn {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}

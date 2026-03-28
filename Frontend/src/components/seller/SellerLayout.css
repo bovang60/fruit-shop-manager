@@ -1,0 +1,152 @@
+@import "../common/AdminShared.css";
+
+.admin-dashboard-root {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.seller-shell {
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.seller-sidebar-shell {
+  width: var(--sidebar-w);
+}
+
+.seller-brand {
+  cursor: pointer;
+}
+
+.seller-nav-button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.seller-logout-button {
+  color: #ef4444;
+}
+
+.seller-logout-button:hover {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.seller-header {
+  background: #ffffff;
+}
+
+.seller-header-copy h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #212b36;
+}
+
+.seller-header-copy p {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: #637381;
+}
+
+.seller-avatar {
+  cursor: pointer;
+  margin-left: 0;
+}
+
+.seller-content-shell {
+  padding: 1.5rem 2rem;
+}
+
+.seller-profile-menu {
+  position: relative;
+}
+
+.seller-profile-trigger {
+  list-style: none;
+  cursor: pointer;
+}
+
+.seller-profile-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.seller-profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 220px;
+  background: #fff;
+  border: 1px solid rgba(145, 158, 171, 0.24);
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(145, 158, 171, 0.2);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 1200;
+}
+
+.seller-profile-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #212b36;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 0.25rem;
+}
+
+.seller-menu-item {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #212b36;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s;
+}
+
+.seller-menu-item:hover {
+  background: rgba(145, 158, 171, 0.08);
+}
+
+.seller-menu-item.logout {
+  color: #ef4444;
+}
+
+.seller-menu-item.logout:hover {
+  background: #fef2f2;
+}
+
+@media (max-width: 992px) {
+  .seller-shell {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .seller-sidebar-shell,
+  .admin-sidebar,
+  .sidebar-inner {
+    width: 100%;
+    height: auto;
+  }
+
+  .admin-main {
+    min-height: 0;
+  }
+
+  .seller-content-shell {
+    padding: 1rem;
+  }
+}

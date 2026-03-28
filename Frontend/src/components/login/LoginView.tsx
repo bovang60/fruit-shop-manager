@@ -1,130 +1,172 @@
-import React from 'react'
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
+import LoadingModal from '../common/loading/LoadingModal'
 import './Login.css'
 
-type Props = {
+export type Props = {
   email: string
   password: string
   loading: boolean
-  showRegister: boolean
-  showReset: boolean
-  regName: string
-  regEmail: string
-  regPwd: string
+  errors: { email?: string; password?: string; general?: string }
   onEmailChange: (v: string) => void
   onPasswordChange: (v: string) => void
   onSubmit: (e: React.FormEvent) => void
-  onToggleRegister: (v: boolean) => void
-  onToggleReset: () => void
-  onRegisterSubmit: (e: React.FormEvent) => void
-  onRegNameChange: (v: string) => void
-  onRegEmailChange: (v: string) => void
-  onRegPwdChange: (v: string) => void
-  onSendReset: (e: React.FormEvent) => void
+  onGoToRegister: () => void
+  onGoToForgotPassword: () => void
 }
 
 export default function LoginView({
   email,
   password,
   loading,
-  showRegister,
-  showReset,
-  regName,
-  regEmail,
-  regPwd,
+  errors,
   onEmailChange,
   onPasswordChange,
   onSubmit,
-  onToggleRegister,
-  onToggleReset,
-  onRegisterSubmit,
-  onRegNameChange,
-  onRegEmailChange,
-  onRegPwdChange,
-  onSendReset,
+  onGoToRegister,
+  onGoToForgotPassword,
 }: Props) {
   return (
-    <main className="home-root login-root">
-      <div className="home-container">
+    <div className="login-root">
+      {/* Sticky Header */}
+      <header className="login-header">
         <Header />
+      </header>
 
-        <div className="content">
-          <div className="login-wrap">
-            {!showRegister && (
-              <div className="card login-card">
-                <h2>Đăng nhập</h2>
-                <p className="muted">Đăng nhập để quản lý cửa hàng của bạn</p>
-                <form onSubmit={onSubmit} className="login-form">
-                  <label className="field">
-                    <span>Email</span>
-                    <input type="email" value={email} onChange={(e) => onEmailChange(e.target.value)} required />
-                  </label>
-
-                  <label className="field">
-                    <span>Mật khẩu</span>
-                    <input type="password" value={password} onChange={(e) => onPasswordChange(e.target.value)} required />
-                  </label>
-
-                  <div className="auth-links">
-                    <button type="button" className="link-btn" onClick={onToggleReset}>
-                      Quên mật khẩu?
-                    </button>
-                    <button type="button" className="link-btn" onClick={() => onToggleRegister(true)}>
-                      Đăng ký
-                    </button>
-                  </div>
-
-                  {showReset && (
-                    <form onSubmit={onSendReset} className="reset-card">
-                      <label className="field">
-                        <span>Nhập email để đặt lại mật khẩu</span>
-                        <input type="email" value={email} onChange={(e) => onEmailChange(e.target.value)} placeholder="email@domain" />
-                      </label>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button className="primary" type="submit">Gửi liên kết</button>
-                      </div>
-                    </form>
-                  )}
-
-                  <div className="form-actions">
-                    <button className="primary" type="submit" disabled={loading}>
-                      {loading ? 'Đang xử lý...' : 'Đăng nhập'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {showRegister && (
-              <div className="card login-card">
-                <h2>Đăng ký tài khoản</h2>
-                <p className="muted">Tạo tài khoản để quản lý cửa hàng</p>
-                <form onSubmit={onRegisterSubmit} className="login-form">
-                  <label className="field">
-                    <span>Họ và tên</span>
-                    <input value={regName} onChange={(e) => onRegNameChange(e.target.value)} required />
-                  </label>
-                  <label className="field">
-                    <span>Email</span>
-                    <input type="email" value={regEmail} onChange={(e) => onRegEmailChange(e.target.value)} required />
-                  </label>
-                  <label className="field">
-                    <span>Mật khẩu</span>
-                    <input type="password" value={regPwd} onChange={(e) => onRegPwdChange(e.target.value)} required />
-                  </label>
-                  <div className="form-actions" style={{ justifyContent: 'space-between' }}>
-                    <button type="button" className="link-btn" onClick={() => onToggleRegister(false)}>Quay lại</button>
-                    <button className="primary" type="submit">Tạo tài khoản</button>
-                  </div>
-                </form>
-              </div>
-            )}
+      {/* Main Split Layout */}
+      <main className="login-main">
+        {/* Left: Hero Section */}
+        <div className="login-hero">
+          <div className="hero-image">
+            <div className="hero-overlay"></div>
+          </div>
+          <div className="hero-content">
+            <h1 className="hero-title">Sự tươi ngon đang chờ đón</h1>
+            <p className="hero-subtitle">
+              Tham gia cộng đồng yêu thích trái cây và nhận những trái cây tươi ngon nhất trong mùa giao tận tận nhà.
+            </p>
           </div>
         </div>
 
+        {/* Right: Login Form Section */}
+        <div className="login-form-section">
+          <div className="login-form-container">
+            <div className="login-header-text">
+              <h2>Chào Mừng Trở Lại!</h2>
+              <p className="muted">Đăng nhập để truy cập mục yêu thích của bạn.</p>
+            </div>
+
+            <form className="login-form" onSubmit={onSubmit}>
+              {/* General Error Message */}
+              {errors.general && (
+                <div className="error-message" style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#fee', border: '1px solid #fcc', borderRadius: '4px', color: '#c00' }}>
+                  {errors.general}
+                </div>
+              )}
+
+              {/* Email Field */}
+              <div className="field">
+                <label htmlFor="email">Email</label>
+                <div className="input-wrapper">
+                  {/* <span className="input-icon">✉️</span> */}
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => onEmailChange(e.target.value)}
+                    placeholder="Nhập email của bạn"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                    disabled={loading}
+                  />
+                </div>
+                {errors.email && (
+                  <span id="email-error" className="error-message">
+                    {errors.email}
+                  </span>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div className="field">
+                <div className="field-header">
+                  <label htmlFor="password">Mật khẩu</label>
+                  <button type="button" className="forgot-link" onClick={onGoToForgotPassword}>
+                    Quên mật khẩu?
+                  </button>
+                </div>
+                <div className="input-wrapper">
+                  {/* <span className="input-icon">🔒</span> */}
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => onPasswordChange(e.target.value)}
+                    placeholder="Nhập mật khẩu của bạn"
+                    aria-invalid={!!errors.password}
+                    aria-describedby={errors.password ? 'password-error' : undefined}
+                    disabled={loading}
+                  />
+                </div>
+                {errors.password && (
+                  <span id="password-error" className="error-message">
+                    {errors.password}
+                  </span>
+                )}
+              </div>
+
+              {/* Remember Me */}
+              <div className="remember-me">
+                <input type="checkbox" id="remember" />
+                <label htmlFor="remember">Ghi nhớ đăng nhập</label>
+              </div>
+
+              {/* Login Button */}
+              <button type="submit" className="primary login-btn" disabled={loading}>
+                {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              </button>
+            </form>
+
+            {/* Divider */}
+            {/* <div className="divider">
+              <div className="divider-line"></div>
+              <span className="divider-text">Hoặc tiếp tục với</span>
+              <div className="divider-line"></div>
+            </div> */}
+
+            {/* Social Login */}
+            {/* <div className="social-login">
+              <button type="button" className="social-btn" aria-label="Login with Google">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7c0hccFF0Q2ai4PEyNY0oGUKajtYEc04krya811d0VSpXKb74Y6c7aRpRL_0KUhax2Jm-cWang_w8spWDjfWk2rP3porlxzn7fskgeTm13wQ5bTPlLte43SA3-PfkscLUqW1YaZptO3s4P0AkbvuPtBoukYBjxtzID2pLTSudzQEPF7kWwH1xP-5mxBZ3qYy8Utd7R3QymVZc3UFR6JnB9ofhS4P9UbjH7N8SswCGgMcvUHNbgl2XsvN6oNWkbongOS__zCxPHvU" alt="Google" />
+              </button>
+              <button type="button" className="social-btn" aria-label="Login with Facebook">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuArhJrCRLkSbiRUDunubHsZ0zgAlQyf9edRhFpGXdUtmXvsAPE7xTPEjv6Bw3tNiasJlAK6l7K3fLo_eB44O97YwyKkhtl8EMK-Qv166111KaAzA40cfMI7UrsKuqHNAzKKHofJ6FNPtgRB4_aXOD0oBPEa-rDQPWXqCwGrnHFEAnbVoFrJN43V3aL5aNxdliWHVPcfmi4tyt1Un8IGkC5na1hAfDJM9gljEWY-B9r7v7bLVajj6pBUBGEGY6f1F6miTJuT--1ZeOI" alt="Facebook" />
+              </button>
+            </div> */}
+
+            {/* Footer Link */}
+            <p className="signup-link">
+              Chưa có tài khoản?
+              <button type="button" className="link-btn" onClick={onGoToRegister}>
+                Đăng ký
+              </button>
+            </p>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="login-footer">
         <Footer />
-      </div>
-    </main>
+      </footer>
+
+      {/* Loading Modal */}
+      <LoadingModal 
+        isOpen={loading} 
+        message="Đang đăng nhập..."
+        subMessage="Vui lòng chờ trong giây lát"
+        theme="green"
+      />
+    </div>
   )
 }

@@ -1,6 +1,4 @@
-import React from 'react';
 import { Card, Col, Row, List, Avatar, Typography, Tag, Button, Space } from 'antd';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import {
     DollarCircleOutlined,
     ShopOutlined,
@@ -19,7 +17,7 @@ interface AdminDashboardViewProps {
     onNavigate: (view: string) => void;
 }
 
-const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ data, topSellers, onNavigate }) => {
+const AdminDashboardView = ({ data, topSellers, onNavigate }: AdminDashboardViewProps) => {
     return (
         <div className="dash-container">
             <AdminHeader placeholder="Search analytics, sellers, or reports..." />
@@ -98,26 +96,30 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ data, topSeller
                             </Space>
                         </div>
                         <div style={{ height: 300 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#73d13d" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="#73d13d" stopOpacity={0} />
-                                        </linearGradient>
-                                        <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#ff4d4f" stopOpacity={0.1} />
-                                            <stop offset="95%" stopColor="#ff4d4f" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#999' }} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#999' }} />
-                                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                    <Area type="monotone" dataKey="revenue" stroke="#73d13d" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={3} />
-                                    <Area type="monotone" dataKey="expenses" stroke="#ff4d4f" strokeDasharray="5 5" fillOpacity={1} fill="url(#colorExpenses)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                            <div style={{ display: 'flex', alignItems: 'end', gap: 16, height: '100%' }}>
+                                {data.map((item) => {
+                                    const revenueHeight = Math.max(Number(item.revenue) / 50, 16);
+                                    const expensesHeight = Math.max(Number(item.expenses) / 50, 12);
+
+                                    return (
+                                        <div key={item.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'end', gap: 8, height: '100%' }}>
+                                            <div style={{ display: 'flex', alignItems: 'end', gap: 6, height: '100%' }}>
+                                                <div
+                                                    title={`Revenue: ${item.revenue}`}
+                                                    style={{ flex: 1, height: `${revenueHeight}px`, borderRadius: 8, background: 'linear-gradient(180deg, #95de64 0%, #52c41a 100%)' }}
+                                                />
+                                                <div
+                                                    title={`Expenses: ${item.expenses}`}
+                                                    style={{ flex: 1, height: `${expensesHeight}px`, borderRadius: 8, background: 'linear-gradient(180deg, #ffccc7 0%, #ff4d4f 100%)' }}
+                                                />
+                                            </div>
+                                            <Text type="secondary" style={{ textAlign: 'center', fontSize: 12 }}>
+                                                {item.name}
+                                            </Text>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </Card>
                 </Col>

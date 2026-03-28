@@ -1,115 +1,202 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Tag, Form, message, Space, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import type { MenuProps } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
 import ShopManagementView, { type Shop } from './ShopManagementView';
-
-const { Text } = Typography;
+import { usePopup } from '../common/popup';
+import { getShops, approveShop, rejectShop, suspendShop, type ShopDto } from '../../services/shopService';
 
 const ShopManagement: React.FC = () => {
+    const { showNotice, showConfirm, showError, showWarning, showPrompt } = usePopup();
+    // UI State
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        return localStorage.getItem('sidebar-collapsed') === 'true'
+    })
+    const [searchQuery, setSearchQuery] = useState('')
     const [activeTab, setActiveTab] = useState('PENDING');
     const [shops, setShops] = useState<Shop[]>([]);
     const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
     const [viewMode, setViewMode] = useState<'LIST' | 'DETAIL'>('LIST');
-    const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
-    const [rejectForm] = Form.useForm();
 
-    const fetchShops = () => {
-        // Mock Data based on activeTab
-        const mockShops: Shop[] = [
-            { id: 1, shopName: 'Sun Kissed Orchards', ownerName: 'Jonathan Miller', regDate: 'October 24, 2023', status: 'PENDING', description: 'Sun Kissed Orchards is a family-owned sustainable farm specializing in heritage citrus and stone fruits. We pride ourselves on tree-ripened produce delivered straight from our orchards to local communities. All our practices are organic-certified, ensuring the highest quality and nutritional value for our customers. We seek to join the platform to expand our reach to health-conscious consumers in the greater metropolitan area.', ownerPhone: '+1 (555) 902-3482', ownerEmail: 'contact@sunkisedorchards.com', businessAddress: '1242 Harvest Lane, Riverside Valley, CA 92501', documentUrls: ['Business_License.pdf', 'Organic_Certification.pdf'], productCount: 150, yearsInBusiness: 12, locationType: 'Rural', staffCount: 25 },
-            { id: 2, shopName: 'Organic Veggies', ownerName: 'Jane Smith', regDate: '2023-02-15', status: 'APPROVED', description: 'Organic only', ownerPhone: '0987654321', ownerEmail: 'jane@example.com', businessAddress: '456 Farm Rd' },
-            { id: 3, shopName: 'Bad Apples', ownerName: 'Bad Guy', regDate: '2023-03-10', status: 'REJECTED', rejectReason: 'Incomplete documents' },
-        ];
-        const filtered = mockShops.filter(s => s.status === activeTab || (activeTab === 'APPROVED' && s.status === 'SUSPENDED'));
-        setShops(filtered);
-    };
+    // Pagination State
+    const [page, setPage] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState(false);
+
+    const loadShops = useCallback(async () => {
+        setLoading(true);
+        try {
+            const filter: any = {
+                status: activeTab === 'ALL' ? undefined : activeTab,
+                page: page,
+                size: 10,
+                sort: 'createdAt,desc'
+            };
+
+            const response = await getShops(filter);
+
+            if (response.resultCd === 0 && response.data) {
+                const mappedShops: Shop[] = response.data.content.map((dto: ShopDto) => ({
+                    id: dto.shopId,
+                    shopName: dto.shopName,
+                    ownerName: dto.ownerName,
+                    regDate: new Date(dto.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }),
+                    status: dto.status as any,
+                    description: dto.description,
+                    ownerPhone: dto.ownerPhone,
+                    ownerEmail: dto.ownerEmail,
+                    businessAddress: dto.businessAddress,
+                    documentUrls: dto.documentUrls,
+                    rejectReason: dto.rejectReason
+                    // Other fields (productCount, etc.) can be added if available in DTO
+                }));
+
+                setShops(mappedShops);
+                setTotalElements(response.data.totalElements);
+                setTotalPages(response.data.totalPages);
+            } else {
+                showError(response.message || "Không thể tải danh sách cửa hàng");
+            }
+        } catch (error) {
+            console.error("Failed to fetch shops:", error);
+            showError("Lỗi kết nối khi tải danh sách cửa hàng");
+        } finally {
+            setLoading(false);
+        }
+    }, [activeTab, page, showError]);
 
     useEffect(() => {
-        fetchShops();
-    }, [activeTab]);
+        loadShops();
+    }, [loadShops]);
 
-    const handleApprove = (_id: number) => {
-        message.success('Shop Approved');
-        setViewMode('LIST');
-        fetchShops();
-    };
-
-    const handleReject = (values: { reason: string }) => {
-        message.success(`Shop Rejected: ${values.reason}`);
-        setIsRejectModalVisible(false);
-        setViewMode('LIST');
-        fetchShops();
-    };
-
-    const handleSuspend = (_id: number) => {
-        message.success('Shop Suspended/Activated');
-        fetchShops();
+    const handleToggleSidebar = () => {
+        setIsSidebarCollapsed((prev) => {
+            const next = !prev
+            localStorage.setItem('sidebar-collapsed', String(next))
+            return next
+        })
     }
 
-    const columns: ColumnsType<Shop> = [
-        {
-            title: 'SHOP NAME',
-            dataIndex: 'shopName',
-            key: 'shopName',
-            render: (text) => <Text strong>{text}</Text>
-        },
-        { title: 'OWNER', dataIndex: 'ownerName', key: 'ownerName' },
-        { title: 'REG DATE', dataIndex: 'regDate', key: 'regDate' },
-        {
-            title: 'STATUS',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => (
-                <Tag
-                    color={status === 'APPROVED' ? 'success' : status === 'PENDING' ? 'warning' : 'error'}
-                    style={{ borderRadius: 12, fontWeight: 500 }}
-                >
-                    {status}
-                </Tag>
-            )
-        },
-        ...(activeTab === 'REJECTED' ? [{ title: 'REASON', dataIndex: 'rejectReason', key: 'rejectReason' }] : []),
-        {
-            title: 'ACTION',
-            key: 'action',
-            render: (_, record) => (
-                <Space>
-                    <Button type="link" size="small" onClick={() => { setSelectedShop(record); setViewMode('DETAIL'); }}>View Detail</Button>
-                    {activeTab === 'APPROVED' && (
-                        <Button type="link" danger size="small" onClick={() => handleSuspend(record.id)}>
-                            {record.status === 'SUSPENDED' ? 'Re-activate' : 'Suspend'}
-                        </Button>
-                    )}
-                    {activeTab === 'REJECTED' && (
-                        <Button type="link" size="small" onClick={() => handleApprove(record.id)}>Re-Approve</Button>
-                    )}
-                </Space>
-            ),
-        },
-    ];
-
-    const sortMenu: MenuProps = {
-        items: [
-            { key: '1', label: 'Name (A-Z)' },
-            { key: '2', label: 'Date Registered' },
-        ],
+    const handleApprove = (id: number) => {
+        showConfirm(
+            `Bạn có chắc chắn muốn phê duyệt shop này ? `,
+            async () => {
+                setLoading(true);
+                try {
+                    const response = await approveShop(id);
+                    if (response.resultCd === 0) {
+                        showNotice(`Shop đã được phê duyệt thành công!`);
+                        setViewMode('LIST');
+                        loadShops();
+                    } else {
+                        showError(response.message || "Không thể phê duyệt cửa hàng");
+                    }
+                } catch (error) {
+                    showError("Lỗi kết nối khi phê duyệt cửa hàng");
+                } finally {
+                    setLoading(false);
+                }
+            },
+            'Xác nhận phê duyệt'
+        );
     };
+
+    const handleReject = (id: number) => {
+        showPrompt(
+            "Vui lòng nhập lý do từ chối đơn đăng ký này:",
+            (reason: string) => {
+
+                if (!reason || reason.trim().length < 3) {
+                    showWarning("Lý do quá ngắn! Vui lòng nhập ít nhất 3 ký tự.");
+                    return;
+                }
+                if (reason.trim().length > 255) {
+                    showWarning("Lý do quá dài! Vui lòng nhập dưới 255 ký tự.");
+                    return;
+                }
+
+                showConfirm(
+                    `Bạn có chắc chắn muốn từ chối shop này với lý do: "${reason.trim()}" ? `,
+                    async () => {
+                        setLoading(true);
+                        try {
+                            const response = await rejectShop(id, reason.trim());
+                            if (response.resultCd === 0) {
+                                showNotice(`Shop đã bị từ chối thành công!`);
+                                setViewMode('LIST');
+                                loadShops();
+                            } else {
+                                showError(response.message || "Không thể từ chối cửa hàng");
+                            }
+                        } catch (error) {
+                            showError("Lỗi kết nối khi từ chối cửa hàng");
+                        } finally {
+                            setLoading(false);
+                        }
+                    },
+                    'Xác nhận từ chối'
+                );
+            },
+            'Từ chối cửa hàng',
+            'Nhập lý do tại đây...'
+        );
+    };
+
+
+    const handleSuspend = (id: number) => {
+        showConfirm(
+            `Bạn có chắc chắn muốn đình chỉ toàn bộ hoạt động của shop này?`,
+            async () => {
+                setLoading(true);
+                try {
+                    const response = await suspendShop(id);
+                    if (response.resultCd === 0) {
+                        showNotice(`Shop đã bị đình chỉ thành công!`);
+                        setViewMode('LIST');
+                        loadShops();
+                    } else {
+                        showError(response.message || "Không thể đình chỉ cửa hàng");
+                    }
+                } catch (error) {
+                    showError("Lỗi kết nối khi đình chỉ cửa hàng");
+                } finally {
+                    setLoading(false);
+                }
+            },
+            'Xác nhận đình chỉ'
+        );
+    };
+
+
+    // Local search filtering as backend doesn't seem to support search param in guide
+    const filteredShops = shops.filter(shop =>
+        shop.shopName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        shop.ownerName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <ShopManagementView
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={handleToggleSidebar}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
-            shops={shops}
-            columns={columns}
-            sortMenu={sortMenu}
+            onTabChange={(tab) => { setActiveTab(tab); setPage(0); }}
+            shops={filteredShops}
             viewMode={viewMode}
             selectedShop={selectedShop}
             setViewMode={setViewMode}
-            isRejectModalVisible={isRejectModalVisible}
-            onCancelReject={() => setIsRejectModalVisible(false)}
-            onFinishReject={handleReject}
-            rejectForm={rejectForm}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            onSuspend={handleSuspend}
+            setSelectedShop={setSelectedShop}
+            page={page}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            onPageChange={setPage}
+            loading={loading}
         />
     );
 };

@@ -1,19 +1,6 @@
-import React from 'react';
-import { Table, Tabs, Button, Modal, Tag, Input, Form, Card, Row, Col, Typography, Breadcrumb, Space, Divider, Dropdown, MenuProps } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import {
-    UserOutlined,
-    FilePdfOutlined,
-    ShopOutlined,
-    CalendarOutlined,
-    ArrowLeftOutlined,
-    DownOutlined,
-    InfoCircleOutlined
-} from '@ant-design/icons';
-import AdminHeader from '../common/admin-header/AdminHeader';
+import { Link } from 'react-router-dom';
+import { AdminFrame, ADMIN_NAV_ITEMS } from '../common/admin-frame';
 import './ShopManagement.css';
-
-const { Title, Text, Paragraph } = Typography;
 
 export interface Shop {
     id: number;
@@ -21,7 +8,6 @@ export interface Shop {
     ownerName: string;
     regDate: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
-    rejectReason?: string;
     description?: string;
     ownerPhone?: string;
     ownerEmail?: string;
@@ -31,199 +17,288 @@ export interface Shop {
     yearsInBusiness?: number;
     locationType?: string;
     staffCount?: number;
+    rejectReason?: string;
 }
 
 interface ShopManagementViewProps {
+    isSidebarCollapsed: boolean;
+    onToggleSidebar: () => void;
+    searchQuery: string;
+    onSearchChange: (v: string) => void;
     activeTab: string;
-    onTabChange: (key: string) => void;
+    onTabChange: (tab: string) => void;
     shops: Shop[];
-    columns: ColumnsType<Shop>;
-    sortMenu: MenuProps;
     viewMode: 'LIST' | 'DETAIL';
     selectedShop: Shop | null;
     setViewMode: (mode: 'LIST' | 'DETAIL') => void;
-    isRejectModalVisible: boolean;
-    onCancelReject: () => void;
-    onFinishReject: (values: { reason: string }) => void;
-    rejectForm: any;
+    onApprove: (id: number) => void;
+    onReject: (id: number) => void;
+    onSuspend: (id: number) => void;
+    setSelectedShop: (shop: Shop) => void;
+
+    page: number;
+    totalPages: number;
+    totalElements: number;
+    onPageChange: (page: number) => void;
+    loading?: boolean;
 }
 
 const ShopManagementView: React.FC<ShopManagementViewProps> = ({
+    isSidebarCollapsed,
+    onToggleSidebar,
+    searchQuery,
+    onSearchChange,
     activeTab,
     onTabChange,
     shops,
-    columns,
-    sortMenu,
     viewMode,
     selectedShop,
     setViewMode,
-    isRejectModalVisible,
-    onCancelReject,
-    onFinishReject,
-    rejectForm
-}) => {
-    if (viewMode === 'DETAIL' && selectedShop) {
-        return (
-            <div className="shop-detail-container">
-                <AdminHeader />
+    onApprove,
+    onReject,
+    onSuspend,
+    setSelectedShop,
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Button
-                            icon={<ArrowLeftOutlined />}
+    page,
+    totalPages,
+    totalElements,
+    onPageChange,
+    loading = false
+}) => {
+    const renderListView = () => (
+        <>
+            <div className="page-header-content">
+                <nav className="breadcrumbs-modern">
+                    <Link to="/admin-dashboard">Dashboard</Link>
+                    <span className="material-symbols-outlined">chevron_right</span>
+                    <span className="current">Shop Management</span>
+                </nav>
+                <h1>Shop Management</h1>
+                <p>Review and manage merchant applications and storefront approvals.</p>
+            </div>
+
+            <div className="management-filter-section">
+                <div className="filter-search-actions">
+                    <div className="modern-search-input-wrap">
+                        <span className="material-symbols-outlined">search</span>
+                        <input
                             type="text"
-                            onClick={() => setViewMode('LIST')}
-                            style={{ marginRight: 16 }}
+                            placeholder="Search by shop or owner name..."
+                            value={searchQuery}
+                            onChange={(e) => onSearchChange(e.target.value)}
                         />
-                        <Title level={3} style={{ marginBottom: 0, marginRight: 16 }}>Shop Details</Title>
+                    </div>
+
+                    <div className="custom-dropdown-filters">
+                        <div className="filter-select-wrap">
+                            <select
+                                value={activeTab}
+                                onChange={(e) => onTabChange(e.target.value)}
+                                className="modern-filter-select"
+                            >
+                                <option value="ALL">All Statuses</option>
+                                <option value="PENDING">Status: Pending</option>
+                                <option value="APPROVED">Status: Approval</option>
+                                <option value="REJECTED">Status: Rejected</option>
+                            </select>
+                            <span className="material-symbols-outlined select-arrow">expand_more</span>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <Breadcrumb
-                    style={{ marginBottom: 24 }}
-                    items={[
-                        { title: 'Shop Management' },
-                        { title: activeTab === 'PENDING' ? 'Pending Approvals' : 'Shops' },
-                        { title: selectedShop.shopName },
-                    ]}
-                />
-
-                <Card className="shop-main-card" style={{ marginBottom: 24, borderRadius: 12, border: '1px solid #f0f0f0' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                        <div className="shop-icon-circle">
-                            <ShopOutlined style={{ fontSize: 32, color: '#fff' }} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                                <Title level={2} style={{ margin: 0, marginRight: 12, fontSize: 24 }}>{selectedShop.shopName}</Title>
-                                <Tag color={selectedShop.status === 'PENDING' ? 'gold' : 'green'} style={{ fontSize: 12, padding: '2px 8px', borderRadius: 4 }}>
-                                    {selectedShop.status}
-                                </Tag>
-                            </div>
-                            <Space style={{ color: '#666' }} size="large">
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <UserOutlined /> {selectedShop.ownerName}
-                                </span>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <CalendarOutlined /> Registered: {selectedShop.regDate}
-                                </span>
-                            </Space>
-                        </div>
-                    </div>
-                </Card>
-
-                <Row gutter={24} style={{ marginBottom: 24 }}>
-                    <Col span={16}>
-                        <Card title="General Information" bordered={false} style={{ borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                            <Row gutter={[24, 24]}>
-                                <Col span={12}>
-                                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>Owner Name</Text>
-                                    <div style={{ fontSize: 16, fontWeight: 500, marginTop: 4 }}>{selectedShop.ownerName}</div>
-                                </Col>
-                                <Col span={12}>
-                                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>Contact Email</Text>
-                                    <div style={{ fontSize: 16, fontWeight: 500, marginTop: 4 }}>{selectedShop.ownerEmail}</div>
-                                </Col>
-                                <Col span={12}>
-                                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>Phone Number</Text>
-                                    <div style={{ fontSize: 16, fontWeight: 500, marginTop: 4 }}>{selectedShop.ownerPhone}</div>
-                                </Col>
-                                <Col span={12}>
-                                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>Business Address</Text>
-                                    <div style={{ fontSize: 16, fontWeight: 500, marginTop: 4 }}>{selectedShop.businessAddress}</div>
-                                </Col>
-                            </Row>
-                            <Divider />
-                            <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase' }}>Description</Text>
-                            <Paragraph style={{ marginTop: 8, color: '#555', lineHeight: 1.6 }}>
-                                {selectedShop.description || 'No description provided.'}
-                            </Paragraph>
-                        </Card>
-                    </Col>
-                    <Col span={8}>
-                        <Card title="Uploaded Documents" bordered={false} style={{ borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', height: '100%' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                {selectedShop.documentUrls?.map((_url, index) => (
-                                    <div key={index} className="doc-item">
-                                        <FilePdfOutlined style={{ fontSize: 20, color: '#ff4d4f', marginRight: 12 }} />
-                                        <div style={{ flex: 1, overflow: 'hidden' }}>
-                                            <Text ellipsis style={{ fontWeight: 500 }}>Document_{index + 1}.pdf</Text>
-                                            <div style={{ fontSize: 11, color: '#999' }}>2.4 MB</div>
+            <div className="table-card">
+                <table className={`admin-table ${loading ? 'table-loading' : ''}`}>
+                    <thead>
+                        <tr>
+                            <th>Shop Name</th>
+                            <th>Owner</th>
+                            <th>Reg Date</th>
+                            <th>Status</th>
+                            {activeTab === 'REJECTED' && <th>Reason</th>}
+                            <th style={{ textAlign: 'center', width: '200px' }}>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>Loading shops...</td>
+                            </tr>
+                        ) : shops.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>No shops found.</td>
+                            </tr>
+                        ) : (
+                            shops.map((s) => (
+                                <tr key={s.id}>
+                                    <td><span style={{ fontWeight: 700 }}>{s.shopName}</span></td>
+                                    <td>{s.ownerName}</td>
+                                    <td style={{ color: '#637381' }}>{s.regDate}</td>
+                                    <td>
+                                        <span className={`status-chip status-${s.status.toLowerCase()}`}>
+                                            {s.status === 'APPROVED' ? 'Approval' : s.status}
+                                        </span>
+                                    </td>
+                                    {activeTab === 'REJECTED' && <td>{s.rejectReason}</td>}
+                                    <td>
+                                        <div className="status-actions-group">
+                                            <button
+                                                className="icon-btn-action"
+                                                title="View details"
+                                                onClick={() => { setSelectedShop(s); setViewMode('DETAIL'); }}
+                                            >
+                                                <span className="material-symbols-outlined">visibility</span>
+                                            </button>
+                                            {s.status !== 'REJECTED' && (
+                                                <>
+                                                    <div className="action-divider-vertical"></div>
+                                                    {(s.status === 'APPROVED' || s.status === 'SUSPENDED') && (
+                                                        <button
+                                                            className={`action-status-btn ${s.status === 'SUSPENDED' ? 'activate' : 'deactivate'}`}
+                                                            onClick={() => onSuspend(s.id)}
+                                                        >
+                                                            {s.status === 'SUSPENDED' ? 'Re-activate' : 'Suspend'}
+                                                        </button>
+                                                    )}
+                                                    {s.status === 'PENDING' && (
+                                                        <button
+                                                            className="action-status-btn activate"
+                                                            onClick={() => onApprove(s.id)}
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
-                                    </div>
-                                )) || <Text type="secondary">No documents.</Text>}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+                <div className="table-footer">
+                    <p className="footer-stats">
+                        Showing {shops.length} of {totalElements} shops
+                    </p>
+                    <div className="pagination-group">
+                        <button
+                            className="page-btn"
+                            disabled={page === 0 || loading}
+                            onClick={() => onPageChange(page - 1)}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_left</span>
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i).map(p => (
+                            <button
+                                key={p}
+                                className={`page-btn ${page === p ? 'active' : ''}`}
+                                onClick={() => onPageChange(p)}
+                                disabled={loading}
+                            >
+                                {p + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            className="page-btn"
+                            disabled={page >= totalPages - 1 || loading}
+                            onClick={() => onPageChange(page + 1)}
+                        >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+
+    const renderDetailView = (shop: Shop) => (
+        <div className="admin-modal-overlay" onClick={() => setViewMode('LIST')}>
+            <div className="admin-modal-content large" onClick={(e) => e.stopPropagation()}>
+                <div className="admin-modal-header">
+                    <h2>Shop Details</h2>
+                    <button className="admin-modal-close-btn" onClick={() => setViewMode('LIST')} title="Close">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div className="user-identity-card" style={{ gap: '1.5rem', padding: '1rem', marginBottom: 0, boxShadow: 'none' }}>
+                        <div className="brand-icon" style={{ width: '64px', height: '64px', borderRadius: '12px' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>storefront</span>
+                        </div>
+                        <div className="user-identity-info">
+                            <div className="identity-title-row">
+                                <h2 className="user-name-title">{shop.shopName}</h2>
+                                <span className={`status-chip status-${shop.status.toLowerCase()}`}>
+                                    {shop.status}
+                                </span>
                             </div>
-                        </Card>
-                    </Col>
-                </Row>
-
-                <Modal
-                    title="Reject Reason"
-                    open={isRejectModalVisible}
-                    onCancel={onCancelReject}
-                    onOk={rejectForm.submit}
-                >
-                    <Form form={rejectForm} onFinish={onFinishReject}>
-                        <Form.Item name="reason" rules={[{ required: true, message: 'Reason is required' }]}>
-                            <Input.TextArea rows={4} placeholder="Enter rejection reason..." />
-                        </Form.Item>
-                    </Form>
-                </Modal>
-            </div>
-        );
-    }
-
-    return (
-        <div className="shop-mgmt-container">
-            <AdminHeader />
-
-            <div style={{ marginBottom: 32 }}>
-                <Title level={3} style={{ margin: '0 0 8px 0' }}>Shop Management</Title>
-                <Text type="secondary">Review applications and manage active sellers shops</Text>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <Tabs
-                    activeKey={activeTab}
-                    onChange={onTabChange}
-                    type="card"
-                    items={[
-                        { key: 'PENDING', label: 'Pending Applications' },
-                        { key: 'APPROVED', label: 'Approved Shops' },
-                        { key: 'REJECTED', label: 'Rejected Shops' },
-                    ]}
-                />
-
-                <Dropdown menu={sortMenu}>
-                    <Button style={{ borderRadius: 6 }}>
-                        <Space>
-                            Sort by <DownOutlined style={{ fontSize: 10 }} />
-                        </Space>
-                    </Button>
-                </Dropdown>
-            </div>
-
-            <Table
-                columns={columns}
-                dataSource={shops}
-                rowKey="id"
-                pagination={{ position: ['bottomRight'] }}
-            />
-
-            <div className="footer-banner-shop">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <div className="info-icon-circle-shop">
-                        <InfoCircleOutlined style={{ color: '#fff', fontSize: 24 }} />
+                            <div className="user-role-meta">
+                                <span className="material-symbols-outlined">person</span>
+                                <span>{shop.ownerName}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <Text strong style={{ fontSize: 16, display: 'block' }}>Approval SLA </Text>
-                        <Text type="secondary" style={{ maxWidth: 600, display: 'block' }}>
-                            New shop applications should be reviewed within 48 hours. Pending applications older than 3 days will be flagged.
-                        </Text>
+
+                    <div className="detail-section-card" style={{ marginBottom: 0, padding: '1rem', boxShadow: 'none' }}>
+                        <h3 className="section-title-label" style={{ marginBottom: '1.25rem', fontSize: '0.875rem', color: '#637381', borderBottom: '1px solid #f4f6f8', paddingBottom: '0.75rem' }}>Shop & Owner Information</h3>
+                        <div className="section-content-body grid-info">
+                            <div className="info-group">
+                                <label>Owner Name</label>
+                                <p>{shop.ownerName}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Phone Number</label>
+                                <p>{shop.ownerPhone || 'N/A'}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Email Address</label>
+                                <p>{shop.ownerEmail || 'N/A'}</p>
+                            </div>
+                            <div className="info-group">
+                                <label>Registration Date</label>
+                                <p>{shop.regDate}</p>
+                            </div>
+                            <div className="info-group" style={{ gridColumn: 'span 2' }}>
+                                <label>Business Address</label>
+                                <p>{shop.businessAddress || 'N/A'}</p>
+                            </div>
+                        </div>
                     </div>
+
+                    {shop.description && (
+                        <div className="detail-section-card" style={{ marginBottom: 0, padding: '1rem', boxShadow: 'none' }}>
+                            <h3 className="section-title-label" style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#637381' }}>Business Description</h3>
+                            <p style={{ fontSize: '0.875rem', color: '#212b36', lineHeight: 1.6 }}>{shop.description}</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="admin-modal-footer">
+                    <button className="btn-cancel-action" onClick={() => setViewMode('LIST')}>Close</button>
+                    {shop.status === 'PENDING' && (
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button className="btn-status-toggle is-deactivate" onClick={() => onReject(shop.id)}>Reject Shop</button>
+                            <button className="btn-status-toggle is-activate" onClick={() => onApprove(shop.id)}>Approve Shop</button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
+    );
+
+    return (
+        <AdminFrame
+            sidebarItems={ADMIN_NAV_ITEMS}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={onToggleSidebar}
+            modalContent={viewMode === 'DETAIL' && selectedShop ? renderDetailView(selectedShop) : null}
+        >
+            {renderListView()}
+        </AdminFrame>
     );
 };
 
