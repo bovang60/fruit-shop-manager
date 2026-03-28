@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Voucher.css';
 import Pagination from '../common/pagination/Pagination';
+import LoadingModal from '../common/loading/LoadingModal';
 
 export type VoucherData = {
     voucherId: number;
@@ -70,33 +71,32 @@ const VoucherView: React.FC<Props> = ({
         }
     }, [currentPage, totalPages]);
 
-    if (isLoading) return <div className="loading">Đang tải danh sách ưu đãi...</div>;
-
     return (
-        <div className="seller-page">
-            <div className="page-header-content">
-                <nav className="breadcrumbs-modern">
-                    <Link to="/seller/dashboard">Seller</Link>
-                    <span className="material-symbols-outlined">chevron_right</span>
-                    <span className="current">Mã giảm giá</span>
-                </nav>
-                <h1>Quản lý voucher</h1>
-                <p>Thiết kế lại theo form-card và bảng dữ liệu đồng nhất với các trang admin.</p>
-            </div>
-
-            <section className="management-filter-section">
-                <div className="filter-search-actions">
-                    <div className="utility-actions">
-                        <button type="button" className="btn-primary-admin" onClick={() => setIsAdding((value) => !value)}>
-                            <span className="material-symbols-outlined">{isAdding ? 'close' : 'add'}</span>
-                            {isAdding ? 'Đóng form tạo' : 'Tạo mã giảm giá'}
-                        </button>
-                        <button type="button" className="seller-secondary-btn" onClick={onRefresh}>Làm mới</button>
-                    </div>
+        <>
+            <div className="seller-page">
+                <div className="page-header-content">
+                    <nav className="breadcrumbs-modern">
+                        <Link to="/seller/dashboard">Seller</Link>
+                        <span className="material-symbols-outlined">chevron_right</span>
+                        <span className="current">Mã giảm giá</span>
+                    </nav>
+                    <h1>Quản lý voucher</h1>
+                    <p>Thiết kế lại theo form-card và bảng dữ liệu đồng nhất với các trang admin.</p>
                 </div>
-            </section>
 
-            {isAdding && (
+                <section className="management-filter-section">
+                    <div className="filter-search-actions">
+                        <div className="utility-actions">
+                            <button type="button" className="btn-primary-admin" onClick={() => setIsAdding((value) => !value)}>
+                                <span className="material-symbols-outlined">{isAdding ? 'close' : 'add'}</span>
+                                {isAdding ? 'Đóng form tạo' : 'Tạo mã giảm giá'}
+                            </button>
+                            <button type="button" className="seller-secondary-btn" onClick={onRefresh}>Làm mới</button>
+                        </div>
+                    </div>
+                </section>
+
+                {isAdding && (
                 <section className="data-card seller-form-card">
                     <div className="seller-form-card-header">
                         <div>
@@ -161,9 +161,9 @@ const VoucherView: React.FC<Props> = ({
                         </div>
                     </form>
                 </section>
-            )}
+                )}
 
-            <section className="table-card">
+                <section className="table-card">
                 <table className="admin-table">
                     <thead>
                         <tr>
@@ -265,8 +265,15 @@ const VoucherView: React.FC<Props> = ({
                     totalPages={totalPages}
                     onPageChange={setCurrentPage}
                 />
-            </section>
-        </div>
+                </section>
+            </div>
+            <LoadingModal
+                isOpen={isLoading}
+                message="Đang tải danh sách ưu đãi..."
+                subMessage="Vui lòng chờ trong giây lát"
+                theme="green"
+            />
+        </>
     );
 };
 

@@ -2,6 +2,7 @@ import React from 'react';
 import './OrderManager.css';
 import { Link } from 'react-router-dom';
 import Pagination from '../common/pagination/Pagination';
+import LoadingModal from '../common/loading/LoadingModal';
 
 export type OrderData = {
     orderId: number;
@@ -100,6 +101,7 @@ const OrderManagerView: React.FC<Props> = ({
     }, [currentPage, totalPages]);
 
     return (
+        <>
         <div className="seller-page">
             <header className="home-actions">
                 <div className="page-header-content">
@@ -127,9 +129,6 @@ const OrderManagerView: React.FC<Props> = ({
                     ))}
                 </div>
 
-                {isDetailLoading && (
-                    <div className="loading">Đang tải chi tiết đơn hàng...</div>
-                )}
             </section>
 
             {!isDetailLoading && selectedOrder && (
@@ -286,6 +285,13 @@ const OrderManagerView: React.FC<Props> = ({
                 />
             </section>
         </div >
+        <LoadingModal
+            isOpen={isLoading || isDetailLoading}
+            message={isDetailLoading ? 'Đang tải chi tiết đơn hàng...' : 'Đang tải danh sách đơn hàng...'}
+            subMessage="Vui lòng chờ trong giây lát"
+            theme="green"
+        />
+        </>
     );
 };
 
