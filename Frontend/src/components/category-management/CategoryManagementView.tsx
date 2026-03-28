@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { SortConfig } from './CategoryManagement';
 import { AdminFrame, ADMIN_NAV_ITEMS } from '../common/admin-frame';

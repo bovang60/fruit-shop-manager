@@ -28,7 +28,7 @@ export default function CartView({
   onViewOrderHistory,
 }: CartViewProps) {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+    return `₫${amount.toLocaleString('vi-VN')}`
   }
 
   const hasItems = (cart?.items?.length ?? 0) > 0
@@ -41,25 +41,25 @@ export default function CartView({
 
       <main className="cart-main">
         <section className="cart-container">
-          <h1 className="cart-title">Your Cart</h1>
+          <h1 className="cart-title">Giỏ hàng</h1>
 
           {!hasItems ? (
             <div className="cart-empty-state">
-              <div className="cart-empty-icon">CART</div>
-              <p className="cart-empty-message">Your cart is currently empty</p>
+              <div className="cart-empty-icon">GIỎ HÀNG</div>
+              <p className="cart-empty-message">Giỏ hàng của bạn đang trống</p>
               <button
                 type="button"
                 className="cart-btn-primary cart-btn-continue"
                 onClick={onContinueShopping}
               >
-                Continue Shopping
+                Tiếp tục mua sắm
               </button>
               <button
                 type="button"
                 className="cart-btn-secondary cart-btn-order-history"
                 onClick={onViewOrderHistory}
               >
-                View Order History
+                Xem lịch sử đơn hàng
               </button>
             </div>
           ) : (
@@ -67,14 +67,14 @@ export default function CartView({
               <div className="cart-items-section">
                 <div className="cart-items-header">
                   <span className="cart-items-count">
-                    You have {cart?.totalItems || 0} item(s) in your cart
+                    Bạn có {cart?.totalItems || 0} sản phẩm trong giỏ hàng
                   </span>
                   <button
                     type="button"
                     className="cart-btn-text cart-btn-clear"
                     onClick={onClearCart}
                   >
-                    Clear All
+                    Xóa tất cả
                   </button>
                 </div>
 
@@ -106,7 +106,7 @@ export default function CartView({
                           className="cart-qty-btn"
                           onClick={() => onUpdateQuantity(item.cartItemId, item.quantity, -1)}
                           disabled={item.quantity <= 1 || updatingItemId === item.cartItemId}
-                          aria-label="Decrease quantity"
+                          aria-label="Giảm số lượng"
                         >
                           -
                         </button>
@@ -116,7 +116,7 @@ export default function CartView({
                           className="cart-qty-btn"
                           onClick={() => onUpdateQuantity(item.cartItemId, item.quantity, 1)}
                           disabled={updatingItemId === item.cartItemId}
-                          aria-label="Increase quantity"
+                          aria-label="Tăng số lượng"
                         >
                           +
                         </button>
@@ -131,7 +131,7 @@ export default function CartView({
                         className="cart-btn-remove"
                         onClick={() => onRemoveItem(item.cartItemId)}
                         disabled={updatingItemId === item.cartItemId}
-                        aria-label={`Remove ${item.productName} from cart`}
+                        aria-label={`Xóa ${item.productName} khỏi giỏ hàng`}
                       >
                         x
                       </button>
@@ -142,10 +142,10 @@ export default function CartView({
 
               <div className="cart-summary-section">
                 <div className="cart-summary-card">
-                  <h2 className="cart-summary-title">Order Summary</h2>
+                  <h2 className="cart-summary-title">Tóm tắt đơn hàng</h2>
 
                   <div className="cart-summary-row">
-                    <span className="cart-summary-label">Subtotal ({cart?.totalItems} items)</span>
+                    <span className="cart-summary-label">Tạm tính ({cart?.totalItems} sản phẩm)</span>
                     <span className="cart-summary-value">
                       {formatCurrency(cart?.totalPrice || 0)}
                     </span>
@@ -154,14 +154,14 @@ export default function CartView({
                   <div className="cart-summary-divider"></div>
 
                   <div className="cart-summary-row cart-summary-total">
-                    <span className="cart-summary-label">Total</span>
+                    <span className="cart-summary-label">Tổng cộng</span>
                     <span className="cart-summary-value-total">
                       {formatCurrency(cart?.totalPrice || 0)}
                     </span>
                   </div>
 
                   <p className="cart-summary-note">
-                    VAT included if applicable. Shipping fees will be calculated at checkout.
+                    Đã bao gồm VAT (nếu có). Phí vận chuyển sẽ được tính khi thanh toán.
                   </p>
 
                   <button
@@ -169,7 +169,7 @@ export default function CartView({
                     className="cart-btn-primary cart-btn-checkout"
                     onClick={onCheckout}
                   >
-                    Proceed to Checkout
+                    Tiến hành thanh toán
                   </button>
 
                   <button
@@ -177,7 +177,7 @@ export default function CartView({
                     className="cart-btn-secondary cart-btn-continue"
                     onClick={onContinueShopping}
                   >
-                    Continue Shopping
+                    Tiếp tục mua sắm
                   </button>
 
                   <button
@@ -185,7 +185,7 @@ export default function CartView({
                     className="cart-btn-secondary cart-btn-order-history"
                     onClick={onViewOrderHistory}
                   >
-                    View Order History
+                    Xem lịch sử đơn hàng
                   </button>
                 </div>
               </div>

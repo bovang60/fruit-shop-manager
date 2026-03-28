@@ -262,28 +262,33 @@
 
 .checkout-btn-submit {
   width: 100%;
-  padding: 14px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #121811;
-  background-color: #33f20d;
+  height: 3rem;
+  border-radius: 9999px;
   border: none;
-  border-radius: 10px;
+  background: #33f20d !important;
+  color: #121811;
+  font-size: 1rem;
+  font-weight: 800;
   cursor: pointer;
-  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 .checkout-btn-submit:hover:not(:disabled) {
-  background-color: #2cd60b;
-}
-
-.checkout-btn-submit:active:not(:disabled) {
-  transform: scale(0.98);
+  background: #2dd60c !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(51, 242, 13, 0.3);
 }
 
 .checkout-btn-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background: #a0a0a0 !important;
+  box-shadow: none;
+  transform: none;
 }
 
 /* ---------- Responsive ---------- */

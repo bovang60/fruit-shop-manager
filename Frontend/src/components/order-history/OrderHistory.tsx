@@ -29,11 +29,11 @@ export default function OrderHistory() {
         if (response.resultCd === 0 && response.data) {
           setOrders(response.data);
         } else {
-          showError(response.message || 'Could not load order history');
+          showError(response.message || 'Không thể tải lịch sử đơn hàng');
         }
       } catch (error) {
         console.error('Error fetching orders:', error);
-        showError('Connection error while loading order history');
+        showError('Lỗi kết nối khi tải lịch sử đơn hàng');
       } finally {
         setLoading(false);
       }

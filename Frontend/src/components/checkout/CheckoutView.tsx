@@ -54,7 +54,7 @@ export default function CheckoutView({
 }: CheckoutViewProps) {
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    return `₫${amount.toLocaleString('vi-VN')}`;
   };
 
   const totalItems = cart?.totalItems ?? cartItems?.length ?? 0;
@@ -73,27 +73,27 @@ export default function CheckoutView({
 
       <main className="checkout-main">
         <section className="checkout-container">
-          <h1 className="checkout-title">Checkout</h1>
+          <h1 className="checkout-title">Thanh toán</h1>
 
           {!hasItems && !loading ? (
             <div className="checkout-loading">
-              <p>Your cart is empty.</p>
+              <p>Giỏ hàng của bạn đang trống.</p>
             </div>
           ) : !loading && (
             <div className="checkout-content">
               {/* Customer Info Form */}
               <div className="checkout-form-section">
-                <h2 className="checkout-section-title">Customer Information</h2>
+                <h2 className="checkout-section-title">Thông tin khách hàng</h2>
 
                 <div className="checkout-form-group">
                   <label className="checkout-label" htmlFor="checkout-fullname">
-                    Full Name
+                    Họ và tên
                   </label>
                   <input
                     id="checkout-fullname"
                     type="text"
                     className={`checkout-input ${nameError ? 'checkout-input--error' : ''}`}
-                    placeholder="Enter your full name"
+                    placeholder="Nhập họ và tên"
                     value={fullName}
                     onChange={(e) => onFullNameChange(e.target.value)}
                     onBlur={onNameBlur}
@@ -104,13 +104,13 @@ export default function CheckoutView({
 
                 <div className="checkout-form-group">
                   <label className="checkout-label" htmlFor="checkout-address">
-                    Address
+                    Địa chỉ
                   </label>
                   <input
                     id="checkout-address"
                     type="text"
                     className={`checkout-input ${addressError ? 'checkout-input--error' : ''}`}
-                    placeholder="Enter your delivery address"
+                    placeholder="Nhập địa chỉ giao hàng"
                     value={address}
                     onChange={(e) => onAddressChange(e.target.value)}
                     onBlur={onAddressBlur}
@@ -121,13 +121,13 @@ export default function CheckoutView({
 
                 <div className="checkout-form-group">
                   <label className="checkout-label" htmlFor="checkout-phone">
-                    Phone
+                    Số điện thoại
                   </label>
                   <input
                     id="checkout-phone"
                     type="tel"
                     className={`checkout-input ${phoneError ? 'checkout-input--error' : ''}`}
-                    placeholder="Enter your phone number"
+                    placeholder="Nhập số điện thoại"
                     value={phone}
                     onChange={(e) => onPhoneChange(e.target.value)}
                     onBlur={onPhoneBlur}
@@ -139,10 +139,10 @@ export default function CheckoutView({
 
               {/* Shipping Methods */}
               <div className="checkout-shipping-section">
-                <h2 className="checkout-section-title">Shipping Method</h2>
+                <h2 className="checkout-section-title">Phương thức vận chuyển</h2>
 
                 {shippingMethods?.length === 0 ? (
-                  <p className="checkout-no-shipping">No shipping methods available</p>
+                  <p className="checkout-no-shipping">Không có phương thức vận chuyển nào</p>
                 ) : (
                   <div className="checkout-shipping-list">
                     {shippingMethods?.map((method) => (
@@ -200,8 +200,8 @@ export default function CheckoutView({
               </div>
 
               <div className="checkout-form-section">
-                <h2 className="checkout-section-title">Order Items</h2>
-                <p className="checkout-shipping-desc">Total items: {totalItems}</p>
+                <h2 className="checkout-section-title">Sản phẩm đặt hàng</h2>
+                <p className="checkout-shipping-desc">Tổng số sản phẩm: {totalItems}</p>
                 <div className="checkout-shipping-list">
                   {cartItems?.map((item) => (
                     <div
@@ -210,10 +210,10 @@ export default function CheckoutView({
                     >
                       <div className="checkout-shipping-info">
                         <span className="checkout-shipping-name">
-                          {item?.productName || 'Unnamed product'}
+                          {item?.productName || 'Sản phẩm chưa đặt tên'}
                         </span>
                         <span className="checkout-shipping-desc">
-                          Product ID: {item?.productId ?? 'N/A'} | Quantity: {item?.quantity ?? 0}
+                          Mã SP: {item?.productId ?? 'N/A'} | Số lượng: {item?.quantity ?? 0}
                         </span>
                       </div>
 
@@ -224,9 +224,9 @@ export default function CheckoutView({
                   ))}
                 </div>
                 <div className="checkout-submit-section" style={{ textAlign: 'right' }}>
-                  <p className="checkout-shipping-desc" style={{ marginBottom: '4px' }}>Subtotal: {formatCurrency(totalPrice)}</p>
-                  <p className="checkout-shipping-desc" style={{ marginBottom: '12px' }}>Shipping Fee: {formatCurrency(shippingFee)}</p>
-                  <p className="checkout-section-title">Grand Total: {formatCurrency(finalTotal)}</p>
+                  <p className="checkout-shipping-desc" style={{ marginBottom: '4px' }}>Tạm tính: {formatCurrency(totalPrice)}</p>
+                  <p className="checkout-shipping-desc" style={{ marginBottom: '12px' }}>Phí vận chuyển: {formatCurrency(shippingFee)}</p>
+                  <p className="checkout-section-title">Tổng cộng: {formatCurrency(finalTotal)}</p>
                 </div>
               </div>
 
@@ -239,7 +239,7 @@ export default function CheckoutView({
                   onClick={onSubmit}
                   disabled={!isFormValid || submitting}
                 >
-                  {submitting ? 'Placing Order...' : 'Place Order'}
+                  {submitting ? 'Đang đặt hàng...' : 'Đặt hàng'}
                 </button>
               </div>
             </div>

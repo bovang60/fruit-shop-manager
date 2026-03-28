@@ -18,6 +18,7 @@ import Checkout from './components/checkout/Checkout'
 import OrderHistory from './components/order-history/OrderHistory'
 import OrderDetail from './components/order-detail/OrderDetail'
 import SellerDashboard from './components/seller-dashboard/SellerDashboard'
+import ProductDetail from './components/product-detail/ProductDetail'
 import SellerLayout from './components/seller/SellerLayout'
 import FruitManager from './components/seller-fruit/FruitManager'
 import OrderManager from './components/seller-order/OrderManager'
@@ -69,6 +70,8 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
+          <Route path="/seller-dashboard" element={<SellerDashboard />} />
+          <Route path="/product/:productId" element={<ProductDetail />} />
           <Route
             path="/seller/*"
             element={

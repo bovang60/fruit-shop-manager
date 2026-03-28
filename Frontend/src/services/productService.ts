@@ -100,6 +100,19 @@ export interface CartDto {
   items: CartItemDto[];
 }
 
+export interface ProductDetailDto {
+  productId: number;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  stock: number;
+  rating: number;
+  reviewCount: number;
+  categoryName: string;
+  shopName: string;
+}
+
 // ============= API Functions =============
 
 /**
@@ -246,6 +259,53 @@ export async function addToCart(
       resultCd: 1,
       message: "Failed to add to cart. Please try again.",
       data: null,
+    };
+  }
+}
+
+/**
+ * Get product details by ID
+ *
+ * Endpoint: GET /api/products/{id}
+ */
+export async function getProductDetail(
+  id: number
+): Promise<ApiResponse<ProductDetailDto>> {
+  try {
+    return await callApiWithMethod<never, ApiResponse<ProductDetailDto>>(
+      "GET",
+      `/api/products/${id}`
+    );
+  } catch (error) {
+    console.error(`Error fetching product details for ID ${id}:`, error);
+    return {
+      resultCd: 1,
+      message: "Failed to fetch product details.",
+      data: null as any
+    };
+  }
+}
+
+/**
+ * Get related products
+ *
+ * Endpoint: GET /api/products/{id}/related
+ */
+export async function getRelatedProducts(
+  id: number,
+  limit: number = 8
+): Promise<ApiResponse<ProductSummaryDto[]>> {
+  try {
+    return await callApiWithMethod<never, ApiResponse<ProductSummaryDto[]>>(
+      "GET",
+      `/api/products/${id}/related?limit=${limit}`
+    );
+  } catch (error) {
+    console.error(`Error fetching related products for ID ${id}:`, error);
+    return {
+      resultCd: 1,
+      message: "Failed to fetch related products.",
+      data: null as any
     };
   }
 }
