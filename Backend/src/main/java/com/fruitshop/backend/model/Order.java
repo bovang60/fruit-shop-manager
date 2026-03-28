@@ -51,6 +51,6 @@ public class Order {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum OrderStatus {
-        PENDING, CONFIRMED, SHIPPING, DELIVERED, COMPLETED, CANCELLED, REFUNDED, REJECTED
+        PENDING, CONFIRMED, SHIPPING, DELIVERED, COMPLETED, CANCELLED, REJECTED
     }
 }
