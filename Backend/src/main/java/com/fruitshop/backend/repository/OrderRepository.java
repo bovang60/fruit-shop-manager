@@ -67,4 +67,15 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
                         org.springframework.data.domain.Pageable pageable);
 
         java.util.List<Order> findByUser_UserIdOrderByCreatedAtDesc(Integer userId);
+
+        @Query("SELECT o FROM Order o WHERE o.shop.shopId = :shopId AND o.status = 'PENDING' AND (:since IS NULL OR o.createdAt > :since) ORDER BY o.createdAt DESC")
+        List<Order> findNewPendingOrdersByShop(
+                @Param("shopId") Integer shopId,
+                @Param("since") java.time.LocalDateTime since,
+                Pageable pageable);
+
+        @Query("SELECT COUNT(o) FROM Order o WHERE o.shop.shopId = :shopId AND o.status = 'PENDING' AND (:since IS NULL OR o.createdAt > :since)")
+        Integer countNewPendingOrdersByShop(
+                @Param("shopId") Integer shopId,
+                @Param("since") java.time.LocalDateTime since);
 }
