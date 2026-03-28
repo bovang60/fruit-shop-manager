@@ -7,8 +7,10 @@ import lombok.Data;
 
 @Data
 public class FeedbackRequestDto {
-    @NotNull(message = "Order ID is required")
+    // Either orderId or cartId must be provided (backward compatible)
     private Integer orderId;
+
+    private Integer cartId;
 
     @NotNull(message = "Product ID is required")
     private Integer productId;
@@ -20,3 +22,4 @@ public class FeedbackRequestDto {
 
     private String comment;
 }
+
