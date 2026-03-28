@@ -87,7 +87,20 @@ export async function getCategories(filter: CategoryFilter): Promise<ApiResponse
  */
 export async function getCategoryFilterList(): Promise<ApiResponse<CategoryFilterItemDto[]>> {
     try {
-        return await callApi<undefined, ApiResponse<CategoryFilterItemDto[]>>("/api/categories/filter-list");
+        const response = await callApi<undefined, ApiResponse<PageResponse<CategoryDto>>>(
+            "/api/categories?status=ACTIVE&size=100"
+        );
+        if (response.resultCd === 0 && response.data) {
+            const items: CategoryFilterItemDto[] = response.data.content.map((cat) => ({
+                categoryId: cat.categoryId,
+                categoryName: cat.categoryName,
+                description: cat.description,
+                status: cat.status,
+                fruitCount: cat.productCount,
+            }));
+            return { resultCd: 0, message: response.message, data: items };
+        }
+        return { resultCd: response.resultCd, message: response.message, data: null };
     } catch (error) {
         console.error("Error fetching category filter list:", error);
         return { resultCd: 1, message: "Lỗi kết nối khi lấy bộ lọc danh mục", data: null };
