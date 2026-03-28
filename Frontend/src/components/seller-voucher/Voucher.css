@@ -1,0 +1,5 @@
+@import "../seller/SellerPageShared.css";
+
+.seller-voucher-code {
+    letter-spacing: 0.08em;
+}

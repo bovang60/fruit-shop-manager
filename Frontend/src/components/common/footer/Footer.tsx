@@ -1,6 +1,13 @@
-import FooterView from './FooterView'
+import './Footer.css'
 
 export default function Footer() {
-  // container kept for future logic
-  return <FooterView />
+  const currentYear = new Date().getFullYear()
+
+  return (
+    <div className="footer-content">
+      <p className="footer-title">Fruit Shop Manager</p>
+      <p className="footer-meta">Fresh produce marketplace for everyone.</p>
+      <p className="footer-meta">© {currentYear} Fruit Shop Manager. All rights reserved.</p>
+    </div>
+  )
 }

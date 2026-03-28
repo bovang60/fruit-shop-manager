@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Tag, Form, message, Space, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import type { MenuProps } from 'antd';
 import ShopManagementView, { type Shop } from './ShopManagementView';
-
-const { Text } = Typography;
+import { usePopup } from '../common/popup';
 
 const ShopManagement: React.FC = () => {
+    const { showNotice, showConfirm, showError } = usePopup();
+    // UI State
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        return localStorage.getItem('sidebar-collapsed') === 'true'
+    })
+    const [searchQuery, setSearchQuery] = useState('')
     const [activeTab, setActiveTab] = useState('PENDING');
     const [shops, setShops] = useState<Shop[]>([]);
     const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
     const [viewMode, setViewMode] = useState<'LIST' | 'DETAIL'>('LIST');
-    const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
-    const [rejectForm] = Form.useForm();
 
     const fetchShops = () => {
         // Mock Data based on activeTab
@@ -21,6 +21,7 @@ const ShopManagement: React.FC = () => {
             { id: 2, shopName: 'Organic Veggies', ownerName: 'Jane Smith', regDate: '2023-02-15', status: 'APPROVED', description: 'Organic only', ownerPhone: '0987654321', ownerEmail: 'jane@example.com', businessAddress: '456 Farm Rd' },
             { id: 3, shopName: 'Bad Apples', ownerName: 'Bad Guy', regDate: '2023-03-10', status: 'REJECTED', rejectReason: 'Incomplete documents' },
         ];
+        // Filter by tab status
         const filtered = mockShops.filter(s => s.status === activeTab || (activeTab === 'APPROVED' && s.status === 'SUSPENDED'));
         setShops(filtered);
     };
@@ -29,87 +30,59 @@ const ShopManagement: React.FC = () => {
         fetchShops();
     }, [activeTab]);
 
-    const handleApprove = (_id: number) => {
-        message.success('Shop Approved');
-        setViewMode('LIST');
-        fetchShops();
-    };
-
-    const handleReject = (values: { reason: string }) => {
-        message.success(`Shop Rejected: ${values.reason}`);
-        setIsRejectModalVisible(false);
-        setViewMode('LIST');
-        fetchShops();
-    };
-
-    const handleSuspend = (_id: number) => {
-        message.success('Shop Suspended/Activated');
-        fetchShops();
+    const handleToggleSidebar = () => {
+        setIsSidebarCollapsed((prev) => {
+            const next = !prev
+            localStorage.setItem('sidebar-collapsed', String(next))
+            return next
+        })
     }
 
-    const columns: ColumnsType<Shop> = [
-        {
-            title: 'SHOP NAME',
-            dataIndex: 'shopName',
-            key: 'shopName',
-            render: (text) => <Text strong>{text}</Text>
-        },
-        { title: 'OWNER', dataIndex: 'ownerName', key: 'ownerName' },
-        { title: 'REG DATE', dataIndex: 'regDate', key: 'regDate' },
-        {
-            title: 'STATUS',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => (
-                <Tag
-                    color={status === 'APPROVED' ? 'success' : status === 'PENDING' ? 'warning' : 'error'}
-                    style={{ borderRadius: 12, fontWeight: 500 }}
-                >
-                    {status}
-                </Tag>
-            )
-        },
-        ...(activeTab === 'REJECTED' ? [{ title: 'REASON', dataIndex: 'rejectReason', key: 'rejectReason' }] : []),
-        {
-            title: 'ACTION',
-            key: 'action',
-            render: (_, record) => (
-                <Space>
-                    <Button type="link" size="small" onClick={() => { setSelectedShop(record); setViewMode('DETAIL'); }}>View Detail</Button>
-                    {activeTab === 'APPROVED' && (
-                        <Button type="link" danger size="small" onClick={() => handleSuspend(record.id)}>
-                            {record.status === 'SUSPENDED' ? 'Re-activate' : 'Suspend'}
-                        </Button>
-                    )}
-                    {activeTab === 'REJECTED' && (
-                        <Button type="link" size="small" onClick={() => handleApprove(record.id)}>Re-Approve</Button>
-                    )}
-                </Space>
-            ),
-        },
-    ];
-
-    const sortMenu: MenuProps = {
-        items: [
-            { key: '1', label: 'Name (A-Z)' },
-            { key: '2', label: 'Date Registered' },
-        ],
+    const handleApprove = (id: number) => {
+        showConfirm(
+            `Bạn có chắc chắn muốn phê duyệt shop này?`,
+            () => {
+                // Call API here
+                showNotice(`Shop ${id} đã được phê duyệt thành công!`);
+                setViewMode('LIST');
+                fetchShops();
+            },
+            'Xác nhận phê duyệt'
+        );
     };
+
+    const handleSuspend = (id: number) => {
+        showConfirm(
+            `Bạn có chắc chắn muốn thay đổi trạng thái shop này?`,
+            () => {
+                // Call API here
+                showNotice(`Shop ${id} đã thay đổi trạng thái`);
+                fetchShops();
+            },
+            'Xác nhận thay đổi'
+        );
+    }
+
+    const filteredShops = shops.filter(shop =>
+        shop.shopName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        shop.ownerName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <ShopManagementView
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={handleToggleSidebar}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            shops={shops}
-            columns={columns}
-            sortMenu={sortMenu}
+            shops={filteredShops}
             viewMode={viewMode}
             selectedShop={selectedShop}
             setViewMode={setViewMode}
-            isRejectModalVisible={isRejectModalVisible}
-            onCancelReject={() => setIsRejectModalVisible(false)}
-            onFinishReject={handleReject}
-            rejectForm={rejectForm}
+            onApprove={handleApprove}
+            onSuspend={handleSuspend}
+            setSelectedShop={setSelectedShop}
         />
     );
 };
