@@ -8,6 +8,7 @@ export default function Header() {
   const location = useLocation()
   const [userAvatar, setUserAvatar] = useState<string | undefined>(undefined)
   const [userName, setUserName] = useState<string>('')
+  const [userRole, setUserRole] = useState<string>('')
 
   // Load user info from localStorage
   useEffect(() => {
@@ -16,6 +17,11 @@ export default function Header() {
       if (user) {
         setUserAvatar(user.image)
         setUserName(user.fullName)
+        setUserRole(user.role)
+      } else {
+        setUserAvatar(undefined)
+        setUserName('')
+        setUserRole('')
       }
     }
 
@@ -56,10 +62,15 @@ export default function Header() {
     navigate('/cart')
   }
 
+  const handleNavigateToSellerPortal = () => {
+    navigate('/seller/dashboard')
+  }
+
   return (
     <HeaderView 
       userAvatar={userAvatar}
       userName={userName}
+      userRole={userRole}
       currentPath={location.pathname}
       onNavigateToHome={handleNavigateToHome}
       onNavigateToProducts={handleNavigateToProducts}
@@ -69,6 +80,7 @@ export default function Header() {
       onLogout={handleLogout}
       onNavigateToSellerRegistration={handleNavigateToSellerRegistration}
       onNavigateToCart={handleNavigateToCart}
+      onNavigateToSellerPortal={handleNavigateToSellerPortal}
     />
   )
 }

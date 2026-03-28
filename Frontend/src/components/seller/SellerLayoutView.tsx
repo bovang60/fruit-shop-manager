@@ -93,6 +93,13 @@ const SellerLayoutView: React.FC<Props> = ({ children }) => {
                         </div>
                     </div>
                     <div className="header-actions-right">
+                        <button
+                            type="button"
+                            className="seller-home-button"
+                            onClick={() => navigate('/home')}
+                        >
+                            Về trang chủ
+                        </button>
                         <details className="seller-profile-menu">
                             <summary className="seller-profile-trigger" aria-label="Menu hồ sơ người bán">
                                 <div className="user-avatar-circle seller-avatar">

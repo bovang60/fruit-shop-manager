@@ -4,6 +4,7 @@ import './Header.css'
 export type Props = {
   userAvatar?: string
   userName: string
+  userRole: string
   currentPath: string
   onNavigateToHome: () => void
   onNavigateToProducts: () => void
@@ -13,11 +14,13 @@ export type Props = {
   onLogout: () => void
   onNavigateToSellerRegistration: () => void
   onNavigateToCart: () => void
+  onNavigateToSellerPortal: () => void
 }
 
 export default function HeaderView({
   userAvatar,
   userName,
+  userRole,
   currentPath,
   onNavigateToHome,
   onNavigateToProducts,
@@ -25,6 +28,7 @@ export default function HeaderView({
   onLogout,
   onNavigateToSellerRegistration,
   onNavigateToCart,
+  onNavigateToSellerPortal,
 }: Props) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -84,6 +88,14 @@ export default function HeaderView({
         >
           Trở thành người bán
         </button>
+        {userRole === 'SELLER' && (
+          <button
+            className={`tab${currentPath.startsWith('/seller') ? ' active' : ''}`}
+            onClick={onNavigateToSellerPortal}
+          >
+            Khu người bán
+          </button>
+        )}
       </nav>
       <div className="header-actions">
         <div className="profile-dropdown-container" ref={dropdownRef}>
