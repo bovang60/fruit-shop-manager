@@ -24,6 +24,9 @@ export type Props = {
   onNotifToggle?: () => void;
   onMarkAllRead?: () => void;
   onNotifOrderClick?: (orderId: number) => void;
+  hideProfile?: boolean;
+  isAdmin?: boolean;
+  onNavigateToAdminDashboard: () => void;
 };
 
 export default function HeaderView({
@@ -113,7 +116,7 @@ export default function HeaderView({
           className={`tab${currentPath === "/register-shop" ? " active" : ""}`}
           onClick={onNavigateToSellerRegistration}
         >
-          Trở thành người bán
+          Đăng kí bán hàng
         </button>
         {userRole === "SELLER" && (
           <button
@@ -247,8 +250,8 @@ export default function HeaderView({
           <button
             className="profile-icon-btn"
             onClick={toggleDropdown}
-            aria-label="Menu người dùng"
-            title={userName || "Menu người dùng"}
+            aria-label="User menu"
+            title={userName || "User menu"}
             aria-expanded={isDropdownOpen}
           >
             {userAvatar ? (
@@ -278,6 +281,39 @@ export default function HeaderView({
 
           {isDropdownOpen && (
             <div className="profile-dropdown-menu">
+              <div className="profile-dropdown-header">
+                {userAvatar ? (
+                  <img
+                    src={userAvatar}
+                    alt={userName}
+                    className="profile-dropdown-avatar"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      const placeholder = e.currentTarget
+                        .nextElementSibling as HTMLElement;
+                      if (placeholder) {
+                        placeholder.style.display = "flex";
+                      }
+                    }}
+                  />
+                ) : null}
+                <div
+                  className="profile-avatar-placeholder"
+                  style={{ display: userAvatar ? "none" : "flex" }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
+                <div className="profile-dropdown-info">
+                  <p className="profile-dropdown-name">{userName}</p>
+                </div>
+              </div>
+              <div className="dropdown-divider"></div>
               <button className="dropdown-item" onClick={handleProfileClick}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -289,6 +325,28 @@ export default function HeaderView({
                 </svg>
                 <span>Hồ sơ</span>
               </button>
+              {isAdmin && (
+                <>
+                  <div className="dropdown-divider"></div>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      onNavigateToAdminDashboard();
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="dropdown-icon"
+                    >
+                      <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                    </svg>
+                    <span>Admin Dashboard</span>
+                  </button>
+                </>
+              )}
               <div className="dropdown-divider"></div>
               <button
                 className="dropdown-item dropdown-item-danger"
