@@ -9,8 +9,9 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
+import java.util.List;
+
 
 @Repository
 public interface FruitRepository extends JpaRepository<Fruit, Integer> {
@@ -23,5 +24,7 @@ public interface FruitRepository extends JpaRepository<Fruit, Integer> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT f FROM Fruit f WHERE f.fruitId = :fruitId")
     Optional<Fruit> findByIdForUpdate(@Param("fruitId") Integer fruitId);
+    List<Fruit> findByShop_ShopId(Integer shopId);
+
 }
 

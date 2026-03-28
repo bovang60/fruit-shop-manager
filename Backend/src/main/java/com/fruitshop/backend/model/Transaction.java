@@ -40,6 +40,6 @@ public class Transaction {
     }
 
     public enum PaymentStatus {
-        UNPAID, PAID, FAILED
+        PENDING, SUCCESS, FAILED, UNPAID, COMPLETED, PAID
     }
 }
