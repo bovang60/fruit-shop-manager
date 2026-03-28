@@ -43,12 +43,17 @@ function SellerRouteContent() {
   )
 }
 
+function RootRedirect() {
+  const user = getUserFromStorage()
+  return <Navigate to={user ? '/home' : '/login'} replace />
+}
+
 function App() {
   return (
     <BrowserRouter>
       <PopupProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<RootRedirect />} />
           {/* Public Routes */}
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -70,7 +75,7 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
-          <Route path="/seller-dashboard" element={<SellerDashboard />} />
+          <Route path="/seller-dashboard" element={<Navigate to="/seller/dashboard" replace />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
           <Route
             path="/seller/*"
