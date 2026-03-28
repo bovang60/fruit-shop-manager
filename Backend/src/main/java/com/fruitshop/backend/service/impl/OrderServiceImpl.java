@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
+import com.fruitshop.backend.service.OrderService;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -187,6 +189,32 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
 
     @Override
     @Transactional
+    public Order updateOrderStatus(Integer orderId, Order.OrderStatus newStatus) {
+        Order order = getOrderDetail(orderId);
+
+        // Logic chặn: Nếu đơn đã hủy hoặc đã hoàn thành thì không cho đổi trạng thái nữa
+        if (order.getStatus() == Order.OrderStatus.CANCELLED ||
+                order.getStatus() == Order.OrderStatus.COMPLETED) {
+            throw new IllegalStateException("Đơn hàng đã đóng, không thể thay đổi trạng thái!");
+        }
+
+        order.setStatus(newStatus);
+        return orderRepository.save(order);
+    }
+    @Override
+    public SalesReportDto getShopSalesReport(Integer shopId) {
+        Integer totalOrders = (int) orderRepository.countByShop_ShopId(shopId);
+        Integer successfulOrders = orderRepository.countByShopIdAndStatus(shopId, Order.OrderStatus.COMPLETED);
+        java.math.BigDecimal revenue = orderRepository.sumRevenueByShopId(shopId);
+        Integer quantitySold = orderRepository.sumQuantitySoldByShopId(shopId);
+
+        return SalesReportDto.builder()
+                .totalOrders(totalOrders)
+                .successfulOrders(successfulOrders)
+                .totalRevenue(revenue != null ? revenue : java.math.BigDecimal.ZERO)
+                .totalFruitsSold(quantitySold != null ? quantitySold : 0)
+                .build();
+    }
     public ApiResponse<List<OrderDto>> checkout(CheckoutRequestDto dto) {
         // 1. Find user
         Optional<User> userOpt = userRepository.findById(dto.getUserId());
@@ -598,5 +626,15 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         dto.setCreatedAt(order.getCreatedAt());
         dto.setItems(itemDtos);
         return dto;
+    }
+    @Override
+    public List<Order> getOrdersByShop(Integer shopId) {
+        return orderRepository.findByShop_ShopIdOrderByCreatedAtDesc(shopId);
+    }
+
+    @Override
+    public Order getOrderDetail(Integer orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng ID: " + orderId));
     }
 }

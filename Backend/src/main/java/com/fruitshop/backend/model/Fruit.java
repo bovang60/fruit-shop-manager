@@ -44,6 +44,6 @@ public class Fruit {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum FruitStatus {
-        AVAILABLE, OUT_OF_STOCK, HIDDEN
+        AVAILABLE, OUT_OF_STOCK, HIDDEN, DISCONTINUED
     }
 }
