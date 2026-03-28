@@ -1,5 +1,6 @@
 import React from 'react';
-import { Input, Badge, Avatar, Dropdown, MenuProps } from 'antd';
+import { Input, Badge, Avatar, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
 import { SearchOutlined, BellOutlined } from '@ant-design/icons';
 import './AdminHeader.css';
 
@@ -9,6 +10,7 @@ interface AdminHeaderViewProps {
     userName: string;
     userRole: string;
     avatarUrl: string;
+    onMenuClick: MenuProps['onClick'];
 }
 
 const AdminHeaderView: React.FC<AdminHeaderViewProps> = ({
@@ -16,7 +18,8 @@ const AdminHeaderView: React.FC<AdminHeaderViewProps> = ({
     userMenuItems,
     userName,
     userRole,
-    avatarUrl
+    avatarUrl,
+    onMenuClick
 }) => {
     return (
         <header className="admin-header">
@@ -38,7 +41,7 @@ const AdminHeaderView: React.FC<AdminHeaderViewProps> = ({
                         <div className="user-name">{userName}</div>
                         <div className="user-role">{userRole}</div>
                     </div>
-                    <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
+                    <Dropdown menu={{ items: userMenuItems, onClick: onMenuClick }} placement="bottomRight" arrow>
                         <Avatar
                             src={avatarUrl}
                             className="user-avatar"

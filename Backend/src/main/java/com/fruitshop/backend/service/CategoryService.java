@@ -12,4 +12,5 @@ public interface CategoryService {
     ApiResponse<CategoryDto> updateCategory(Integer id, CategoryDto categoryDto);
     ApiResponse<CategoryDto> toggleCategoryStatus(Integer id);
     ApiResponse<CategoryDto> deleteCategory(Integer id);
+    ApiResponse<java.util.List<CategoryDto>> getActiveCategoriesForFilter();
 }

@@ -1,0 +1,5 @@
+@import "../seller/SellerPageShared.css";
+
+.seller-fruit-table td input {
+    width: 100%;
+}

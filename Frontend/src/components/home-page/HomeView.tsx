@@ -4,64 +4,340 @@ import Footer from '../common/footer/Footer'
 import Pagination from '../common/pagination/Pagination'
 import './Home.css'
 
-type Product = { id: number; name: string; price: string; img?: string }
+type Product = { id: number; name: string; price: string; img?: string; desc?: string; tag?: string }
 
-type Props = {
+export type Props = {
   query: string
   onQueryChange: (v: string) => void
   products: Product[]
   displayed: Product[]
+  newArrivals: Product[]
+  trending: Product[]
   page: number
   totalPages: number
   onPageChange: (p: number) => void
+  onAddToCart: (productId: number) => void
+  loading: boolean
+  error: string
+  // Filter values
+  category?: string
+  minPrice?: number
+  maxPrice?: number
+  origin?: string
+  organic?: boolean
+  sortBy: string
+  sortOrder: string
+  // Filter handlers
+  onCategoryChange: (category: string) => void
+  onPriceChange: (minPrice: number, maxPrice: number) => void
+  onOriginChange: (origin: string | undefined) => void
+  onOrganicChange: (organic: boolean | undefined) => void
+  onSortChange: (sortBy: string, sortOrder: string) => void
+  onApplyFilters: () => void
 }
 
-export default function HomeView({ query, onQueryChange, products, displayed, page, totalPages, onPageChange }: Props) {
+export default function HomeView({ 
+  query, 
+  onQueryChange, 
+  displayed, 
+  newArrivals,
+  trending,
+  page, 
+  totalPages, 
+  onPageChange,
+  onAddToCart,
+  loading,
+  error,
+  // Filter values
+  category,
+  minPrice = 0,
+  maxPrice = 500000,
+  origin,
+  organic,
+  sortBy,
+  sortOrder,
+  // Filter handlers
+  onCategoryChange,
+  onPriceChange,
+  onOriginChange,
+  onOrganicChange,
+  onSortChange,
+  onApplyFilters
+}: Props) {
   return (
-    <main className="home-root">
-      <div className="home-container">
-        <Header />
-
-        <div className="topbar">
-          <div className="search-wrap">
-            <input className="search" placeholder="Tìm kiếm sản phẩm..." value={query} onChange={(e) => onQueryChange(e.target.value)} />
-          </div>
-          <div className="cart-wrap">
-            <button className="cart-btn">🧺 Giỏ hàng</button>
-          </div>
+    <div className="home-root">
+      {/* Sticky Header */}
+      <div className="home-header-sticky">
+        <div className="home-header-container">
+          <Header />
         </div>
+      </div>
 
-        <section className="home-actions">
-          <div className="home-main">
-            <div className="card">
-              <h2>Sản phẩm</h2>
-              <div className="products-grid">
-                {displayed.map((p) => (
-                  <article className="product-card" key={p.id}>
-                    <div className="product-media">🍊</div>
-                    <h3 className="product-name">{p.name}</h3>
-                    <div className="product-meta">
-                      <span className="price">{p.price}</span>
-                      <button className="add" onClick={() => alert('Đã thêm vào giỏ (mock)')}>Thêm</button>
+      {/* Main Layout */}
+      <main className="home-main-layout">
+        {/* Sidebar Filters */}
+        <aside className="home-sidebar-filters">
+          <div className="filters-sticky">
+            {/* Category Filter */}
+            <div className="filter-section">
+              <h3 className="filter-title">Category</h3>
+              <div className="filter-options">
+                <label className="filter-option">
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={!category} 
+                    onChange={() => onCategoryChange('')}
+                  />
+                  <span>All Fruits</span>
+                </label>
+                <label className="filter-option">
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={category === 'berries'}
+                    onChange={() => onCategoryChange('berries')}
+                  />
+                  <span>Berries</span>
+                </label>
+                <label className="filter-option">
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={category === 'citrus'}
+                    onChange={() => onCategoryChange('citrus')}
+                  />
+                  <span>Citrus</span>
+                </label>
+                <label className="filter-option">
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={category === 'tropical'}
+                    onChange={() => onCategoryChange('tropical')}
+                  />
+                  <span>Tropical</span>
+                </label>
+                <label className="filter-option">
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    checked={category === 'seasonal'}
+                    onChange={() => onCategoryChange('seasonal')}
+                  />
+                  <span>Seasonal</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div className="filter-section">
+              <h3 className="filter-title">Price Range</h3>
+              <div className="price-range-wrap">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="500000" 
+                  step="10000"
+                  value={maxPrice} 
+                  onChange={(e) => onPriceChange(minPrice, Number(e.target.value))}
+                  className="price-slider" 
+                />
+                <div className="price-labels">
+                  <span>₫{minPrice.toLocaleString('vi-VN')}</span>
+                  <span>₫{maxPrice.toLocaleString('vi-VN')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Origin */}
+            <div className="filter-section">
+              <h3 className="filter-title">Origin</h3>
+              <div className="filter-options">
+                <label className="filter-option">
+                  <input 
+                    type="radio" 
+                    name="origin" 
+                    checked={!origin} 
+                    onChange={() => onOriginChange(undefined)}
+                  />
+                  <span>Any</span>
+                </label>
+                <label className="filter-option">
+                  <input 
+                    type="radio" 
+                    name="origin" 
+                    checked={origin === 'local'}
+                    onChange={() => onOriginChange('local')}
+                  />
+                  <span>Local Farms</span>
+                </label>
+                <label className="filter-option">
+                  <input 
+                    type="radio" 
+                    name="origin" 
+                    checked={origin === 'imported'}
+                    onChange={() => onOriginChange('imported')}
+                  />
+                  <span>Imported</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Organic Status */}
+            <div className="filter-section">
+              <h3 className="filter-title">Organic Status</h3>
+              <label className="filter-option-organic">
+                <input 
+                  type="checkbox" 
+                  checked={organic === true} 
+                  onChange={(e) => onOrganicChange(e.target.checked ? true : undefined)}
+                />
+                <span>Certified Organic</span>
+              </label>
+            </div>
+
+            <button className="apply-filters-btn" onClick={onApplyFilters}>Apply Filters</button>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="home-content">
+          {/* Title and Sort */}
+          <div className="content-header">
+            <div>
+              <h1 className="content-title">Fresh Produce</h1>
+              <p className="content-subtitle">Showing {displayed.length} results for "All Fruits"</p>
+            </div>
+            <div className="content-actions">
+              <input
+                className="search-input"
+                placeholder="Search fruits..."
+                value={query}
+                onChange={(e) => onQueryChange(e.target.value)}
+              />
+              <select 
+                className="sort-select"
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortOrder] = e.target.value.split('-')
+                  onSortChange(newSortBy, newSortOrder)
+                }}
+              >
+                <option value="popularity-desc">Sort by: Popularity</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="createdAt-desc">Newest First</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Loading & Error States */}
+          {loading && (
+            <div className="loading-state">
+              <p>Đang tải sản phẩm...</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className="error-state">
+              <p style={{color: 'red'}}>{error}</p>
+            </div>
+          )}
+
+          {/* Products Grid */}
+          {!loading && !error && (
+            <div className="modern-products-grid">
+              {displayed.map((p) => (
+                <div key={p.id} className="modern-product-card">
+                  <div className="product-image-wrap">
+                    {p.img ? (
+                      <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
+                    ) : (
+                      <div className="product-image-placeholder">🍊</div>
+                    )}
+                    {p.tag && <div className="product-tag">{p.tag}</div>}
+                    <div className="product-favorite">❤</div>
+                  </div>
+                  <div className="product-info">
+                    <div className="product-details">
+                      <div>
+                        <p className="product-name-modern">{p.name}</p>
+                        {p.desc && <p className="product-desc">{p.desc}</p>}
+                      </div>
+                      <p className="product-price-modern">{p.price}</p>
                     </div>
-                  </article>
+                    <button 
+                      className="add-to-cart-btn" 
+                      onClick={() => onAddToCart(p.id)}
+                    >
+                      🛒 Add to Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          <div className="pagination-wrap">
+            <Pagination currentPage={page} totalPages={totalPages} onPageChange={onPageChange} />
+          </div>
+
+          {/* Additional Sections */}
+          <div className="extra-sections">
+            {/* Newest Arrivals */}
+            <section className="section-arrivals">
+              <div className="section-header">
+                <h2 className="section-title">Newest Arrivals</h2>
+                <div className="section-nav">
+                  <button className="nav-btn">←</button>
+                  <button className="nav-btn">→</button>
+                </div>
+              </div>
+              <div className="horizontal-scroll">
+                {newArrivals.map(p => (
+                  <div key={p.id} className="mini-card">
+                    <div className="mini-card-img" style={{backgroundImage: p.img ? `url('${p.img}')` : 'none'}}></div>
+                    <p className="mini-card-name">{p.name}</p>
+                    <p className="mini-card-price">{p.price}</p>
+                  </div>
                 ))}
               </div>
-              <Pagination currentPage={page} totalPages={totalPages} onPageChange={onPageChange} />
-            </div>
+            </section>
+
+            {/* Trending Now */}
+            <section className="section-trending">
+              <div className="section-header">
+                <div className="trending-header-left">
+                  <h2 className="section-title">Trending Now</h2>
+                  <span className="trending-badge">🔥 Hot Picks</span>
+                </div>
+                <div className="section-nav">
+                  <button className="nav-btn">←</button>
+                  <button className="nav-btn">→</button>
+                </div>
+              </div>
+              <div className="horizontal-scroll">
+                {trending.map(p => (
+                  <div key={p.id} className="mini-card">
+                    <div className="mini-card-img" style={{backgroundImage: p.img ? `url('${p.img}')` : 'none'}}></div>
+                    <p className="mini-card-name">{p.name}</p>
+                    <p className="mini-card-price">{p.price}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
+        </div>
+      </main>
 
-          <aside className="sidebar">
-            <div className="card">
-              <h3>Thông tin nhanh</h3>
-              <p>Đơn chờ: 2</p>
-              <p>Doanh thu hôm nay: ₫1,250,000</p>
-            </div>
-          </aside>
-        </section>
-
-        <Footer />
-      </div>
-    </main>
+      {/* Footer */}
+      <footer className="home-footer">
+        <div className="footer-container">
+          <Footer />
+        </div>
+      </footer>
+    </div>
   )
 }

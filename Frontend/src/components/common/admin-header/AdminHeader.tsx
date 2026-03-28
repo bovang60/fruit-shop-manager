@@ -1,7 +1,9 @@
 import React from 'react';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import AdminHeaderView from './AdminHeaderView';
+import { clearUserStorage, getUserFromStorage } from '../../../services/authService';
 
 interface AdminHeaderProps {
     placeholder?: string;
@@ -10,11 +12,17 @@ interface AdminHeaderProps {
 const AdminHeader: React.FC<AdminHeaderProps> = ({
     placeholder = "Search categories, products, or sellers..."
 }) => {
+    const navigate = useNavigate();
+    const user = getUserFromStorage();
+
     // Logic for user menu action
-    const handleMenuClick: MenuProps['onClick'] = (e) => {
-        if (e.key === 'logout') {
+    const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
+        if (key === 'logout') {
             console.log('Logging out...');
-            // Add logout logic here
+            clearUserStorage();
+            navigate('/login');
+        } else if (key === 'profile') {
+            navigate('/profile');
         }
     };
 
@@ -32,10 +40,10 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
         },
     ];
 
-    // Mock user data - could be from state/context later
+    // User data from storage or defaults
     const userData = {
-        name: 'Admin Executive',
-        role: 'SUPER ADMIN',
+        name: user?.fullName || 'Admin Executive',
+        role: user?.role || 'SUPER ADMIN',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
     };
 
@@ -46,6 +54,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
             userName={userData.name}
             userRole={userData.role}
             avatarUrl={userData.avatar}
+            onMenuClick={handleMenuClick}
         />
     );
 };
