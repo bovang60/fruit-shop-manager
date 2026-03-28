@@ -4,14 +4,13 @@ import com.fruitshop.backend.dto.*;
 import com.fruitshop.backend.model.*;
 import com.fruitshop.backend.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -21,17 +20,16 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
-    private final com.fruitshop.backend.repository.ShippingMethodRepository shippingMethodRepository;
+    private final ShippingMethodRepository shippingMethodRepository;
 
     @Override
     @Transactional
     public ApiResponse<OrderResponse> createOrder(Integer userId, OrderRequest request) {
-        System.out.println("createOrder -> userId: " + userId);
-        
+        log.info("createOrder -> userId: {}", userId);
+
         // Fetch user from db
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
@@ -40,46 +38,63 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         if (request.getShippingMethodId() == null) {
             return ApiResponse.error("Shipping method is required");
         }
-        
-        com.fruitshop.backend.model.ShippingMethod shippingMethod = shippingMethodRepository.findById(request.getShippingMethodId()).orElse(null);
+
+        ShippingMethod shippingMethod = shippingMethodRepository.findById(request.getShippingMethodId()).orElse(null);
         if (shippingMethod == null) {
             return ApiResponse.error("Shipping method not found");
         }
-        
+
         if (Boolean.FALSE.equals(shippingMethod.getIsAvailable())) {
             return ApiResponse.error("Shipping method is not available");
         }
-        
+
         BigDecimal shippingFee = shippingMethod.getFixedFee() != null ? shippingMethod.getFixedFee() : BigDecimal.ZERO;
 
-        // Fetch user's actual cart
-        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(userId);
-        if (cartOpt.isEmpty()) {
-            return ApiResponse.error("Cart not found. Cannot create order.");
-        }
-        
-        Cart cart = cartOpt.get();
-        List<CartItem> cartItems = cartItemRepository.findByCart(cart);
-
+        // Fetch user's cart items
+        List<Cart> cartItems = cartRepository.findByCustomerUserIdAndStatus(userId, Cart.STATUS_IN_CART);
         if (cartItems.isEmpty()) {
             return ApiResponse.error("Cart is empty. Cannot create order.");
         }
-        
-        System.out.println("createOrder -> cartItems count: " + cartItems.size());
+
+        log.info("createOrder -> cartItems count: {}", cartItems.size());
+
+        // --- SORT product IDs and lock to prevent deadlock + race condition ---
+        List<Integer> productIds = cartItems.stream()
+                .map(c -> c.getProduct().getProductId())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        List<Product> lockedProducts = productRepository.findByIdsForUpdate(productIds);
+        Map<Integer, Product> productMap = lockedProducts.stream()
+                .collect(Collectors.toMap(Product::getProductId, p -> p));
+
+        // Validate stock for all items
+        for (Cart cartItem : cartItems) {
+            Product lockedProduct = productMap.get(cartItem.getProduct().getProductId());
+            if (lockedProduct == null) {
+                return ApiResponse.error("Product not found: " + cartItem.getProduct().getProductId());
+            }
+            if (lockedProduct.getStock() < cartItem.getQuantity()) {
+                return ApiResponse.error("Not enough stock for \"" + lockedProduct.getName()
+                        + "\". Available: " + lockedProduct.getStock()
+                        + ", Requested: " + cartItem.getQuantity());
+            }
+        }
 
         // 1. Calculate totalAmount
         BigDecimal subTotal = BigDecimal.ZERO;
-        for (CartItem item : cartItems) {
-            if (item.getProduct() != null && item.getProduct().getPrice() != null) {
-                subTotal = subTotal.add(item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+        for (Cart item : cartItems) {
+            Product p = productMap.get(item.getProduct().getProductId());
+            if (p != null && p.getPrice() != null) {
+                subTotal = subTotal.add(p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
             }
         }
-        
-        BigDecimal totalAmount = subTotal.add(shippingFee);
-        
-        System.out.println("createOrder -> subTotal: " + subTotal + ", shippingFee: " + shippingFee + ", totalAmount: " + totalAmount);
 
-        // 2. To save Order in this existing architecture, we MUST create a Transaction first (nullable = false)
+        BigDecimal totalAmount = subTotal.add(shippingFee);
+        log.info("createOrder -> subTotal: {}, shippingFee: {}, totalAmount: {}", subTotal, shippingFee, totalAmount);
+
+        // 2. Create Transaction
         Transaction transaction = new Transaction();
         transaction.setUser(user);
         transaction.setTotalPayment(totalAmount);
@@ -89,27 +104,21 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         } catch (Exception e) {
             transaction.setPaymentMethod(Transaction.PaymentMethod.COD);
         }
-        
-        // Save the transaction to avoid TransientPropertyValueException
         transaction = transactionRepository.save(transaction);
 
-        // 3. We also need a Shop (nullable = false). Pick from cart or DB.
+        // 3. Get shop from first cart item
         Shop shop = null;
         if (cartItems.get(0).getProduct() != null && cartItems.get(0).getProduct().getShop() != null) {
             shop = cartItems.get(0).getProduct().getShop();
-        } else {
-            List<Product> allProducts = productRepository.findAll();
-            if (!allProducts.isEmpty() && allProducts.get(0).getShop() != null) {
-                shop = allProducts.get(0).getShop();
-            }
+        }
+        if (shop == null) {
+            return ApiResponse.error("Product is not assigned to any shop");
         }
 
-        // 4. Create and Save Order Entity using existing structure
-        System.out.println("Preparing to save order... totalAmount: " + totalAmount);
-        
+        // 4. Create and Save Order Entity
         Order order = new Order();
         order.setTransaction(transaction);
-        order.setShop(shop); 
+        order.setShop(shop);
         order.setUser(user);
         order.setReceiverName(request.getCustomerName());
         order.setReceiverPhone(request.getPhone());
@@ -123,65 +132,60 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         Order savedOrder;
         try {
             savedOrder = orderRepository.save(order);
-            System.out.println("Saved order successfully! ID: " + savedOrder.getOrderId());
+            log.info("Saved order successfully! ID: {}", savedOrder.getOrderId());
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to save order: " + e.getMessage());
+            log.error("Failed to save order", e);
             return ApiResponse.error("Error saving order");
         }
 
-        // 4b. Create OrderItem from Cart
-        List<OrderItem> orderItems = new java.util.ArrayList<>();
-        for (CartItem cartItem : cartItems) {
-            if (cartItem.getProduct() == null) {
-                return ApiResponse.error("CartItem product is missing");
-            }
+        // 4b. Create OrderItems + DEDUCT STOCK
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (Cart cartItem : cartItems) {
+            Product product = productMap.get(cartItem.getProduct().getProductId());
 
-            Optional<Product> productOpt = productRepository.findById(cartItem.getProduct().getProductId());
-            if (productOpt.isEmpty()) {
-                return ApiResponse.error("Product with ID " + cartItem.getProduct().getProductId() + " not found");
-            }
-            Product product = productOpt.get();
-
+            // Create OrderItem
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(savedOrder);
-            orderItem.setProduct(product); // Setting entity relationship
+            orderItem.setProduct(product);
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPrice(product.getPrice());
-            
-            System.out.println("createOrder -> productId: " + cartItem.getProduct().getProductId());
-            
             orderItems.add(orderItem);
-        }
-        
-        System.out.println("SavedOrder ID: " + savedOrder.getOrderId());
-        System.out.println("Number of orderItems: " + orderItems.size());
-        
-        try {
-            orderItemRepository.saveAll(orderItems);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ApiResponse.error("Error saving order items");
-        }
-        
-        // 5. CLEAR CART (Enterprise Standard)
-        cartItemRepository.deleteByCart(cart);
-        System.out.println("createOrder -> Cart cleared successfully for userId: " + userId);
-        
-        // 6. Log SELLER notification
-        java.util.List<User> sellers = userRepository.findByRole(User.Role.SELLER);
-        for (User seller : sellers) {
-            System.out.println("New order " + savedOrder.getOrderId() + " created. Seller " + seller.getUserId() + " notified.");
+
+            // DEDUCT STOCK (FIX: was missing before)
+            product.setStock(product.getStock() - cartItem.getQuantity());
+            if (product.getSoldCount() != null) {
+                product.setSoldCount(product.getSoldCount() + cartItem.getQuantity());
+            } else {
+                product.setSoldCount(cartItem.getQuantity());
+            }
         }
 
-        // 5. Build Response
+        try {
+            orderItemRepository.saveAll(orderItems);
+            productRepository.saveAll(lockedProducts); // Batch save stock changes
+        } catch (Exception e) {
+            log.error("Error saving order items or updating stock", e);
+            return ApiResponse.error("Error saving order items");
+        }
+
+        // 5. Delete cart items after successful checkout
+        cartRepository.deleteAll(cartItems);
+        log.info("createOrder -> {} cart items removed from cart for userId: {}", cartItems.size(), userId);
+
+        // 6. Log SELLER notification
+        List<User> sellers = userRepository.findByRole(User.Role.SELLER);
+        for (User seller : sellers) {
+            log.info("New order {} created. Seller {} notified.", savedOrder.getOrderId(), seller.getUserId());
+        }
+
+        // 7. Build Response
         OrderResponse response = new OrderResponse();
         response.setOrderId(savedOrder.getOrderId());
         response.setTotalAmount(totalAmount);
         response.setShippingFee(shippingFee);
         response.setStatus(savedOrder.getStatus().name());
         response.setCreatedAt(savedOrder.getCreatedAt());
-        
+
         return ApiResponse.success("Order saved successfully", response);
     }
 
@@ -195,32 +199,35 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         }
         User user = userOpt.get();
 
-        // 2. Find cart and validate non-empty
-        Optional<Cart> cartOpt = cartRepository.findByShellerUserId(dto.getUserId());
-        if (cartOpt.isEmpty()) {
-            return ApiResponse.error("Cart not found");
-        }
-        Cart cart = cartOpt.get();
-
-        List<CartItem> cartItems = cartItemRepository.findByCart(cart);
+        // 2. Find pending cart items for user
+        List<Cart> cartItems = cartRepository.findByCustomerUserIdAndStatus(dto.getUserId(), Cart.STATUS_IN_CART);
         if (cartItems.isEmpty()) {
             return ApiResponse.error("Cart is empty");
         }
 
-        // 3. Lock fruit rows and validate stock (PESSIMISTIC_WRITE prevents race condition)
-        for (CartItem cartItem : cartItems) {
-            Product lockedProduct = productRepository.findByIdForUpdate(cartItem.getProduct().getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getProduct().getProductId()));
+        // 3. Sort product IDs and lock (PESSIMISTIC_WRITE, prevents deadlock + race condition)
+        List<Integer> productIds = cartItems.stream()
+                .map(c -> c.getProduct().getProductId())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
 
+        List<Product> lockedProducts = productRepository.findByIdsForUpdate(productIds);
+        Map<Integer, Product> productMap = lockedProducts.stream()
+                .collect(Collectors.toMap(Product::getProductId, p -> p));
+
+        // Validate stock
+        for (Cart cartItem : cartItems) {
+            Product lockedProduct = productMap.get(cartItem.getProduct().getProductId());
+            if (lockedProduct == null) {
+                throw new RuntimeException("Product not found: " + cartItem.getProduct().getProductId());
+            }
             if (lockedProduct.getStock() < cartItem.getQuantity()) {
                 throw new RuntimeException(
                         "Not enough stock for \"" + lockedProduct.getName()
                                 + "\". Available: " + lockedProduct.getStock()
                                 + ", Requested: " + cartItem.getQuantity());
             }
-
-            // Update the cartItem's fruit reference to the locked version
-            cartItem.setProduct(lockedProduct);
         }
 
         // 4. Parse payment method
@@ -232,21 +239,22 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         }
 
         // 5. Group cart items by shop
-        List<CartItem> invalidShopItems = cartItems.stream()
+        List<Cart> invalidShopItems = cartItems.stream()
                 .filter(item -> item.getProduct() == null || item.getProduct().getShop() == null)
                 .toList();
         if (!invalidShopItems.isEmpty()) {
             return ApiResponse.error("Some products are not mapped to any shop");
         }
 
-        Map<Integer, List<CartItem>> itemsByShop = cartItems.stream()
+        Map<Integer, List<Cart>> itemsByShop = cartItems.stream()
                 .collect(Collectors.groupingBy(item -> item.getProduct().getShop().getShopId()));
 
         // 6. Calculate total payment
         BigDecimal totalPayment = BigDecimal.ZERO;
-        for (CartItem item : cartItems) {
+        for (Cart item : cartItems) {
+            Product p = productMap.get(item.getProduct().getProductId());
             totalPayment = totalPayment.add(
-                    item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                    p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
         // 7. Create transaction FIRST
@@ -262,15 +270,16 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         // 8. For each shop group: create Order, then OrderItems, deduct stock
         List<OrderDto> orderDtos = new ArrayList<>();
 
-        for (Map.Entry<Integer, List<CartItem>> entry : itemsByShop.entrySet()) {
-            List<CartItem> shopItems = entry.getValue();
+        for (Map.Entry<Integer, List<Cart>> entry : itemsByShop.entrySet()) {
+            List<Cart> shopItems = entry.getValue();
             Shop shop = shopItems.get(0).getProduct().getShop();
 
             // Calculate sub total for this shop's order
             BigDecimal subTotal = BigDecimal.ZERO;
-            for (CartItem item : shopItems) {
+            for (Cart item : shopItems) {
+                Product p = productMap.get(item.getProduct().getProductId());
                 subTotal = subTotal.add(
-                        item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                        p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
             }
 
             // Save Order FIRST (before OrderItems — FK constraint)
@@ -288,9 +297,10 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
             order = orderRepository.save(order);
 
             // Save OrderItems and deduct stock
+            List<OrderItem> batchOrderItems = new ArrayList<>();
             List<OrderItemDto> orderItemDtos = new ArrayList<>();
-            for (CartItem cartItem : shopItems) {
-                Product product = cartItem.getProduct();
+            for (Cart cartItem : shopItems) {
+                Product product = productMap.get(cartItem.getProduct().getProductId());
 
                 // Create OrderItem
                 OrderItem orderItem = new OrderItem();
@@ -298,11 +308,10 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
                 orderItem.setProduct(product);
                 orderItem.setQuantity(cartItem.getQuantity());
                 orderItem.setPrice(product.getPrice());
-                orderItemRepository.save(orderItem);
+                batchOrderItems.add(orderItem);
 
-                // Deduct stock (fruit is already locked by PESSIMISTIC_WRITE)
+                // Deduct stock (already locked by PESSIMISTIC_WRITE)
                 product.setStock(product.getStock() - cartItem.getQuantity());
-                productRepository.save(product);
 
                 // Build DTO
                 OrderItemDto itemDto = new OrderItemDto();
@@ -315,6 +324,9 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
                 itemDto.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
                 orderItemDtos.add(itemDto);
             }
+
+            // Batch save
+            orderItemRepository.saveAll(batchOrderItems);
 
             // Build OrderDto
             OrderDto orderDto = new OrderDto();
@@ -341,8 +353,11 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
             orderDtos.add(orderDto);
         }
 
-        // 9. Clear cart (prevent duplicate order)
-        cartItemRepository.deleteByCart(cart);
+        // 9. Batch save product stock changes
+        productRepository.saveAll(lockedProducts);
+
+        // 10. Delete cart items as they are now Orders
+        cartRepository.deleteAll(cartItems);
 
         return ApiResponse.success("Order placed successfully", orderDtos);
     }
@@ -365,11 +380,10 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
 
             List<OrderDto> orderDtos = new ArrayList<>();
             for (Order order : orders) {
-                log.info("getOrderHistory -> processing orderId: {}", order.getOrderId());
                 List<OrderItem> items = orderItemRepository.findByOrderOrderId(order.getOrderId());
                 if (items == null || items.isEmpty()) {
                     log.warn("getOrderHistory -> orderId {} has no items, skipping", order.getOrderId());
-                    continue; // Skip invalid orders
+                    continue;
                 }
                 orderDtos.add(buildOrderDto(order, items));
             }
@@ -422,6 +436,13 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         }
 
         Order order = orderOpt.get();
+
+        // FIX: Verify seller owns this order's shop
+        if (order.getShop() == null || order.getShop().getOwner() == null
+                || !order.getShop().getOwner().getUserId().equals(userId)) {
+            return ApiResponse.error("This order does not belong to your shop");
+        }
+
         if (order.getStatus() != Order.OrderStatus.PENDING) {
             return ApiResponse.error("Order cannot be confirmed");
         }
@@ -435,7 +456,7 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
 
     @Override
     @Transactional
-    public ApiResponse<String> updateOrderStatus(Integer orderId, com.fruitshop.backend.dto.OrderStatusDto dto, Integer userId) {
+    public ApiResponse<String> updateOrderStatus(Integer orderId, OrderStatusDto dto, Integer userId) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty() || userOpt.get().getRole() != User.Role.SELLER) {
             return ApiResponse.error("Permission denied");
@@ -447,6 +468,13 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         }
 
         Order order = orderOpt.get();
+
+        // FIX: Verify seller owns this order's shop
+        if (order.getShop() == null || order.getShop().getOwner() == null
+                || !order.getShop().getOwner().getUserId().equals(userId)) {
+            return ApiResponse.error("This order does not belong to your shop");
+        }
+
         Order.OrderStatus currentStatus = order.getStatus();
         Order.OrderStatus newStatus;
 
@@ -490,10 +518,11 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
             return ApiResponse.error("Only pending orders can be cancelled. Current status: " + order.getStatus());
         }
 
-        // Restore stock
+        // FIX: Restore stock with PESSIMISTIC LOCK to prevent lost update
         List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
         for (OrderItem item : items) {
-            Product product = item.getProduct();
+            Product product = productRepository.findByIdForUpdate(item.getProduct().getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProduct().getProductId()));
             product.setStock(product.getStock() + item.getQuantity());
             productRepository.save(product);
         }
@@ -537,7 +566,7 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         order.setStatus(Order.OrderStatus.COMPLETED);
         orderRepository.save(order);
 
-        System.out.println("User " + userId + " completed order " + orderId + " (" + previousStatus + " → COMPLETED)");
+        log.info("User {} completed order {} ({} → COMPLETED)", userId, orderId, previousStatus);
 
         return ApiResponse.success("Order completed successfully", null);
     }
@@ -552,34 +581,34 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
                     log.warn("Skipped orderItemId={} because Product is null", item.getOrderItemId());
                     continue;
                 }
-                
+
                 Product product = item.getProduct();
-                
+
                 OrderItemDto dto = new OrderItemDto();
                 dto.setOrderItemId(item.getOrderItemId());
                 dto.setProductId(product.getProductId());
                 dto.setProductName(product.getName() != null ? product.getName() : "Unknown Product");
                 dto.setImageUrl(product.getImageUrl() != null ? product.getImageUrl() : "");
-                
+
                 Integer quantity = item.getQuantity() != null ? item.getQuantity() : 0;
                 BigDecimal price = item.getPrice() != null ? item.getPrice() : BigDecimal.ZERO;
-                
+
                 dto.setQuantity(quantity);
                 dto.setPrice(price);
                 dto.setSubtotal(price.multiply(BigDecimal.valueOf(quantity)));
-                
+
                 itemDtos.add(dto);
             }
         }
 
         OrderDto dto = new OrderDto();
         dto.setOrderId(order.getOrderId());
-        
+
         if (order.getShop() != null) {
             dto.setShopId(order.getShop().getShopId());
             dto.setShopName(order.getShop().getShopName() != null ? order.getShop().getShopName() : "Unknown Shop");
         }
-        
+
         dto.setReceiverName(order.getReceiverName() != null ? order.getReceiverName() : "");
         dto.setReceiverPhone(order.getReceiverPhone() != null ? order.getReceiverPhone() : "");
         dto.setShippingAddress(order.getShippingAddress() != null ? order.getShippingAddress() : "");

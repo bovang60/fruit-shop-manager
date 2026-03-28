@@ -22,4 +22,8 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
 
     @Query("SELECT COUNT(f) FROM Feedback f WHERE f.product.productId = :productId")
     Long countByProductId(@Param("productId") Integer productId);
+
+    /** Cart-based feedback duplicate check */
+    Optional<Feedback> findByCart_CartIdAndProduct_ProductIdAndUser_UserId(
+            Integer cartId, Integer productId, Integer userId);
 }
