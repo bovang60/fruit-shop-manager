@@ -48,6 +48,8 @@ export default function HeaderView({
   onNotifToggle,
   onMarkAllRead,
   onNotifOrderClick,
+  isAdmin = false,
+  onNavigateToAdminDashboard,
 }: Props) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
