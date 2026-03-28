@@ -1,0 +1,147 @@
+@import "../seller/SellerPageShared.css";
+
+.report-period-label {
+    margin: 0.35rem 0 0;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.report-chart-card {
+    padding: 1.5rem;
+}
+
+.report-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.report-chart-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: #212b36;
+}
+
+.report-chart-header p {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    color: #637381;
+}
+
+.report-legend {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+}
+
+.legend-dot.orders {
+    background: #22c55e;
+}
+
+.legend-dot.revenue {
+    background: #2563eb;
+}
+
+.report-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.75rem;
+    align-items: end;
+    min-height: 320px;
+}
+
+.report-chart-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.report-bar-wrap {
+    height: 220px;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0 0.15rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.report-bar {
+    width: 42%;
+    min-height: 4px;
+    border-radius: 8px 8px 0 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.report-bar:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.report-bar.orders {
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+}
+
+.report-bar.revenue {
+    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+}
+
+.report-month-label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.report-month-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+@media (max-width: 1200px) {
+    .report-chart-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .report-chart-header {
+        flex-direction: column;
+    }
+
+    .report-chart-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .report-chart-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
