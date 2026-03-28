@@ -28,11 +28,11 @@ export default function OrderDetail() {
       if (response.resultCd === 0 && response.data) {
         setOrder(response.data);
       } else {
-        showError(response.message || 'Could not load order details');
+        showError(response.message || 'Không thể tải chi tiết đơn hàng');
       }
     } catch (error) {
       console.error('Error fetching order detail:', error);
-      showError('Connection error while loading order details');
+      showError('Lỗi kết nối khi tải chi tiết đơn hàng');
     } finally {
       setLoading(false);
     }
@@ -78,19 +78,19 @@ export default function OrderDetail() {
 
   const handleCancelOrder = () => {
     if (!order) return;
-    showConfirm('Are you sure you want to cancel this order?', async () => {
+    showConfirm('Bạn có chắc chắn muốn hủy đơn hàng này?', async () => {
       setActionLoading(true);
       try {
         const response = await cancelOrder(order.orderId, userId);
         if (response.resultCd === 0) {
-          showNotice('Order cancelled successfully');
+          showNotice('Đã hủy đơn hàng thành công');
           fetchOrderDetail();
         } else {
-          showError(response.message || 'Could not cancel order');
+          showError(response.message || 'Không thể hủy đơn hàng');
         }
       } catch (error) {
         console.error('Error cancelling order:', error);
-        showError('Connection error while cancelling order');
+        showError('Lỗi kết nối khi hủy đơn hàng');
       } finally {
         setActionLoading(false);
       }
@@ -99,19 +99,19 @@ export default function OrderDetail() {
 
   const handleCompleteOrder = () => {
     if (!order) return;
-    showConfirm('Confirm order completion?', async () => {
+    showConfirm('Xác nhận hoàn thành đơn hàng?', async () => {
       setActionLoading(true);
       try {
         const response = await completeOrder(order.orderId, userId);
         if (response.resultCd === 0) {
-          showNotice('Order marked as completed');
+          showNotice('Đơn hàng đã được hoàn thành');
           fetchOrderDetail();
         } else {
-          showError(response.message || 'Could not complete order');
+          showError(response.message || 'Không thể hoàn thành đơn hàng');
         }
       } catch (error) {
         console.error('Error completing order:', error);
-        showError('Connection error while completing order');
+        showError('Lỗi kết nối khi hoàn thành đơn hàng');
       } finally {
         setActionLoading(false);
       }

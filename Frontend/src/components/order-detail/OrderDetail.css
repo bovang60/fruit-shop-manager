@@ -150,13 +150,15 @@
 .od-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .od-btn-cancel {
-  background-color: #dc3545;
-  color: white;
+  background-color: #dc3545 !important;
+  color: #ffffff !important;
+  border: 1px solid #c82333 !important;
 }
 
 .od-btn-complete {
-  background-color: #28a745;
-  color: white;
+  background-color: #28a745 !important;
+  color: #ffffff !important;
+  border: 1px solid #218838 !important;
 }
 
 .od-not-found {

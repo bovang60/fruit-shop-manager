@@ -139,7 +139,7 @@ export default function ProductDetailView({
                       <button 
                         className="qty-btn" 
                         onClick={handleDecrease}
-                        disabled={quantity <= 1}
+                        disabled={quantity <= 1 || addingToCart}
                       >
                         -
                       </button>
@@ -150,11 +150,12 @@ export default function ProductDetailView({
                         className="qty-input"
                         min="1"
                         max={currentStock}
+                        disabled={addingToCart}
                       />
                       <button 
                         className="qty-btn" 
                         onClick={handleIncrease}
-                        disabled={quantity >= currentStock}
+                        disabled={quantity >= currentStock || addingToCart}
                       >
                         +
                       </button>
@@ -214,7 +215,7 @@ export default function ProductDetailView({
                         style={{ backgroundImage: rp.imageUrl ? `url('${rp.imageUrl}')` : 'none' }}
                       />
                       <div className="related-info">
-                        <p className="related-name" title={rp.name ?? "Product"}>{rp.name ?? "Product Name"}</p>
+                        <p className="related-name" title={rp.name ?? "Sản phẩm"}>{rp.name ?? "Tên sản phẩm"}</p>
                         <p className="related-price">{formatPrice(rp.price)}</p>
                       </div>
                     </div>
