@@ -40,12 +40,15 @@ const SellerDashboard = ({ shopId }: { shopId: number }) => {
                 console.error("Dashboard load failed", error);
                 showError("Không thể kết nối đến hệ thống. Vui lòng thử lại.", "Lỗi");
             } finally {
-                // Giả lập delay 600ms theo checklist
-                setTimeout(() => setIsLoading(false), 600);
+                setIsLoading(false);
             }
         };
 
-        if (shopId) fetchDashboardData();
+        if (shopId) {
+            fetchDashboardData();
+        } else {
+            setIsLoading(false);
+        }
     }, [shopId]);
 
     return (
