@@ -14,7 +14,11 @@ import AdminProfilePage from './components/admin-profile/AdminProfile'
 import { PopupProvider } from './components/common/popup'
 import ProtectedRoute from './components/common/protected-route/ProtectedRoute'
 import './App.css'
-
+import Cart from './components/cart/Cart'
+import Checkout from './components/checkout/Checkout'
+import OrderHistory from './components/order-history/OrderHistory'
+import OrderDetail from './components/order-detail/OrderDetail'
+import SellerDashboard from './components/seller-dashboard/SellerDashboard'
 function App() {
   return (
     <BrowserRouter>
@@ -38,6 +42,12 @@ function App() {
           <Route path="/category-management" element={<ProtectedRoute requiredRole="ADMIN"><CategoryManagement /></ProtectedRoute>} />
           <Route path="/shop-management" element={<ProtectedRoute requiredRole="ADMIN"><ShopManagement /></ProtectedRoute>} />
           <Route path="/user-management" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
+          {/*Cart Routes*/}
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/order-detail/:orderId" element={<OrderDetail />} />
+          <Route path="/seller-dashboard" element={<SellerDashboard />} />
         </Routes>
       </PopupProvider>
     </BrowserRouter>

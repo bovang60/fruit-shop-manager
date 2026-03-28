@@ -136,7 +136,7 @@ export interface Category {
     name: string;
     description: string;
     status: "ACTIVE" | "INACTIVE";
-    fruitCount: number;
+    productCount: number;
 }
 
 export interface CategoryRequest {
@@ -148,7 +148,7 @@ export interface CategoryRequest {
 /**
  * Get all categories
  */
-export async function getCategories(params?: { search?: string; sortByFruitCount?: boolean }) {
+export async function getCategories(params?: { search?: string; sortByProductCount?: boolean }) {
     const url = buildUrlWithParams("/api/categories", params);
     return callApi<undefined, ApiResponse<Category[]>>(url);
 }
