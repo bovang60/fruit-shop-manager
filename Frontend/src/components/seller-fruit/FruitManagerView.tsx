@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './FruitManager.css';
 import type { SellerProductDto } from '../../services/sellerFruitService';
+import Pagination from '../common/pagination/Pagination';
 
 export type FruitData = SellerProductDto;
 
@@ -29,6 +30,8 @@ export type Props = {
     onRefresh: () => void;
 };
 
+const ITEMS_PER_PAGE = 10;
+
 const FruitManagerView: React.FC<Props> = ({
     fruits,
     isLoading,
@@ -45,12 +48,25 @@ const FruitManagerView: React.FC<Props> = ({
     onRefresh,
 }) => {
     const [isAdding, setIsAdding] = React.useState(false);
+    const [currentPage, setCurrentPage] = React.useState(1);
     const [newFruit, setNewFruit] = React.useState({
         name: '',
         price: '',
         stock: '',
         imageUrl: '',
     });
+
+    const totalPages = Math.max(1, Math.ceil(fruits.length / ITEMS_PER_PAGE));
+    const paginatedFruits = fruits.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE,
+    );
+
+    React.useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
 
     if (isLoading) return <div className="loading">Đang tải kho hàng...</div>;
 
@@ -168,7 +184,7 @@ const FruitManagerView: React.FC<Props> = ({
                                 <td colSpan={5} className="seller-empty-state">Chưa có sản phẩm nào trong cửa hàng.</td>
                             </tr>
                         ) : (
-                            fruits.map((fruit) => {
+                            paginatedFruits.map((fruit) => {
                                 const isActive = fruit.isActive !== false;
                                 const isEditing = editingFruitId === fruit.productId;
 
@@ -277,6 +293,11 @@ const FruitManagerView: React.FC<Props> = ({
                         )}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </section>
         </div>
     );

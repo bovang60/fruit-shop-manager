@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Voucher.css';
+import Pagination from '../common/pagination/Pagination';
 
 export type VoucherData = {
     voucherId: number;
@@ -33,6 +34,8 @@ export type Props = {
     onRefresh: () => void;
 };
 
+const ITEMS_PER_PAGE = 10;
+
 const VoucherView: React.FC<Props> = ({
     vouchers,
     isLoading,
@@ -47,12 +50,25 @@ const VoucherView: React.FC<Props> = ({
     onRefresh,
 }) => {
     const [isAdding, setIsAdding] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
     const [newVoucher, setNewVoucher] = useState({
         code: '',
         discountValue: 0,
         minOrderValue: 0,
         expiryDate: ''
     });
+
+    const totalPages = Math.max(1, Math.ceil(vouchers.length / ITEMS_PER_PAGE));
+    const paginatedVouchers = vouchers.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE,
+    );
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
 
     if (isLoading) return <div className="loading">Đang tải danh sách ưu đãi...</div>;
 
@@ -164,7 +180,7 @@ const VoucherView: React.FC<Props> = ({
                                 <td colSpan={5} className="seller-empty-state">Chưa có voucher nào được tạo.</td>
                             </tr>
                         ) : (
-                            vouchers.map((voucher) => {
+                            paginatedVouchers.map((voucher) => {
                                 const isEditing = editingVoucherId === voucher.voucherId;
 
                                 return (
@@ -244,6 +260,11 @@ const VoucherView: React.FC<Props> = ({
                         )}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </section>
         </div>
     );
