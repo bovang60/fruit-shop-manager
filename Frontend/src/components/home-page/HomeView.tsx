@@ -2,6 +2,7 @@ import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
 import Pagination from '../common/pagination/Pagination'
 import LoadingModal from '../common/loading/LoadingModal'
+import type { HomeCategory } from './Home.types'
 import './Home.css'
 
 type Product = { id: number; name: string; price: string; img?: string; desc?: string; tag?: string }
@@ -13,6 +14,7 @@ export type Props = {
   displayed: Product[]
   newArrivals: Product[]
   trending: Product[]
+  categories: HomeCategory[]
   page: number
   totalPages: number
   onPageChange: (p: number) => void
@@ -43,6 +45,7 @@ export default function HomeView({
   displayed,
   newArrivals,
   trending,
+  categories,
   page,
   totalPages,
   onPageChange,
@@ -93,51 +96,17 @@ export default function HomeView({
                   />
                   <span>Tất cả</span>
                 </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="category"
-                    checked={category === '5'}
-                    onChange={() => onCategoryChange('5')}
-                  />
-                  <span>Hoa quả nhập khẩu</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="category"
-                    checked={category === '6'}
-                    onChange={() => onCategoryChange('6')}
-                  />
-                  <span>Hoa quả nội địa</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="category"
-                    checked={category === '7'}
-                    onChange={() => onCategoryChange('7')}
-                  />
-                  <span>Giỏ quà trái cây</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="category"
-                    checked={category === '8'}
-                    onChange={() => onCategoryChange('8')}
-                  />
-                  <span>Trái cây sấy &amp; Hạt</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="category"
-                    checked={category === '9'}
-                    onChange={() => onCategoryChange('9')}
-                  />
-                  <span>Nước ép tươi</span>
-                </label>
+                {categories.map((item) => (
+                  <label key={item.id} className="filter-option">
+                    <input
+                      type="radio"
+                      name="category"
+                      checked={category === item.id}
+                      onChange={() => onCategoryChange(item.id)}
+                    />
+                    <span>{item.name}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -160,55 +129,6 @@ export default function HomeView({
                 </div>
               </div>
             </div>
-
-            {/* Origin */}
-            <div className="filter-section">
-              <h3 className="filter-title">Xuất xứ</h3>
-              <div className="filter-options">
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="origin"
-                    checked={!origin}
-                    onChange={() => onOriginChange(undefined)}
-                  />
-                  <span>Tất cả</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="origin"
-                    checked={origin === 'local'}
-                    onChange={() => onOriginChange('local')}
-                  />
-                  <span>Nông sản trong nước</span>
-                </label>
-                <label className="filter-option">
-                  <input
-                    type="radio"
-                    name="origin"
-                    checked={origin === 'imported'}
-                    onChange={() => onOriginChange('imported')}
-                  />
-                  <span>Hàng nhập khẩu</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Organic Status */}
-            <div className="filter-section">
-              <h3 className="filter-title">Chứng nhận hữu cơ</h3>
-              <label className="filter-option-organic">
-                <input
-                  type="checkbox"
-                  checked={organic === true}
-                  onChange={(e) => onOrganicChange(e.target.checked ? true : undefined)}
-                />
-                <span>Sản phẩm hữu cơ</span>
-              </label>
-            </div>
-
-
           </div>
         </aside>
 
