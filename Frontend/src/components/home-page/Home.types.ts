@@ -6,6 +6,11 @@
 
 import type { ProductDto, ProductSummaryDto } from '../../services/productService'
 
+export interface HomeCategory {
+  id: string
+  name: string
+}
+
 // ============= UI State Types =============
 
 /**
