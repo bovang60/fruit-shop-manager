@@ -1,4 +1,4 @@
-import { callApi, callApiWithMethod } from "../utils/apiClient";
+import { callApiWithMethod, getAuthToken, authHeader } from "../utils/apiClient";
 import type { ApiResponse } from "../utils/apiClient";
 
 /**
@@ -18,32 +18,41 @@ function buildUrlWithParams(url: string, params?: any): string {
 
 // ============= Dashboard Types & API =============
 
-export interface DashboardStats {
-    grossMerchandiseValue: number;
-    gmvGrowth: number;
+export interface DailyOrderDto {
+    date: string; // Format: YYYY-MM-DD
+    orderCount: number;
+}
+
+export interface TopSellerDto {
+    shopName: string;
+    totalUnitsSold: number;
+    totalRevenue: number;
+    status: string;
+}
+
+export interface DashboardDto {
+    activeUsers: number;
+    totalOrders: number;
+    cancellationRate: number;
+    totalRevenue: number;
     totalActiveSellers: number;
-    sellerGrowth: number;
-    acquisitionRate: number;
-    acquisitionGrowth: number;
     pendingShopApprovals: number;
-    pendingGrowth: number;
-    revenueVsExpenses: Array<{
-        date: string;
-        revenue: number;
-        expenses: number;
-    }>;
-    topSellers: Array<{
-        shopName: string;
-        totalSales: number;
-        status: string;
-    }>;
+    ordersLast7Days: DailyOrderDto[];
+    topSellers: TopSellerDto[];
 }
 
 /**
  * Fetch dashboard statistics
  */
-export async function getDashboardStats() {
-    return callApi<undefined, ApiResponse<DashboardStats>>("/api/admin/dashboard/stats");
+export async function getDashboardStats(): Promise<ApiResponse<DashboardDto>> {
+    try {
+        const token = getAuthToken();
+        const headers = token ? authHeader(token) : {};
+        return await callApiWithMethod<never, ApiResponse<DashboardDto>>('GET', '/api/admin/dashboard/stats', undefined, headers);
+    } catch (error) {
+        console.error('Error fetching admin dashboard stats:', error);
+        return { resultCd: 1, message: 'Không thể tải dữ liệu thống kê quản trị', data: null };
+    }
 }
 
 // ============= User Management Types & API =============
@@ -56,6 +65,14 @@ export interface UserDto {
     role: string;
     status: string;
     createdAt: string;
+}
+
+export interface PageResponse<T> {
+    content: T[];
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    number: number;
 }
 
 export interface PageResponse<T> {
@@ -80,7 +97,9 @@ export interface UserQueryParams {
  */
 export async function getUsers(params?: UserQueryParams) {
     const url = buildUrlWithParams("/api/users", params);
-    return callApi<undefined, ApiResponse<PageResponse<UserDto>>>(url);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<undefined, ApiResponse<PageResponse<UserDto>>>("GET", url, undefined, headers);
 }
 
 /**
@@ -88,7 +107,9 @@ export async function getUsers(params?: UserQueryParams) {
  */
 export async function updateUserStatus(userId: number, status: string) {
     const url = buildUrlWithParams(`/api/users/${userId}/status`, { status });
-    return callApiWithMethod<null, ApiResponse<UserDto>>("PUT", url, null);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<null, ApiResponse<UserDto>>("PUT", url, null, headers);
 }
 
 // ============= Category Management Types & API =============
@@ -112,28 +133,36 @@ export interface CategoryRequest {
  */
 export async function getCategories(params?: { search?: string; sortByProductCount?: boolean }) {
     const url = buildUrlWithParams("/api/categories", params);
-    return callApi<undefined, ApiResponse<Category[]>>(url);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<undefined, ApiResponse<Category[]>>("GET", url, undefined, headers);
 }
 
 /**
  * Create a new category
  */
 export async function createCategory(data: CategoryRequest) {
-    return callApiWithMethod<CategoryRequest, ApiResponse<Category>>("POST", "/api/categories", data);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<CategoryRequest, ApiResponse<Category>>("POST", "/api/categories", data, headers);
 }
 
 /**
  * Update an existing category
  */
 export async function updateCategory(id: number, data: CategoryRequest) {
-    return callApiWithMethod<CategoryRequest, ApiResponse<Category>>("PUT", `/api/categories/${id}`, data);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<CategoryRequest, ApiResponse<Category>>("PUT", `/api/categories/${id}`, data, headers);
 }
 
 /**
  * Toggle category status
  */
 export async function toggleCategoryStatus(id: number) {
-    return callApiWithMethod<null, ApiResponse<Category>>("PUT", `/api/categories/${id}/toggle-status`, null);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<null, ApiResponse<Category>>("PUT", `/api/categories/${id}/toggle-status`, null, headers);
 }
 
 // ============= Shop Management Types & API =============
@@ -151,26 +180,34 @@ export interface ShopDto {
  */
 export async function getShops(params: { status: string; page?: number }) {
     const url = buildUrlWithParams("/api/shops", params);
-    return callApi<undefined, ApiResponse<ShopDto[]>>(url);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<undefined, ApiResponse<ShopDto[]>>("GET", url, undefined, headers);
 }
 
 /**
  * Approve a shop
  */
 export async function approveShop(id: number) {
-    return callApiWithMethod<null, ApiResponse<null>>("PUT", `/api/shops/${id}/approve`, null);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<null, ApiResponse<null>>("PUT", `/api/shops/${id}/approve`, null, headers);
 }
 
 /**
  * Reject a shop
  */
 export async function rejectShop(id: number, reason: string) {
-    return callApiWithMethod<{ reason: string }, ApiResponse<null>>("PUT", `/api/shops/${id}/reject`, { reason });
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<{ reason: string }, ApiResponse<null>>("PUT", `/api/shops/${id}/reject`, { reason }, headers);
 }
 
 /**
  * Suspend a shop
  */
 export async function suspendShop(id: number) {
-    return callApiWithMethod<null, ApiResponse<null>>("PUT", `/api/shops/${id}/suspend`, null);
+    const token = getAuthToken();
+    const headers = token ? authHeader(token) : {};
+    return callApiWithMethod<null, ApiResponse<null>>("PUT", `/api/shops/${id}/suspend`, null, headers);
 }

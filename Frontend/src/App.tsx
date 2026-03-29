@@ -1,34 +1,34 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Home from './components/home-page/Home'
-import Login from './components/login/Login'
-import Register from './components/register/Register'
-import ForgotPassword from './components/forgot-password/ForgotPassword'
-import ChangePassword from './components/change-password/ChangePassword'
-import CategoryManagement from './components/category-management/CategoryManagement'
-import AdminDashboard from './components/dashboard-admin/AdminDashboard'
-import ShopManagement from './components/shop-management/ShopManagement'
-import UserManagement from './components/user-management/UserManagement'
-import Profile from './components/profile/Profile'
-import ShopRegistration from './components/shop-registration/ShopRegistration'
-import { PopupProvider } from './components/common/popup'
-import ProtectedRoute from './components/common/protected-route/ProtectedRoute'
-import './App.css'
-import Cart from './components/cart/Cart'
-import Checkout from './components/checkout/Checkout'
-import OrderHistory from './components/order-history/OrderHistory'
-import OrderDetail from './components/order-detail/OrderDetail'
-import SellerDashboard from './components/seller-dashboard/SellerDashboard'
-import ProductDetail from './components/product-detail/ProductDetail'
-import SellerLayout from './components/seller/SellerLayout'
-import FruitManager from './components/seller-fruit/FruitManager'
-import OrderManager from './components/seller-order/OrderManager'
-import Voucher from './components/seller-voucher/Voucher'
-import Report from './components/seller-report/Report'
-import { getUserFromStorage } from './services/authService'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Home from "./components/home-page/Home";
+import Login from "./components/login/Login";
+import Register from "./components/register/Register";
+import ForgotPassword from "./components/forgot-password/ForgotPassword";
+import ChangePassword from "./components/change-password/ChangePassword";
+import CategoryManagement from "./components/category-management/CategoryManagement";
+import AdminDashboard from "./components/dashboard-admin/AdminDashboard";
+import ShopManagement from "./components/shop-management/ShopManagement";
+import UserManagement from "./components/user-management/UserManagement";
+import Profile from "./components/profile/Profile";
+import ShopRegistration from "./components/shop-registration/ShopRegistration";
+import { PopupProvider } from "./components/common/popup";
+import ProtectedRoute from "./components/common/protected-route/ProtectedRoute";
+import "./App.css";
+import Cart from "./components/cart/Cart";
+import Checkout from "./components/checkout/Checkout";
+import OrderHistory from "./components/order-history/OrderHistory";
+import OrderDetail from "./components/order-detail/OrderDetail";
+import SellerDashboard from "./components/seller-dashboard/SellerDashboard";
+import ProductDetail from "./components/product-detail/ProductDetail";
+import SellerLayout from "./components/seller/SellerLayout";
+import FruitManager from "./components/seller-fruit/FruitManager";
+import OrderManager from "./components/seller-order/OrderManager";
+import Voucher from "./components/seller-voucher/Voucher";
+import Report from "./components/seller-report/Report";
+import { getUserFromStorage } from "./services/authService";
 
 function SellerRouteContent() {
-  const user = getUserFromStorage()
-  const shopId = user?.shopId ?? Number(localStorage.getItem('shopId') || 0)
+  const user = getUserFromStorage();
+  const shopId = user?.shopId ?? Number(localStorage.getItem("shopId") || 0);
 
   return (
     <Routes>
@@ -40,7 +40,12 @@ function SellerRouteContent() {
       <Route path="reports" element={<Report shopId={shopId} />} />
       <Route path="profile" element={<Profile />} />
     </Routes>
-  )
+  );
+}
+
+function RootRedirect() {
+  const user = getUserFromStorage()
+  return <Navigate to={user ? '/home' : '/login'} replace />
 }
 
 function App() {
@@ -48,7 +53,7 @@ function App() {
     <BrowserRouter>
       <PopupProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<RootRedirect />} />
           {/* Public Routes */}
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -56,21 +61,78 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Private Routes - Required Login */}
-          <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/register-shop" element={<ProtectedRoute><ShopRegistration /></ProtectedRoute>} />
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/register-shop"
+            element={
+              <ProtectedRoute>
+                <ShopRegistration />
+              </ProtectedRoute>
+            }
+          />
+          {/* <Route
+            path="/admin-profile"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <AdminProfilePage />
+              </ProtectedRoute>
+            }
+          /> */}
 
           {/* Admin Routes - Required ADMIN role */}
-          <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/category-management" element={<ProtectedRoute requiredRole="ADMIN"><CategoryManagement /></ProtectedRoute>} />
-          <Route path="/shop-management" element={<ProtectedRoute requiredRole="ADMIN"><ShopManagement /></ProtectedRoute>} />
-          <Route path="/user-management" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
+          <Route
+            path="/admin-dashboard"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/category-management"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <CategoryManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shop-management"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <ShopManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-management"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
           {/*Cart Routes*/}
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
-          <Route path="/seller-dashboard" element={<SellerDashboard />} />
+          <Route path="/seller-dashboard" element={<Navigate to="/seller/dashboard" replace />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
           <Route
             path="/seller/*"
@@ -82,11 +144,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/seller-dashboard" element={<Navigate to="/seller/dashboard" replace />} />
+          <Route
+            path="/seller-dashboard"
+            element={<Navigate to="/seller/dashboard" replace />}
+          />
         </Routes>
       </PopupProvider>
     </BrowserRouter>
-  )
+  );
 }
 
 export default App;

@@ -156,7 +156,7 @@ export default function HomeView({
                   🔍
                 </button>
               </div>
-              <select 
+              <select
                 className="sort-select"
                 value={`${sortBy}-${sortOrder}`}
                 onChange={(e) => {

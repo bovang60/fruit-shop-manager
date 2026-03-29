@@ -30,11 +30,15 @@ interface Props {
     onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onShippingMethodToggle: (methodId: number) => void;
     onNext: () => void;
-    onSaveDraft: () => void;
+    onPrev: () => void;
+    onBackToHome: () => void;
     isVerifying?: boolean;
     isSubmitting?: boolean;
-    taxStatus?: string;
+    taxStatus?: '' | 'checking' | 'INVALID' | 'VALID' | 'taken';
+    taxErrorMessage?: string;
     shopNameStatus?: '' | 'checking' | 'taken' | 'available';
+    shopNameErrorMessage?: string;
+    rejectReason?: string | null;
 }
 
 const ShopRegistrationView: React.FC<Props> = ({
@@ -46,11 +50,15 @@ const ShopRegistrationView: React.FC<Props> = ({
     onInputChange,
     onShippingMethodToggle,
     onNext,
-    onSaveDraft,
+    onPrev,
+    onBackToHome,
     isVerifying = false,
     isSubmitting = false,
     taxStatus = '',
+    taxErrorMessage = '',
     shopNameStatus = '',
+    shopNameErrorMessage = '',
+    rejectReason = null,
 }) => {
     return (
         <div className="shop-registration-container">
@@ -58,6 +66,9 @@ const ShopRegistrationView: React.FC<Props> = ({
                     <Header />
                   </header>
             {/* Header */}
+            <header className="login-header">
+                <Header />
+            </header>
             {/* <header className="registration-header">
                 <div className="header-brand">
                     <div className="brand" style={{ fontWeight: 700, fontSize: '1.25rem', color: '#212b36' }}>
@@ -88,9 +99,35 @@ const ShopRegistrationView: React.FC<Props> = ({
 
             {/* Step Content */}
             <main className="registration-form-card">
-                <h2 className="form-title">{steps.find(s => s.id === currentStep)?.label || 'Thông tin Shop'}</h2>
+                <div className="form-card-header">
+                    {currentStep > 1 && (
+                        <button className="btn-back-step-icon" onClick={onPrev} title="Quay lại bước trước">
+                            <span className="material-symbols-outlined">arrow_back</span>
+                        </button>
+                    )}
+                    <h2 className="form-title" style={{ margin: 0, flex: 1 }}>{steps.find(s => s.id === currentStep)?.label || 'Thông tin Shop'}</h2>
+                </div>
 
                 <div className="registration-form-body">
+                    {rejectReason && (
+                        <div className="alert-error-box" style={{
+                            background: '#fff5f5',
+                            border: '1px solid #ffcdd2',
+                            borderRadius: '8px',
+                            padding: '16px',
+                            marginBottom: '24px',
+                            display: 'flex',
+                            gap: '12px',
+                            alignItems: 'flex-start'
+                        }}>
+                            <span className="material-symbols-outlined" style={{ color: '#e53935' }}>cancel</span>
+                            <div>
+                                <div style={{ fontWeight: 600, color: '#e53935', marginBottom: '4px' }}>Đơn đăng ký trước đó bị từ chối</div>
+                                <div style={{ fontSize: '0.9rem', color: '#666' }}>Lý do: {rejectReason}</div>
+                                <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '8px' }}>Vui lòng chỉnh sửa và gửi lại thông tin chính xác.</div>
+                            </div>
+                        </div>
+                    )}
                     {currentStep === 1 && (
                         <>
                             {/* Shop Name */}
@@ -100,21 +137,21 @@ const ShopRegistrationView: React.FC<Props> = ({
                                     <input
                                         type="text"
                                         name="shopName"
-                                        className="form-input"
-                                        placeholder="Nhập tên shop"
+                                        className={`form-input ${shopNameStatus === 'taken' ? 'error' : ''}`}
+                                        placeholder="Ví dụ: Trái cây tươi Bốn Mùa"
                                         maxLength={30}
                                         value={formData.shopName}
                                         onChange={onInputChange}
                                     />
-                                    <span className="input-counter">{formData.shopName.length}/30</span>
+                                    <span className="input-counter">{(formData.shopName || '').length}/30</span>
                                     {shopNameStatus === 'checking' && (
-                                        <div className="input-helper" style={{ color: '#888' }}>⏳ Đang kiểm tra tên cửa hàng...</div>
+                                        <div className="input-helper" style={{ color: '#888' }}>⏳ Đang kiểm tra tên shop...</div>
                                     )}
                                     {shopNameStatus === 'taken' && (
-                                        <div className="input-helper" style={{ color: '#e53935' }}>❌ Tên cửa hàng này đã được sử dụng. Vui lòng chọn tên khác.</div>
+                                        <div className="input-helper" style={{ color: '#e53935' }}>⚠️ {shopNameErrorMessage || 'Tên cửa hàng đã tồn tại. Vui lòng chọn tên khác.'}</div>
                                     )}
                                     {shopNameStatus === 'available' && (
-                                        <div className="input-helper" style={{ color: '#2e7d32' }}>✅ Tên cửa hàng này khả dụng.</div>
+                                        <div className="input-helper" style={{ color: '#2e7d32' }}>✅ Tên cửa hàng hợp lệ.</div>
                                     )}
                                 </div>
                             </div>
@@ -285,6 +322,9 @@ const ShopRegistrationView: React.FC<Props> = ({
                                     {!isVerifying && taxStatus === 'INVALID' && (
                                         <div className="input-helper" style={{ color: '#e53935', marginTop: '6px' }}>⚠️ Mã số thuế thuộc Người nộp thuế đã ngừng hoạt động (NNT ngừng HĐ). Không thể tiếp tục.</div>
                                     )}
+                                    {!isVerifying && taxStatus === 'taken' && (
+                                        <div className="input-helper" style={{ color: '#e53935', marginTop: '6px' }}>⚠️ {taxErrorMessage || 'Mã số thuế này đã được đăng ký cho một cửa hàng khác. Vui lòng kiểm tra lại.'}</div>
+                                    )}
                                     {!isVerifying && taxStatus === 'VALID' && formData.businessType !== 'personal' && (
                                         <div className="input-helper" style={{ color: '#2e7d32', marginTop: '6px' }}>✅ Đã xác thực mã số thuế thành công.</div>
                                     )}
@@ -378,7 +418,7 @@ const ShopRegistrationView: React.FC<Props> = ({
 
                 {/* Footer Actions */}
                 <div className="form-footer-actions">
-                    <button className="btn-save-draft" onClick={onSaveDraft}>Lưu</button>
+                    <button className="btn-back-to-home" onClick={onBackToHome}>Quay về trang chủ</button>
                     <button
                         className="btn-next-step"
                         onClick={onNext}
@@ -393,12 +433,13 @@ const ShopRegistrationView: React.FC<Props> = ({
                             (currentStep === 3 && (
                                 !formData.taxCode ||
                                 taxStatus === 'INVALID' ||
+                                taxStatus === 'taken' ||
                                 !formData.businessAddress ||
                                 (formData.businessType !== 'personal' && !formData.companyName)
                             ))
                         }
                     >
-                        {isSubmitting ? 'Đang gửi...' : isVerifying ? 'Đang xác thực...' : (currentStep === steps.length ? 'Hoàn tất' : 'Tiếp theo')}
+                        {isSubmitting ? 'Đang gửi...' : isVerifying ? 'Đang xác thực...' : (currentStep === steps.length ? 'Gửi hồ sơ' : 'Tiếp theo')}
                     </button>
                 </div>
             </main>

@@ -5,16 +5,19 @@
   gap: 1rem;
   padding: 0.75rem 0;
 }
+
 .brand {
   font-weight: 700;
   font-size: 1.25rem;
 }
+
 .nav-tabs {
   display: flex;
   gap: 0.5rem;
   flex: 1;
   margin-left: 2rem;
 }
+
 .tab {
   background: transparent;
   border: none;
@@ -23,6 +26,7 @@
   cursor: pointer;
   color: #334155;
 }
+
 .tab.active,
 .tab:hover {
   background: #e6f6f7;
@@ -97,6 +101,7 @@
     opacity: 0;
     transform: translateY(-0.5rem);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -145,6 +150,43 @@
   margin: 0.25rem 0;
 }
 
+/* Profile Dropdown Header */
+.profile-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.profile-dropdown-avatar,
+.profile-avatar-placeholder {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid rgba(51, 242, 13, 0.3);
+  flex-shrink: 0;
+}
+
+.profile-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(51, 242, 13, 0.1);
+  color: #33f20d;
+  font-weight: 700;
+}
+
+.profile-avatar-placeholder svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #33f20d;
+}
+
+.profile-dropdown-info {
 /* ===== Notification Bell ===== */
 
 .notif-container {
@@ -350,6 +392,14 @@
   min-width: 0;
 }
 
+.profile-dropdown-name {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #212b36;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 .notif-item-title {
   font-size: 0.82rem;
   font-weight: 600;

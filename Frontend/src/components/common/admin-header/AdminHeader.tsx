@@ -10,7 +10,7 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({
-    placeholder = "Search categories, products, or sellers..."
+    placeholder = "Tìm kiếm danh mục, sản phẩm, hoặc người bán..."
 }) => {
     const navigate = useNavigate();
     const user = getUserFromStorage();
@@ -29,12 +29,12 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({
     const userMenuItems: MenuProps['items'] = [
         {
             key: 'profile',
-            label: 'Profile',
+            label: 'Hồ sơ',
             icon: <UserOutlined />,
         },
         {
             key: 'logout',
-            label: 'Log out',
+            label: 'Đăng xuất',
             icon: <LogoutOutlined />,
             danger: true,
         },
