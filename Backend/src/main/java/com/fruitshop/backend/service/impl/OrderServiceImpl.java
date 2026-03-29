@@ -198,23 +198,10 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
     public Order updateOrderStatus(Integer orderId, Order.OrderStatus newStatus) {
         Order order = getOrderDetail(orderId);
 
-        // Logic chặn: Nếu đơn đã hủy, đã từ chối hoặc đã hoàn thành thì không cho đổi trạng thái nữa
+        // Logic chặn: Nếu đơn đã hủy hoặc đã hoàn thành thì không cho đổi trạng thái nữa
         if (order.getStatus() == Order.OrderStatus.CANCELLED ||
-                order.getStatus() == Order.OrderStatus.REJECTED ||
                 order.getStatus() == Order.OrderStatus.COMPLETED) {
             throw new IllegalStateException("Đơn hàng đã đóng, không thể thay đổi trạng thái!");
-        }
-
-        // Auto restore stock when seller REJECTS a PENDING order
-        if (order.getStatus() == Order.OrderStatus.PENDING && newStatus == Order.OrderStatus.REJECTED) {
-            List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
-            for (OrderItem item : items) {
-                Product product = productRepository.findByIdForUpdate(item.getProduct().getProductId())
-                        .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProduct().getProductId()));
-                product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
-            }
-            log.info("Seller rejected order {} -> stock restored for {} items", orderId, items.size());
         }
 
         order.setStatus(newStatus);
