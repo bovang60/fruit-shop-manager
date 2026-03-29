@@ -88,6 +88,7 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
       stock: fruit.stock !== undefined ? String(fruit.stock) : "",
       imageUrl: fruit.imageUrl ?? "",
     });
+
   };
 
   const cancelEdit = () => {
@@ -105,9 +106,16 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
     const stockValue = editForm.stock.trim();
     const price = parsePrice(priceValue);
     const stock = Number(stockValue);
-
+    const isDuplicate = fruits.some(
+        (f) => f.name?.toLowerCase() === name.toLowerCase() && f.productId !== fruitId
+    );
     if (!name) {
       showError("Vui lòng nhập tên sản phẩm", "Lỗi");
+      return;
+    }
+
+    if (isDuplicate) {
+      showError("Tên sản phẩm này đã tồn tại trong cửa hàng", "Lỗi");
       return;
     }
     if (!priceValue) {
@@ -178,6 +186,13 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
     const stockValue = data.stock.trim();
     const price = parsePrice(priceValue);
     const stock = Number(stockValue);
+    const isDuplicate = fruits.some(
+        (f) => f.name?.toLowerCase() === name.toLowerCase()
+    );
+    if (isDuplicate) {
+      showError("Tên sản phẩm này đã tồn tại trong danh sách của bạn", "Lỗi");
+      return false;
+    }
     if (!name) {
       showError("Vui lòng nhập tên sản phẩm", "Lỗi");
       return false;
