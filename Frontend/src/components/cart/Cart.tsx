@@ -33,12 +33,12 @@ export default function Cart() {
           setCart(response.data)
         } else {
           setCart(null)
-          showError(response.message || 'Could not load cart information')
+          showError(response.message || 'Không thể tải thông tin giỏ hàng')
         }
       } catch (error) {
         console.error('Error fetching cart:', error)
         setCart(null)
-        showError('Connection error while loading cart')
+        showError('Lỗi kết nối khi tải giỏ hàng')
       } finally {
         setLoading(false)
       }
@@ -48,13 +48,17 @@ export default function Cart() {
   }, [showError, userId])
 
   const refreshCart = async () => {
-    const response = await getCart(userId)
-    if (response.resultCd === 0 && response.data) {
-      setCart(response.data)
-      return
+    try {
+      const response = await getCart(userId)
+      if (response.resultCd === 0 && response.data) {
+        setCart(response.data)
+        return
+      }
+      setCart(null)
+    } catch (error) {
+      console.error('Error refreshing cart:', error)
+      setCart(null)
     }
-
-    setCart(null)
   }
 
   const syncCartItems = async (
@@ -62,7 +66,7 @@ export default function Cart() {
   ) => {
     const clearResponse = await clearCart(userId)
     if (clearResponse.resultCd !== 0) {
-      throw new Error(clearResponse.message || 'Could not reset cart')
+      throw new Error(clearResponse.message || 'Không thể xóa giỏ hàng')
     }
 
     if (nextItems.length === 0) {
@@ -79,7 +83,7 @@ export default function Cart() {
     for (const item of nextItems) {
       const addResponse = await addToCart(userId, item.productId, item.quantity)
       if (addResponse.resultCd !== 0) {
-        throw new Error(addResponse.message || 'Could not sync cart')
+        throw new Error(addResponse.message || 'Không thể đồng bộ giỏ hàng')
       }
     }
 
@@ -106,14 +110,14 @@ export default function Cart() {
       await syncCartItems(nextItems)
     } catch (error) {
       console.error('Error updating quantity:', error)
-      showError('Connection error while updating quantity')
+      showError('Lỗi kết nối khi cập nhật số lượng')
     } finally {
       setUpdatingItemId(null)
     }
   }
 
   const handleRemoveItem = (cartItemId: number) => {
-    showConfirm('Are you sure you want to remove this product from the cart?', async () => {
+    showConfirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?', async () => {
       const cartItems = cart?.items || []
       if (cartItems.length === 0 || updatingItemId !== null || loading) {
         return
@@ -126,10 +130,10 @@ export default function Cart() {
           .map((item) => ({ productId: item.productId, quantity: item.quantity }))
 
         await syncCartItems(nextItems)
-        showNotice('Product removed from cart')
+        showNotice('Đã xóa sản phẩm khỏi giỏ hàng')
       } catch (error) {
         console.error('Error removing item:', error)
-        showError('Connection error while removing product')
+        showError('Lỗi kết nối khi xóa sản phẩm')
       } finally {
         setUpdatingItemId(null)
       }
@@ -137,19 +141,19 @@ export default function Cart() {
   }
 
   const handleClearCart = () => {
-    showConfirm('Are you sure you want to clear the entire cart?', async () => {
+    showConfirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?', async () => {
       setLoading(true)
       try {
         const response = await clearCart(userId)
         if (response.resultCd === 0) {
-          showNotice('Cart cleared successfully')
+          showNotice('Đã xóa giỏ hàng thành công')
           setCart(null)
         } else {
-          showError(response.message || 'Could not clear cart')
+          showError(response.message || 'Không thể xóa giỏ hàng')
         }
       } catch (error) {
         console.error('Error clearing cart:', error)
-        showError('Connection error while clearing cart')
+        showError('Lỗi kết nối khi xóa giỏ hàng')
       } finally {
         setLoading(false)
       }
@@ -158,7 +162,7 @@ export default function Cart() {
 
   const handleCheckout = () => {
     if (!cart?.items || cart.items.length === 0) {
-      showError('Your cart is empty')
+      showError('Giỏ hàng của bạn đang trống')
       return
     }
 

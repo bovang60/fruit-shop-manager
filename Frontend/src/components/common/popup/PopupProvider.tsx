@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from 'react'
+import React, { useContext, useState, useCallback } from 'react'
 import PopupView from './PopupView'
+import PopupContext from './PopupContext'
+import type { PopupContextValue } from './PopupContext'
 
 type PopupType = 'notice' | 'confirm' | 'error' | 'warning' | 'success'
 
@@ -15,18 +17,7 @@ interface PopupConfig {
   placeholder?: string
 }
 
-
-interface PopupContextValue {
-  showNotice: (message: string, title?: string) => void
-  showSuccess: (message: string, title?: string) => void
-  showConfirm: (message: string, onConfirm: () => void, title?: string, onCancel?: () => void) => void
-  showError: (message: string, title?: string) => void
-  showWarning: (message: string, title?: string) => void
-  showPrompt: (message: string, onConfirm: (value: string) => void, title?: string, placeholder?: string, onCancel?: () => void) => void
-}
-
-
-const PopupContext = createContext<PopupContextValue | null>(null)
+export type { PopupContextValue }
 
 export function usePopup() {
   const context = useContext(PopupContext)

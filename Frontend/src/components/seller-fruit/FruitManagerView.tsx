@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './FruitManager.css';
 import type { SellerProductDto } from '../../services/sellerFruitService';
+import Pagination from '../common/pagination/Pagination';
+import LoadingModal from '../common/loading/LoadingModal';
 
 export type FruitData = SellerProductDto;
 
@@ -29,6 +31,8 @@ export type Props = {
     onRefresh: () => void;
 };
 
+const ITEMS_PER_PAGE = 10;
+
 const FruitManagerView: React.FC<Props> = ({
     fruits,
     isLoading,
@@ -45,6 +49,7 @@ const FruitManagerView: React.FC<Props> = ({
     onRefresh,
 }) => {
     const [isAdding, setIsAdding] = React.useState(false);
+    const [currentPage, setCurrentPage] = React.useState(1);
     const [newFruit, setNewFruit] = React.useState({
         name: '',
         price: '',
@@ -52,33 +57,44 @@ const FruitManagerView: React.FC<Props> = ({
         imageUrl: '',
     });
 
-    if (isLoading) return <div className="loading">Đang tải kho hàng...</div>;
+    const totalPages = Math.max(1, Math.ceil(fruits.length / ITEMS_PER_PAGE));
+    const paginatedFruits = fruits.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE,
+    );
+
+    React.useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
 
     return (
-        <div className="seller-page">
-            <div className="page-header-content">
-                <nav className="breadcrumbs-modern">
-                    <Link to="/seller/dashboard">Seller</Link>
-                    <span className="material-symbols-outlined">chevron_right</span>
-                    <span className="current">Sản phẩm</span>
-                </nav>
-                <h1>Quản lý trái cây</h1>
-                <p>Quản lý danh mục sản phẩm theo cùng cấu trúc table và action bar của admin.</p>
-            </div>
-
-            <section className="management-filter-section">
-                <div className="filter-search-actions">
-                    <div className="utility-actions">
-                        <button type="button" className="btn-primary-admin" onClick={() => setIsAdding((value) => !value)}>
-                            <span className="material-symbols-outlined">{isAdding ? 'close' : 'add'}</span>
-                            {isAdding ? 'Đóng form thêm mới' : 'Thêm sản phẩm'}
-                        </button>
-                        <button type="button" className="seller-secondary-btn" onClick={onRefresh}>Làm mới</button>
-                    </div>
+        <>
+            <div className="seller-page">
+                <div className="page-header-content">
+                    <nav className="breadcrumbs-modern">
+                        <Link to="/seller/dashboard">Seller</Link>
+                        <span className="material-symbols-outlined">chevron_right</span>
+                        <span className="current">Sản phẩm</span>
+                    </nav>
+                    <h1>Quản lý trái cây</h1>
+                    <p>Quản lý danh mục sản phẩm theo cùng cấu trúc table và action bar của admin.</p>
                 </div>
-            </section>
 
-            {isAdding && (
+                <section className="management-filter-section">
+                    <div className="filter-search-actions">
+                        <div className="utility-actions">
+                            <button type="button" className="btn-primary-admin" onClick={() => setIsAdding((value) => !value)}>
+                                <span className="material-symbols-outlined">{isAdding ? 'close' : 'add'}</span>
+                                {isAdding ? 'Đóng form thêm mới' : 'Thêm sản phẩm'}
+                            </button>
+                            <button type="button" className="seller-secondary-btn" onClick={onRefresh}>Làm mới</button>
+                        </div>
+                    </div>
+                </section>
+
+                {isAdding && (
                 <section className="data-card seller-form-card">
                     <div className="seller-form-card-header">
                         <div>
@@ -149,9 +165,9 @@ const FruitManagerView: React.FC<Props> = ({
                         </div>
                     </form>
                 </section>
-            )}
+                )}
 
-            <section className="table-card">
+                <section className="table-card">
                 <table className="admin-table seller-fruit-table">
                     <thead>
                         <tr>
@@ -168,7 +184,7 @@ const FruitManagerView: React.FC<Props> = ({
                                 <td colSpan={5} className="seller-empty-state">Chưa có sản phẩm nào trong cửa hàng.</td>
                             </tr>
                         ) : (
-                            fruits.map((fruit) => {
+                            paginatedFruits.map((fruit) => {
                                 const isActive = fruit.isActive !== false;
                                 const isEditing = editingFruitId === fruit.productId;
 
@@ -277,8 +293,20 @@ const FruitManagerView: React.FC<Props> = ({
                         )}
                     </tbody>
                 </table>
-            </section>
-        </div>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
+                </section>
+            </div>
+            <LoadingModal
+                isOpen={isLoading}
+                message="Đang tải kho hàng..."
+                subMessage="Vui lòng chờ trong giây lát"
+                theme="green"
+            />
+        </>
     );
 };
 

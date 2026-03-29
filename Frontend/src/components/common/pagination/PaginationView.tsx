@@ -1,4 +1,4 @@
-import React from 'react'
+// Import removed to avoid unused variable error
 import './Pagination.css'
 
 type Props = {

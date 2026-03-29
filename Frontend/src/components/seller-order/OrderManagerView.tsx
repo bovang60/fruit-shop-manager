@@ -1,6 +1,8 @@
 import React from 'react';
 import './OrderManager.css';
 import { Link } from 'react-router-dom';
+import Pagination from '../common/pagination/Pagination';
+import LoadingModal from '../common/loading/LoadingModal';
 
 export type OrderData = {
     orderId: number;
@@ -28,6 +30,8 @@ export type Props = {
     onUpdateStatus: (id: number, status: string) => void;
     onFilterChange: (status: string) => void;
 };
+
+const ITEMS_PER_PAGE = 10;
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
     PENDING: 'Chờ xác nhận',
@@ -79,7 +83,25 @@ const OrderManagerView: React.FC<Props> = ({
     onUpdateStatus,
     onFilterChange,
 }) => {
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const totalPages = Math.max(1, Math.ceil(orders.length / ITEMS_PER_PAGE));
+    const paginatedOrders = orders.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE,
+    );
+
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [currentFilter]);
+
+    React.useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
     return (
+        <>
         <div className="seller-page">
             <header className="home-actions">
                 <div className="page-header-content">
@@ -107,9 +129,6 @@ const OrderManagerView: React.FC<Props> = ({
                     ))}
                 </div>
 
-                {isDetailLoading && (
-                    <div className="loading">Đang tải chi tiết đơn hàng...</div>
-                )}
             </section>
 
             {!isDetailLoading && selectedOrder && (
@@ -193,7 +212,7 @@ const OrderManagerView: React.FC<Props> = ({
                                 <td colSpan={6} className="seller-empty-state">Không có đơn hàng nào phù hợp với bộ lọc hiện tại.</td>
                             </tr>
                         ) : (
-                            orders.map((order) => (
+                            paginatedOrders.map((order) => (
                                 <tr key={order.orderId}>
                                     <td>#{order.orderId}</td>
                                     <td>
@@ -259,8 +278,20 @@ const OrderManagerView: React.FC<Props> = ({
                         )}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </section>
         </div >
+        <LoadingModal
+            isOpen={isLoading || isDetailLoading}
+            message={isDetailLoading ? 'Đang tải chi tiết đơn hàng...' : 'Đang tải danh sách đơn hàng...'}
+            subMessage="Vui lòng chờ trong giây lát"
+            theme="green"
+        />
+        </>
     );
 };
 

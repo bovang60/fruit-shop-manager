@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import Header from '../common/header/Header'
 import Footer from '../common/footer/Footer'
 import Pagination from '../common/pagination/Pagination'
@@ -69,6 +70,8 @@ export default function HomeView({
   onSortChange,
   onSearchSubmit
 }: Props) {
+  const navigate = useNavigate()
+
   return (
     <div className="home-root">
       {/* Sticky Header */}
@@ -153,7 +156,7 @@ export default function HomeView({
                   🔍
                 </button>
               </div>
-              <select 
+              <select
                 className="sort-select"
                 value={`${sortBy}-${sortOrder}`}
                 onChange={(e) => {
@@ -180,7 +183,7 @@ export default function HomeView({
           {!error && (
             <div className="modern-products-grid">
               {displayed.map((p) => (
-                <div key={p.id} className="modern-product-card">
+                <div key={p.id} className="modern-product-card" onClick={() => { navigate(`/product/${p.id}`); window.scrollTo(0, 0); }} style={{ cursor: 'pointer' }}>
                   <div className="product-image-wrap">
                     {p.img ? (
                       <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
@@ -200,7 +203,7 @@ export default function HomeView({
                     </div>
                     <button
                       className="add-to-cart-btn"
-                      onClick={() => onAddToCart(p.id)}
+                      onClick={(e) => { e.stopPropagation(); onAddToCart(p.id); }}
                       disabled={addingToCartId === p.id}
                     >
                       {addingToCartId === p.id ? '✉️ Đang thêm...' : '🛒 Thêm vào giỏ'}
@@ -229,7 +232,7 @@ export default function HomeView({
               </div>
               <div className="horizontal-scroll">
                 {newArrivals.map(p => (
-                  <div key={p.id} className="mini-card">
+                  <div key={p.id} className="mini-card" onClick={() => { navigate(`/product/${p.id}`); window.scrollTo(0, 0); }} style={{ cursor: 'pointer' }}>
                     <div className="mini-card-img" style={{ backgroundImage: p.img ? `url('${p.img}')` : 'none' }}></div>
                     <p className="mini-card-name">{p.name}</p>
                     <p className="mini-card-price">{p.price}</p>
@@ -252,7 +255,7 @@ export default function HomeView({
               </div>
               <div className="horizontal-scroll">
                 {trending.map(p => (
-                  <div key={p.id} className="mini-card">
+                  <div key={p.id} className="mini-card" onClick={() => { navigate(`/product/${p.id}`); window.scrollTo(0, 0); }} style={{ cursor: 'pointer' }}>
                     <div className="mini-card-img" style={{ backgroundImage: p.img ? `url('${p.img}')` : 'none' }}></div>
                     <p className="mini-card-name">{p.name}</p>
                     <p className="mini-card-price">{p.price}</p>
