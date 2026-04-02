@@ -10,7 +10,7 @@ export type Props = {
   onNavigateToHome: () => void;
   onNavigateToProducts: () => void;
   onNavigateToOrders: () => void;
-  onNavigateToCustomers: () => void;
+  onNavigateToCustomers?: () => void;
   onNavigateToProfile: () => void;
   onLogout: () => void;
   onNavigateToSellerRegistration: () => void;
@@ -94,7 +94,14 @@ export default function HeaderView({
 
   return (
     <header className="site-header">
-      <div className="brand">Trái cây tươi</div>
+      <div
+        id="brand-header-logo"
+        className="brand"
+        onClick={onNavigateToHome}
+        style={{ cursor: "pointer", color: "#1a2e1a", fontWeight: "800", fontSize: "1.5rem" }}
+      >
+        Trái cây tươi
+      </div>
       <nav className="nav-tabs">
         <button
           className={`tab${currentPath === "/home" ? " active" : ""}`}
@@ -102,24 +109,26 @@ export default function HeaderView({
         >
           Trang chủ
         </button>
-        <button
+        {/* <button
           className={`tab${currentPath === "/products" ? " active" : ""}`}
           onClick={onNavigateToProducts}
         >
           Sản phẩm
-        </button>
+        </button> */}
         <button
           className={`tab${currentPath === "/cart" ? " active" : ""}`}
           onClick={onNavigateToCart}
         >
           Đơn hàng
         </button>
-        <button
-          className={`tab${currentPath === "/register-shop" ? " active" : ""}`}
-          onClick={onNavigateToSellerRegistration}
-        >
-          Đăng kí bán hàng
-        </button>
+        {userRole !== "ADMIN" && (
+          <button
+            className={`tab${currentPath === "/register-shop" ? " active" : ""}`}
+            onClick={onNavigateToSellerRegistration}
+          >
+            Đăng ký bán hàng
+          </button>
+        )}
         {userRole === "SELLER" && (
           <button
             className={`tab${currentPath.startsWith("/seller") ? " active" : ""}`}
@@ -139,14 +148,14 @@ export default function HeaderView({
               aria-label="Thông báo đơn hàng"
               title="Thông báo đơn hàng mới"
             >
-              <svg
+              {/* <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 className="notif-icon"
               >
                 <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-              </svg>
+              </svg> */}
               {newOrderCount > 0 && (
                 <span className="notif-badge">
                   {newOrderCount > 99 ? "99+" : newOrderCount}

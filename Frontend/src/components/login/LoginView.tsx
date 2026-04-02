@@ -29,9 +29,12 @@ export default function LoginView({
   return (
     <div className="login-root">
       {/* Sticky Header */}
-      <header className="login-header">
-        <Header />
-      </header>
+      {/* <header className="login-header"> */}
+      {/* <div className="brand" style={{ fontWeight: 800, fontSize: '1.5rem', color: '#1a2e1a', marginBottom: '0.5rem', display: 'block' }}>
+          Trái cây tươi
+        </div> */}
+      <Header />
+      {/* </header> */}
 
       {/* Main Split Layout */}
       <main className="login-main">
@@ -161,8 +164,8 @@ export default function LoginView({
       </footer>
 
       {/* Loading Modal */}
-      <LoadingModal 
-        isOpen={loading} 
+      <LoadingModal
+        isOpen={loading}
         message="Đang đăng nhập..."
         subMessage="Vui lòng chờ trong giây lát"
         theme="green"

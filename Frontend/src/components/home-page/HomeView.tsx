@@ -1,44 +1,51 @@
-import { useNavigate } from 'react-router-dom'
-import Header from '../common/header/Header'
-import Footer from '../common/footer/Footer'
-import Pagination from '../common/pagination/Pagination'
-import LoadingModal from '../common/loading/LoadingModal'
-import type { HomeCategory } from './Home.types'
-import './Home.css'
+import { useNavigate } from "react-router-dom";
+import Header from "../common/header/Header";
+import Footer from "../common/footer/Footer";
+import Pagination from "../common/pagination/Pagination";
+import LoadingModal from "../common/loading/LoadingModal";
+import type { HomeCategory } from "./Home.types";
+import "./Home.css";
 
-type Product = { id: number; name: string; price: string; img?: string; desc?: string; tag?: string }
+type Product = {
+  id: number;
+  name: string;
+  price: string;
+  img?: string;
+  desc?: string;
+  tag?: string;
+};
 
 export type Props = {
-  query: string
-  onQueryChange: (v: string) => void
-  products: Product[]
-  displayed: Product[]
-  newArrivals: Product[]
-  trending: Product[]
-  categories: HomeCategory[]
-  page: number
-  totalPages: number
-  onPageChange: (p: number) => void
-  onAddToCart: (productId: number) => void
-  addingToCartId?: number | null
-  loading: boolean
-  error: string
+  query: string;
+  onQueryChange: (v: string) => void;
+  products: Product[];
+  displayed: Product[];
+  newArrivals: Product[];
+  trending: Product[];
+  categories: HomeCategory[];
+  page: number;
+  totalPages: number;
+  onPageChange: (p: number) => void;
+  onAddToCart: (productId: number) => void;
+  addingToCartId?: number | null;
+  loading: boolean;
+  error: string;
   // Filter values
-  category?: string
-  minPrice?: number
-  maxPrice?: number
-  origin?: string
-  organic?: boolean
-  sortBy: string
-  sortOrder: string
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  origin?: string;
+  organic?: boolean;
+  sortBy: string;
+  sortOrder: string;
   // Filter handlers
-  onCategoryChange: (category: string) => void
-  onPriceChange: (minPrice: number, maxPrice: number) => void
-  onOriginChange: (origin: string | undefined) => void
-  onOrganicChange: (organic: boolean | undefined) => void
-  onSortChange: (sortBy: string, sortOrder: string) => void
-  onSearchSubmit: () => void
-}
+  onCategoryChange: (category: string) => void;
+  onPriceChange: (minPrice: number, maxPrice: number) => void;
+  onOriginChange: (origin: string | undefined) => void;
+  onOrganicChange: (organic: boolean | undefined) => void;
+  onSortChange: (sortBy: string, sortOrder: string) => void;
+  onSearchSubmit: () => void;
+};
 
 export default function HomeView({
   query,
@@ -68,17 +75,17 @@ export default function HomeView({
   onOriginChange,
   onOrganicChange,
   onSortChange,
-  onSearchSubmit
+  onSearchSubmit,
 }: Props) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <div className="home-root">
       {/* Sticky Header */}
       <div className="home-header-sticky">
-        <div className="home-header-container">
-          <Header />
-        </div>
+        {/* <div className="home-header-container"> */}
+        <Header />
+        {/* </div> */}
       </div>
 
       {/* Main Layout */}
@@ -95,7 +102,7 @@ export default function HomeView({
                     type="radio"
                     name="category"
                     checked={!category}
-                    onChange={() => onCategoryChange('')}
+                    onChange={() => onCategoryChange("")}
                   />
                   <span>Tất cả</span>
                 </label>
@@ -123,12 +130,14 @@ export default function HomeView({
                   max="500000"
                   step="10000"
                   value={maxPrice}
-                  onChange={(e) => onPriceChange(minPrice, Number(e.target.value))}
+                  onChange={(e) =>
+                    onPriceChange(minPrice, Number(e.target.value))
+                  }
                   className="price-slider"
                 />
                 <div className="price-labels">
-                  <span>₫{minPrice.toLocaleString('vi-VN')}</span>
-                  <span>₫{maxPrice.toLocaleString('vi-VN')}</span>
+                  <span>₫{minPrice.toLocaleString("vi-VN")}</span>
+                  <span>₫{maxPrice.toLocaleString("vi-VN")}</span>
                 </div>
               </div>
             </div>
@@ -141,7 +150,9 @@ export default function HomeView({
           <div className="content-header">
             <div>
               <h1 className="content-title">Trái cây tươi</h1>
-              <p className="content-subtitle">Hiển thị {displayed.length} sản phẩm</p>
+              <p className="content-subtitle">
+                Hiển thị {displayed.length} sản phẩm
+              </p>
             </div>
             <div className="content-actions">
               <div className="search-wrap">
@@ -150,9 +161,13 @@ export default function HomeView({
                   placeholder="Tìm kiếm trái cây..."
                   value={query}
                   onChange={(e) => onQueryChange(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && onSearchSubmit()}
+                  onKeyDown={(e) => e.key === "Enter" && onSearchSubmit()}
                 />
-                <button className="search-btn" onClick={onSearchSubmit} aria-label="Search">
+                <button
+                  className="search-btn"
+                  onClick={onSearchSubmit}
+                  aria-label="Search"
+                >
                   🔍
                 </button>
               </div>
@@ -160,8 +175,8 @@ export default function HomeView({
                 className="sort-select"
                 value={`${sortBy}-${sortOrder}`}
                 onChange={(e) => {
-                  const [newSortBy, newSortOrder] = e.target.value.split('-')
-                  onSortChange(newSortBy, newSortOrder)
+                  const [newSortBy, newSortOrder] = e.target.value.split("-");
+                  onSortChange(newSortBy, newSortOrder);
                 }}
               >
                 <option value="popularity-desc">Sắp xếp: Phổ biến nhất</option>
@@ -175,7 +190,7 @@ export default function HomeView({
           {/* Error State */}
           {error && (
             <div className="error-state">
-              <p style={{ color: 'red' }}>{error}</p>
+              <p style={{ color: "red" }}>{error}</p>
             </div>
           )}
 
@@ -183,10 +198,21 @@ export default function HomeView({
           {!error && (
             <div className="modern-products-grid">
               {displayed.map((p) => (
-                <div key={p.id} className="modern-product-card" onClick={() => { navigate(`/product/${p.id}`); window.scrollTo(0, 0); }} style={{ cursor: 'pointer' }}>
+                <div
+                  key={p.id}
+                  className="modern-product-card"
+                  onClick={() => {
+                    navigate(`/product/${p.id}`);
+                    window.scrollTo(0, 0);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
                   <div className="product-image-wrap">
                     {p.img ? (
-                      <div className="product-image" style={{ backgroundImage: `url('${p.img}')` }} />
+                      <div
+                        className="product-image"
+                        style={{ backgroundImage: `url('${p.img}')` }}
+                      />
                     ) : (
                       <div className="product-image-placeholder">🍊</div>
                     )}
@@ -203,10 +229,15 @@ export default function HomeView({
                     </div>
                     <button
                       className="add-to-cart-btn"
-                      onClick={(e) => { e.stopPropagation(); onAddToCart(p.id); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToCart(p.id);
+                      }}
                       disabled={addingToCartId === p.id}
                     >
-                      {addingToCartId === p.id ? '✉️ Đang thêm...' : '🛒 Thêm vào giỏ'}
+                      {addingToCartId === p.id
+                        ? "✉️ Đang thêm..."
+                        : "🛒 Thêm vào giỏ"}
                     </button>
                   </div>
                 </div>
@@ -216,7 +247,11 @@ export default function HomeView({
 
           {/* Pagination */}
           <div className="pagination-wrap">
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={onPageChange} />
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
           </div>
 
           {/* Additional Sections */}
@@ -231,9 +266,22 @@ export default function HomeView({
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {newArrivals.map(p => (
-                  <div key={p.id} className="mini-card" onClick={() => { navigate(`/product/${p.id}`); window.scrollTo(0, 0); }} style={{ cursor: 'pointer' }}>
-                    <div className="mini-card-img" style={{ backgroundImage: p.img ? `url('${p.img}')` : 'none' }}></div>
+                {newArrivals.map((p) => (
+                  <div
+                    key={p.id}
+                    className="mini-card"
+                    onClick={() => {
+                      navigate(`/product/${p.id}`);
+                      window.scrollTo(0, 0);
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div
+                      className="mini-card-img"
+                      style={{
+                        backgroundImage: p.img ? `url('${p.img}')` : "none",
+                      }}
+                    ></div>
                     <p className="mini-card-name">{p.name}</p>
                     <p className="mini-card-price">{p.price}</p>
                   </div>
@@ -254,9 +302,22 @@ export default function HomeView({
                 </div>
               </div>
               <div className="horizontal-scroll">
-                {trending.map(p => (
-                  <div key={p.id} className="mini-card" onClick={() => { navigate(`/product/${p.id}`); window.scrollTo(0, 0); }} style={{ cursor: 'pointer' }}>
-                    <div className="mini-card-img" style={{ backgroundImage: p.img ? `url('${p.img}')` : 'none' }}></div>
+                {trending.map((p) => (
+                  <div
+                    key={p.id}
+                    className="mini-card"
+                    onClick={() => {
+                      navigate(`/product/${p.id}`);
+                      window.scrollTo(0, 0);
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div
+                      className="mini-card-img"
+                      style={{
+                        backgroundImage: p.img ? `url('${p.img}')` : "none",
+                      }}
+                    ></div>
                     <p className="mini-card-name">{p.name}</p>
                     <p className="mini-card-price">{p.price}</p>
                   </div>
@@ -282,5 +343,5 @@ export default function HomeView({
         theme="green"
       />
     </div>
-  )
+  );
 }

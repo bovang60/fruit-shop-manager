@@ -617,7 +617,7 @@
   }
 
   /* stronger selector if a global .card style overrides children */
-  .home-container .card > .products-grid,
+  .home-container .card>.products-grid,
   .home-container .home-main .card .products-grid {
     display: grid !important;
     grid-template-columns: repeat(5, 1fr) !important;

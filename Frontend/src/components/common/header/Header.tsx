@@ -62,7 +62,13 @@ export default function Header({
     };
   }, []);
 
-  const handleNavigateToProfile = () => navigate("/profile");
+  const handleNavigateToProfile = () => {
+    // if (isAdmin) {
+    //   navigate("/admin-profile");
+    //   return;
+    // }
+    navigate("/profile");
+  };
   const handleNavigateToHome = () => navigate("/home");
   const handleNavigateToProducts = () => navigate("/products");
   const handleNavigateToOrders = () => navigate("/order-history");
@@ -148,7 +154,7 @@ export default function Header({
       } else {
         showNotice(
           canRegisterRes.message ||
-            "Bạn đã có shop hoặc đơn đăng ký đang chờ duyệt.",
+          "Bạn đã có shop hoặc đơn đăng ký đang chờ duyệt.",
           "Thông báo",
         );
       }
