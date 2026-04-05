@@ -310,10 +310,22 @@ public class OrderServiceImpl implements OrderService {
     public Order updateOrderStatus(Integer orderId, Order.OrderStatus newStatus) {
         Order order = getOrderDetail(orderId);
 
-        // Logic chặn: Nếu đơn đã hủy hoặc đã hoàn thành thì không cho đổi trạng thái nữa
         if (order.getStatus() == Order.OrderStatus.CANCELLED ||
+                order.getStatus() == Order.OrderStatus.REJECTED ||
                 order.getStatus() == Order.OrderStatus.COMPLETED) {
             throw new IllegalStateException("Đơn hàng đã đóng, không thể thay đổi trạng thái!");
+        }
+
+        // Auto restore stock when seller REJECTS a PENDING order
+        if (order.getStatus() == Order.OrderStatus.PENDING && newStatus == Order.OrderStatus.REJECTED) {
+            List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
+            for (OrderItem item : items) {
+                Product product = productRepository.findByIdForUpdate(item.getProduct().getProductId())
+                        .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProduct().getProductId()));
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+            log.info("Seller rejected order {} -> stock restored for {} items", orderId, items.size());
         }
 
         order.setStatus(newStatus);
@@ -325,8 +337,9 @@ public class OrderServiceImpl implements OrderService {
     // =====================================================================
     @Override
     public SalesReportDto getShopSalesReport(Integer shopId) {
-        Integer totalOrders = (int) orderRepository.countByShop_ShopId(shopId);
-        Integer successfulOrders = orderRepository.countByShopIdAndStatus(shopId, Order.OrderStatus.COMPLETED);
+        Integer totalOrders = Math.toIntExact(orderRepository.countByShop_ShopId(shopId));
+        Integer successfulOrders = Math.toIntExact(
+            orderRepository.countByShopIdAndStatus(shopId, Order.OrderStatus.COMPLETED));
         java.math.BigDecimal revenue = orderRepository.sumRevenueByShopId(shopId);
         Integer quantitySold = orderRepository.sumQuantitySoldByShopId(shopId);
 
@@ -339,6 +352,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // =====================================================================
+
     //  ORDER HISTORY
     // =====================================================================
     @Override
