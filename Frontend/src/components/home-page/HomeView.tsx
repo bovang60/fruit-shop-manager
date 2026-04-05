@@ -13,6 +13,7 @@ type Product = {
   img?: string;
   desc?: string;
   tag?: string;
+  isFavorite?: boolean;
 };
 
 export type Props = {
@@ -27,6 +28,7 @@ export type Props = {
   totalPages: number;
   onPageChange: (p: number) => void;
   onAddToCart: (productId: number) => void;
+  onToggleWishlist: (productId: number, isFavorite: boolean) => void;
   addingToCartId?: number | null;
   loading: boolean;
   error: string;
@@ -58,6 +60,7 @@ export default function HomeView({
   totalPages,
   onPageChange,
   onAddToCart,
+  onToggleWishlist,
   addingToCartId,
   loading,
   error,
@@ -217,7 +220,13 @@ export default function HomeView({
                       <div className="product-image-placeholder">🍊</div>
                     )}
                     {p.tag && <div className="product-tag">{p.tag}</div>}
-                    <div className="product-favorite">❤</div>
+                    <button 
+                       className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
+                       onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
+                       aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                    >
+                       <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                    </button>
                   </div>
                   <div className="product-info">
                     <div className="product-details">

@@ -4,6 +4,7 @@ import type { UserData, SortConfig } from "./UserManagementView";
 import {
   getUsers,
   updateUserStatus,
+  registerUser,
   type UserFilter,
   type UserStatus,
 } from "../../services/userService";
@@ -13,7 +14,7 @@ import { LoadingModal } from "../common/loading";
 export default function UserManagement() {
   const { showSuccess, showError, showConfirm } = usePopup();
   // UI State
-  const [viewMode, setViewMode] = useState<"LIST" | "DETAIL">("LIST");
+  const [viewMode, setViewMode] = useState<"LIST" | "DETAIL" | "ADD">("LIST");
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem("sidebar-collapsed") === "true";
@@ -173,6 +174,28 @@ export default function UserManagement() {
     setSelectedUser(null);
   };
 
+  const handleAddUser = () => {
+    setViewMode("ADD");
+  };
+
+  const handleSaveUser = async (data: any) => {
+    setLoading(true);
+    try {
+      const response = await registerUser(data);
+      if (response.resultCd === 0) {
+        showSuccess("Thêm người dùng mới thành công!");
+        setViewMode("LIST");
+        fetchUsers();
+      } else {
+        showError(response.message || "Lỗi khi thêm người dùng");
+      }
+    } catch (err) {
+      showError("Lỗi kết nối khi thêm người dùng");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <UserManagementView
@@ -206,6 +229,8 @@ export default function UserManagement() {
         selectedUser={selectedUser}
         onViewDetail={handleViewDetail}
         onBackToList={handleBackToList}
+        onAddUser={handleAddUser}
+        onSaveUser={handleSaveUser}
         sortConfig={sortConfig}
         onSort={handleSort}
       />

@@ -1,13 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Home from "./components/home-page/Home";
+import Home from "./components/home/Home";
+import ProductList from "./components/home-page/Home";
+import Wishlist from "./components/wishlist/Wishlist";
 import Login from "./components/login/Login";
 import Register from "./components/register/Register";
 import ForgotPassword from "./components/forgot-password/ForgotPassword";
 import ChangePassword from "./components/change-password/ChangePassword";
 import CategoryManagement from "./components/category-management/CategoryManagement";
+// import CategoryProducts from "./components/category-management/CategoryProducts";
 import AdminDashboard from "./components/dashboard-admin/AdminDashboard";
 import ShopManagement from "./components/shop-management/ShopManagement";
 import UserManagement from "./components/user-management/UserManagement";
+import SliderManagement from "./components/slider-management/SliderManagement";
 import Profile from "./components/profile/Profile";
 import ShopRegistration from "./components/shop-registration/ShopRegistration";
 import { PopupProvider } from "./components/common/popup";
@@ -111,6 +115,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* <Route
+            path="/category-management/:categoryId/products"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <CategoryProducts />
+              </ProtectedRoute>
+            }
+          /> */}
           <Route
             path="/shop-management"
             element={
@@ -127,6 +139,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/slider-management"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <SliderManagement />
+              </ProtectedRoute>
+            }
+          />
           {/*Cart Routes*/}
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
@@ -134,6 +154,8 @@ function App() {
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
           <Route path="/seller-dashboard" element={<Navigate to="/seller/dashboard" replace />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
+          <Route path="/products" element={<ProductList />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route
             path="/seller/*"
             element={

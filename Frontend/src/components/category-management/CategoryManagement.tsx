@@ -1,16 +1,7 @@
 import React, { useState } from "react";
 import CategoryManagementView from "./CategoryManagementView";
 import type { Category } from "./CategoryManagementView";
-import {
-  getCategories,
-  createCategory,
-  getCategoryById,
-  updateCategory,
-  deleteCategory,
-  toggleCategoryStatus,
-  type CategoryDto,
-} from "../../services/categoryService";
-// import { usePopup } from "../common/popup/PopupProvider";
+import { getCategories, createCategory, getCategoryById, updateCategory, deleteCategory, toggleCategoryStatus, type CategoryDto } from "../../services/categoryService";
 import { LoadingModal } from "../common/loading";
 
 import { usePopup } from "../common/popup";

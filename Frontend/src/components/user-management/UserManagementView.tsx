@@ -42,10 +42,12 @@ export type Props = {
   onStatusChange: (id: number, status: string) => void;
   visibleColumns: Set<string>;
   onToggleColumn: (col: string) => void;
-  viewMode: "LIST" | "DETAIL";
+  viewMode: "LIST" | "DETAIL" | "ADD";
   selectedUser: UserData | null;
   onViewDetail: (user: UserData) => void;
   onBackToList: () => void;
+  onAddUser: () => void;
+  onSaveUser: (data: any) => void;
   sortConfig: SortConfig;
   onSort: (key: keyof UserData) => void;
 };
@@ -72,6 +74,8 @@ export default function UserManagementView({
   selectedUser,
   onViewDetail,
   onBackToList,
+  onAddUser,
+  onSaveUser,
   sortConfig,
   onSort,
 }: Props) {
@@ -119,6 +123,10 @@ export default function UserManagementView({
               khoản.
             </p>
           </div>
+          <button className="btn-primary-admin" onClick={onAddUser}>
+            <span className="material-symbols-outlined">person_add</span>
+            Thêm người dùng
+          </button>
         </div>
       </div>
 
@@ -559,6 +567,110 @@ export default function UserManagementView({
     </div>
   );
 
+  const renderAddView = () => (
+    <div className="admin-modal-overlay" onClick={onBackToList}>
+      <div
+        className="admin-modal-content"
+        style={{ maxWidth: "500px" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="admin-modal-header">
+          <h2>Thêm người dùng mới</h2>
+          <button
+            className="admin-modal-close-btn"
+            onClick={onBackToList}
+            title="Đóng"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            onSaveUser(Object.fromEntries(formData));
+          }}
+        >
+          <div
+            className="admin-modal-body"
+            style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+          >
+            <div className="form-group-modern">
+              <label>Họ và tên</label>
+              <input
+                name="fullName"
+                type="text"
+                required
+                placeholder="Nhập họ và tên"
+                className="modern-input"
+              />
+            </div>
+            <div className="form-group-modern">
+              <label>Email</label>
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="Nhập địa chỉ email"
+                className="modern-input"
+              />
+            </div>
+            <div className="form-group-modern">
+              <label>Mật khẩu</label>
+              <input
+                name="password"
+                type="password"
+                required
+                placeholder="Nhập mật khẩu"
+                className="modern-input"
+              />
+            </div>
+            <div className="form-group-modern">
+              <label>Số điện thoại</label>
+              <input
+                name="phoneNumber"
+                type="tel"
+                placeholder="Nhập số điện thoại"
+                className="modern-input"
+              />
+            </div>
+            <div className="form-group-modern">
+              <label>Vai trò</label>
+              <div className="filter-select-wrap" style={{ width: "100%" }}>
+                <select
+                  name="role"
+                  required
+                  className="modern-filter-select"
+                  style={{ width: "100%" }}
+                >
+                  <option value="CUSTOMER">Khách hàng</option>
+                  {/* <option value="SELLER">Người bán</option> */}
+                </select>
+                <span className="material-symbols-outlined select-arrow">
+                  expand_more
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-modal-footer">
+            <button
+              type="button"
+              className="btn-cancel-action"
+              onClick={onBackToList}
+            >
+              Hủy
+            </button>
+            <button type="submit" className="btn-save-action">
+              Lưu người dùng
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   return (
     <AdminFrame
       sidebarItems={ADMIN_NAV_ITEMS}
@@ -567,7 +679,9 @@ export default function UserManagementView({
       modalContent={
         viewMode === "DETAIL" && selectedUser
           ? renderDetailView(selectedUser)
-          : null
+          : viewMode === "ADD"
+            ? renderAddView()
+            : null
       }
     >
       {renderListView()}

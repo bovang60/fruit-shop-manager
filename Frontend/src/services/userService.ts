@@ -80,6 +80,17 @@ export async function updateUserStatus(
   return callApiWithMethod<null, ApiResponse<UserDto>>("PUT", url, null);
 }
 
+/**
+ * Register a new user (Admin version - direct)
+ */
+export async function registerUser(data: any): Promise<ApiResponse<UserDto>> {
+  return callApiWithMethod<any, ApiResponse<UserDto>>(
+    "POST",
+    "/api/users/register",
+    data,
+  );
+}
+
 // ============= Helper Functions =============
 
 /**
