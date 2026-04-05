@@ -130,7 +130,7 @@ class ProductControllerTest {
     void getProducts_Success_WithDefaultParameters() throws Exception {
         // Arrange
         when(productService.getProducts(
-                anyInt(), anyInt(), any(), any(), any(), any(), any(), any(), any(), any()))
+                anyInt(), anyInt(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -148,14 +148,14 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.data.pagination.totalItems").value(2));
 
         verify(productService, times(1)).getProducts(
-                anyInt(), anyInt(), any(), any(), any(), any(), any(), any(), any(), any());
+                anyInt(), anyInt(), any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void getProducts_Success_WithSearchParameter() throws Exception {
         // Arrange
         when(productService.getProducts(
-                eq(1), eq(25), eq("táo"), any(), any(), any(), any(), any(), any(), any()))
+                eq(1), eq(25), eq("táo"), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -167,7 +167,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.data.products").isArray());
 
         verify(productService, times(1)).getProducts(
-                eq(1), eq(25), eq("táo"), any(), any(), any(), any(), any(), any(), any());
+                eq(1), eq(25), eq("táo"), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -176,7 +176,7 @@ class ProductControllerTest {
         when(productService.getProducts(
                 eq(1), eq(25), any(), any(),
                 eq(new BigDecimal("50000")), eq(new BigDecimal("100000")),
-                any(), any(), any(), any()))
+                any(), any(), any(), any(), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -190,32 +190,32 @@ class ProductControllerTest {
         verify(productService, times(1)).getProducts(
                 eq(1), eq(25), any(), any(),
                 eq(new BigDecimal("50000")), eq(new BigDecimal("100000")),
-                any(), any(), any(), any());
+                any(), any(), any(), any(), any());
     }
 
     @Test
     void getProducts_Success_WithCategoryFilter() throws Exception {
         // Arrange
         when(productService.getProducts(
-                eq(1), eq(25), any(), any(), any(), any(), any(), any(), any(), any()))
+                eq(1), eq(25), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
         mockMvc.perform(get("/api/products")
-                .param("category", "seasonal")
+                .param("category", "1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCd").value(0));
 
         verify(productService, times(1)).getProducts(
-                eq(1), eq(25), any(), any(), any(), any(), any(), any(), any(), any());
+                eq(1), eq(25), any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void getProducts_Success_WithOriginFilter() throws Exception {
         // Arrange
         when(productService.getProducts(
-                eq(1), eq(25), any(), any(), any(), any(), eq("local"), any(), any(), any()))
+                eq(1), eq(25), any(), any(), any(), any(), eq("local"), any(), any(), any(), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -226,14 +226,14 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.resultCd").value(0));
 
         verify(productService, times(1)).getProducts(
-                eq(1), eq(25), any(), any(), any(), any(), eq("local"), any(), any(), any());
+                eq(1), eq(25), any(), any(), any(), any(), eq("local"), any(), any(), any(), any());
     }
 
     @Test
     void getProducts_Success_WithOrganicFilter() throws Exception {
         // Arrange
         when(productService.getProducts(
-                eq(1), eq(25), any(), any(), any(), any(), any(), eq(true), any(), any()))
+                eq(1), eq(25), any(), any(), any(), any(), any(), eq(true), any(), any(), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -244,14 +244,14 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.resultCd").value(0));
 
         verify(productService, times(1)).getProducts(
-                eq(1), eq(25), any(), any(), any(), any(), any(), eq(true), any(), any());
+                eq(1), eq(25), any(), any(), any(), any(), any(), eq(true), any(), any(), any());
     }
 
     @Test
     void getProducts_Success_WithSortParameters() throws Exception {
         // Arrange
         when(productService.getProducts(
-                eq(1), eq(25), any(), any(), any(), any(), any(), any(), eq("price"), eq("asc")))
+                eq(1), eq(25), any(), any(), any(), any(), any(), any(), eq("price"), eq("asc"), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -263,14 +263,14 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.resultCd").value(0));
 
         verify(productService, times(1)).getProducts(
-                eq(1), eq(25), any(), any(), any(), any(), any(), any(), eq("price"), eq("asc"));
+                eq(1), eq(25), any(), any(), any(), any(), any(), any(), eq("price"), eq("asc"), any());
     }
 
     @Test
     void getProducts_Success_WithPagination() throws Exception {
         // Arrange
         when(productService.getProducts(
-                eq(2), eq(10), any(), any(), any(), any(), any(), any(), any(), any()))
+                eq(2), eq(10), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -282,7 +282,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.resultCd").value(0));
 
         verify(productService, times(1)).getProducts(
-                eq(2), eq(10), any(), any(), any(), any(), any(), any(), any(), any());
+                eq(2), eq(10), any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -291,7 +291,7 @@ class ProductControllerTest {
         when(productService.getProducts(
                 eq(1), eq(20), eq("táo"), any(),
                 eq(new BigDecimal("10000")), eq(new BigDecimal("500000")),
-                eq("imported"), eq(true), eq("rating"), eq("desc")))
+                eq("imported"), eq(true), eq("rating"), eq("desc"), any()))
                 .thenReturn(productsApiResponse);
 
         // Act & Assert
@@ -299,7 +299,7 @@ class ProductControllerTest {
                 .param("page", "1")
                 .param("pageSize", "20")
                 .param("search", "táo")
-                .param("category", "seasonal")
+                .param("category", "1")
                 .param("minPrice", "10000")
                 .param("maxPrice", "500000")
                 .param("origin", "imported")
@@ -313,7 +313,7 @@ class ProductControllerTest {
         verify(productService, times(1)).getProducts(
                 eq(1), eq(20), eq("táo"), any(),
                 eq(new BigDecimal("10000")), eq(new BigDecimal("500000")),
-                eq("imported"), eq(true), eq("rating"), eq("desc"));
+                eq("imported"), eq(true), eq("rating"), eq("desc"), any());
     }
 
     @Test
@@ -323,7 +323,7 @@ class ProductControllerTest {
                 1, "Failed to fetch products: Database error", null);
 
         when(productService.getProducts(
-                anyInt(), anyInt(), any(), any(), any(), any(), any(), any(), any(), any()))
+                anyInt(), anyInt(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(errorResponse);
 
         // Act & Assert

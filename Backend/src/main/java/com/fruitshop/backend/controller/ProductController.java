@@ -46,12 +46,13 @@ public class ProductController {
             @RequestParam(name = "origin", required = false) String origin,
             @RequestParam(name = "organic", required = false) Boolean organic,
             @RequestParam(name = "sortBy", required = false, defaultValue = "popularity") String sortBy,
-            @RequestParam(name = "sortOrder", required = false, defaultValue = "desc") String sortOrder) {
-        log.info("GET /api/products - params: page={}, pageSize={}, category={}, search={}, organic={}", page, pageSize,
-                category, search, organic);
+            @RequestParam(name = "sortOrder", required = false, defaultValue = "desc") String sortOrder,
+            @RequestParam(name = "shopId", required = false) Integer shopId) {
+        log.info("GET /api/products - params: page={}, pageSize={}, category={}, search={}, organic={}, shopId={}", page, pageSize,
+                category, search, organic, shopId);
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
                 page, pageSize, search, category, minPrice, maxPrice,
-                origin, organic, sortBy, sortOrder);
+                origin, organic, sortBy, sortOrder, shopId);
         return ResponseEntity.ok(response);
     }
 

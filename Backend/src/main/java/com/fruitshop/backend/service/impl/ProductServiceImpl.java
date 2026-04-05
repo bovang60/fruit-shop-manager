@@ -32,7 +32,8 @@ public class ProductServiceImpl implements ProductService {
             String origin,
             Boolean organic,
             String sortBy,
-            String sortOrder) {
+            String sortOrder,
+            Integer shopId) {
         try {
             // Validate and set defaults
             page = (page == null || page < 1) ? 1 : page;
@@ -55,6 +56,7 @@ public class ProductServiceImpl implements ProductService {
 
             // Search products
             Page<Product> productPage = productRepository.searchProducts(
+                    shopId,
                     search,
                     category,
                     null, // categoryName - not used, filtering by ID
