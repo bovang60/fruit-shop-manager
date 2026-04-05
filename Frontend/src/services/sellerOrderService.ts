@@ -4,8 +4,10 @@ export type OrderStatus =
   | "PENDING"
   | "CONFIRMED"
   | "SHIPPING"
+  | "DELIVERED"
   | "COMPLETED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "REJECTED";
 
 export type OrderFilterStatus = OrderStatus | "ALL";
 
@@ -17,6 +19,7 @@ export interface SellerOrderApiModel {
   note?: string;
   subTotal: number | string;
   shippingFee?: number | string;
+  discountValue?: number | string;
   paymentMethod?: string;
   paymentStatus?: string;
   status: OrderStatus;
@@ -31,6 +34,7 @@ export interface SellerOrderDto {
   note?: string;
   subTotal: number;
   shippingFee: number;
+  discountValue: number;
   paymentMethod?: string;
   paymentStatus?: string;
   totalAmount: number;
@@ -47,6 +51,8 @@ function toNumber(value: number | string | null | undefined): number {
 function mapOrder(order: SellerOrderApiModel): SellerOrderDto {
   const subTotal = toNumber(order.subTotal);
   const shippingFee = toNumber(order.shippingFee);
+  const discountValue = toNumber(order.discountValue);
+  const totalAmount = Math.max(0, subTotal + shippingFee - discountValue);
 
   return {
     orderId: order.orderId,
@@ -56,9 +62,10 @@ function mapOrder(order: SellerOrderApiModel): SellerOrderDto {
     note: order.note,
     subTotal,
     shippingFee,
+    discountValue,
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
-    totalAmount: subTotal + shippingFee,
+    totalAmount,
     status: order.status,
     createdAt: order.createdAt,
   };
@@ -66,19 +73,38 @@ function mapOrder(order: SellerOrderApiModel): SellerOrderDto {
 
 function normalizeOrderListResponse(
   response: ApiResponse<SellerOrderApiModel[]> | SellerOrderApiModel[],
-): SellerOrderApiModel[] {
-  if (Array.isArray(response)) return response;
-  return response.data ?? [];
+): ApiResponse<SellerOrderApiModel[]> {
+  if (Array.isArray(response)) {
+    return { resultCd: 0, message: "Success", data: response };
+  }
+
+  return {
+    resultCd: response.resultCd ?? 0,
+    message: response.message ?? "Success",
+    data: response.data ?? [],
+  };
 }
 
 function normalizeOrderResponse(
   response: ApiResponse<SellerOrderApiModel> | SellerOrderApiModel,
-): SellerOrderApiModel | null {
-  if (!response) return null;
-  if (typeof response === "object" && "data" in response) {
-    return response.data ?? null;
+): ApiResponse<SellerOrderApiModel> {
+  if (!response) {
+    return { resultCd: 1, message: "Không tìm thấy đơn hàng", data: null };
   }
-  return response;
+
+  if (typeof response === "object" && "data" in response) {
+    return {
+      resultCd: response.resultCd ?? 0,
+      message: response.message ?? "Success",
+      data: response.data ?? null,
+    };
+  }
+
+  return {
+    resultCd: 0,
+    message: "Success",
+    data: response,
+  };
 }
 
 export async function getSellerOrdersByShop(
@@ -91,8 +117,16 @@ export async function getSellerOrdersByShop(
       ApiResponse<SellerOrderApiModel[]> | SellerOrderApiModel[]
     >("GET", `/api/seller/orders/shop/${shopId}`);
 
-    const rawOrders = normalizeOrderListResponse(response);
-    const mappedOrders = rawOrders.map(mapOrder);
+    const normalizedResponse = normalizeOrderListResponse(response);
+    if (normalizedResponse.resultCd !== 0) {
+      return {
+        resultCd: normalizedResponse.resultCd,
+        message: normalizedResponse.message || "Không thể tải danh sách đơn hàng",
+        data: null,
+      };
+    }
+
+    const mappedOrders = (normalizedResponse.data ?? []).map(mapOrder);
     const filteredOrders =
       status === "ALL"
         ? mappedOrders
@@ -122,7 +156,16 @@ export async function getSellerOrderById(
       ApiResponse<SellerOrderApiModel> | SellerOrderApiModel
     >("GET", `/api/seller/orders/${orderId}`);
 
-    const data = normalizeOrderResponse(response);
+    const normalizedResponse = normalizeOrderResponse(response);
+    if (normalizedResponse.resultCd !== 0) {
+      return {
+        resultCd: normalizedResponse.resultCd,
+        message: normalizedResponse.message || "Không thể tải chi tiết đơn hàng",
+        data: null,
+      };
+    }
+
+    const data = normalizedResponse.data;
     if (!data || Array.isArray(data)) {
       return { resultCd: 1, message: "Không tìm thấy đơn hàng", data: null };
     }
@@ -155,7 +198,17 @@ export async function updateSellerOrderStatus(
       ApiResponse<SellerOrderApiModel> | SellerOrderApiModel
     >("PATCH", url);
 
-    const data = normalizeOrderResponse(response);
+    const normalizedResponse = normalizeOrderResponse(response);
+    if (normalizedResponse.resultCd !== 0) {
+      return {
+        resultCd: normalizedResponse.resultCd,
+        message:
+          normalizedResponse.message || "Không thể cập nhật trạng thái đơn hàng",
+        data: null,
+      };
+    }
+
+    const data = normalizedResponse.data;
     if (!data || Array.isArray(data)) {
       return {
         resultCd: 1,

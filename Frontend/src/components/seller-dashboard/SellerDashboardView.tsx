@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './SellerDashboard.css';
 import LoadingModal from '../common/loading/LoadingModal';
+import type { SellerOrderDto } from '../../services/sellerOrderService';
 
 export type RecentOrder = {
     orderId: number;
@@ -21,9 +22,54 @@ export type Props = {
     stats: DashboardStats;
     recentOrders: RecentOrder[];
     isLoading: boolean;
+    selectedOrder: SellerOrderDto | null;
+    isDetailLoading: boolean;
+    onViewDetail: (orderId: number) => void;
+    onCloseDetail: () => void;
 };
 
-const SellerDashboardView: React.FC<Props> = ({ stats, recentOrders, isLoading }) => {
+const ORDER_STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Chờ xác nhận',
+    CONFIRMED: 'Đã xác nhận',
+    SHIPPING: 'Đang giao',
+    DELIVERED: 'Đã giao',
+    COMPLETED: 'Hoàn tất',
+    CANCELLED: 'Đã hủy',
+    REJECTED: 'Từ chối',
+};
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+    COD: 'Thanh toán khi nhận hàng',
+    VNPAY: 'VNPay',
+    MOMO: 'MoMo',
+};
+
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Chờ thanh toán',
+    SUCCESS: 'Thanh toán thành công',
+    FAILED: 'Thanh toán thất bại',
+    UNPAID: 'Chưa thanh toán',
+    COMPLETED: 'Hoàn tất',
+    PAID: 'Đã thanh toán',
+};
+
+const getOrderStatusLabel = (status: string) => ORDER_STATUS_LABELS[status] || status;
+const getPaymentMethodLabel = (method?: string) =>
+    (method ? PAYMENT_METHOD_LABELS[method] : '') || method || 'N/A';
+const getPaymentStatusLabel = (status?: string) =>
+    (status ? PAYMENT_STATUS_LABELS[status] : '') || status || 'N/A';
+const formatCurrency = (value?: number) => `${(value ?? 0).toLocaleString('vi-VN')}đ`;
+const getStatusClassName = (status: string) => `seller-status-chip is-${status.toLowerCase()}`;
+
+const SellerDashboardView: React.FC<Props> = ({
+    stats,
+    recentOrders,
+    isLoading,
+    selectedOrder,
+    isDetailLoading,
+    onViewDetail,
+    onCloseDetail,
+}) => {
     return (
         <>
             <div className="home-root">
@@ -71,12 +117,13 @@ const SellerDashboardView: React.FC<Props> = ({ stats, recentOrders, isLoading }
                                 <th>Khách hàng</th>
                                 <th>Tổng tiền</th>
                                 <th>Trạng thái</th>
+                                <th style={{ textAlign: 'right' }}>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             {recentOrders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="seller-empty-state">Chưa có đơn hàng nào.</td>
+                                    <td colSpan={5} className="seller-empty-state">Chưa có đơn hàng nào.</td>
                                 </tr>
                             ) : (
                                 recentOrders.map((order) => (
@@ -88,6 +135,17 @@ const SellerDashboardView: React.FC<Props> = ({ stats, recentOrders, isLoading }
                                             <span className={`status-badge ${order.status.toLowerCase()}`}>
                                                 {order.status}
                                             </span>
+                                        </td>
+                                        <td>
+                                            <div className="seller-inline-actions" style={{ justifyContent: 'flex-end' }}>
+                                                <button
+                                                    type="button"
+                                                    className="seller-secondary-btn"
+                                                    onClick={() => onViewDetail(order.orderId)}
+                                                >
+                                                    Xem chi tiết
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -102,6 +160,74 @@ const SellerDashboardView: React.FC<Props> = ({ stats, recentOrders, isLoading }
                 subMessage="Vui lòng chờ trong giây lát"
                 theme="green"
             />
+            {isDetailLoading && (
+                <LoadingModal
+                    isOpen={isDetailLoading}
+                    message="Đang tải chi tiết đơn hàng..."
+                    subMessage="Vui lòng chờ trong giây lát"
+                    theme="green"
+                />
+            )}
+            {selectedOrder && !isDetailLoading && (
+                <div className="seller-dashboard-modal-overlay" onClick={onCloseDetail}>
+                    <div className="seller-dashboard-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="seller-dashboard-modal-header">
+                            <div>
+                                <h3>Chi tiết đơn #{selectedOrder.orderId}</h3>
+                                <p>
+                                    Tạo lúc {new Date(selectedOrder.createdAt).toLocaleString('vi-VN')}
+                                </p>
+                            </div>
+                            <button type="button" className="seller-secondary-btn" onClick={onCloseDetail}>Đóng</button>
+                        </div>
+
+                        <div className="seller-detail-grid">
+                            <div className="seller-detail-item">
+                                <span className="seller-detail-label">Khách hàng</span>
+                                <span className="seller-detail-value">{selectedOrder.receiverName}</span>
+                            </div>
+                            <div className="seller-detail-item">
+                                <span className="seller-detail-label">Số điện thoại</span>
+                                <span className="seller-detail-value">{selectedOrder.receiverPhone}</span>
+                            </div>
+                            <div className="seller-detail-item seller-detail-item-wide">
+                                <span className="seller-detail-label">Địa chỉ nhận</span>
+                                <span className="seller-detail-value">{selectedOrder.shippingAddress || 'N/A'}</span>
+                            </div>
+                            <div className="seller-detail-item seller-detail-item-wide">
+                                <span className="seller-detail-label">Ghi chú</span>
+                                <span className="seller-detail-value">{selectedOrder.note || 'N/A'}</span>
+                            </div>
+                            <div className="seller-detail-item">
+                                <span className="seller-detail-label">Trạng thái đơn hàng</span>
+                                <span className={getStatusClassName(selectedOrder.status)}>
+                                    {getOrderStatusLabel(selectedOrder.status)}
+                                </span>
+                            </div>
+                            <div className="seller-detail-item">
+                                <span className="seller-detail-label">Phương thức thanh toán</span>
+                                <span className="seller-detail-value">{getPaymentMethodLabel(selectedOrder.paymentMethod)}</span>
+                            </div>
+                            <div className="seller-detail-item">
+                                <span className="seller-detail-label">Trạng thái thanh toán</span>
+                                <span className="seller-detail-value">{getPaymentStatusLabel(selectedOrder.paymentStatus)}</span>
+                            </div>
+                            <div className="seller-detail-item">
+                                <span className="seller-detail-label">Tạm tính</span>
+                                <span className="seller-detail-value">{formatCurrency(selectedOrder.subTotal)}</span>
+                            </div>
+                            <div className="seller-detail-item">
+                                <span className="seller-detail-label">Phí ship</span>
+                                <span className="seller-detail-value">{formatCurrency(selectedOrder.shippingFee)}</span>
+                            </div>
+                            <div className="seller-detail-item">
+                                <span className="seller-detail-label">Tổng tiền</span>
+                                <span className="seller-detail-value">{formatCurrency(selectedOrder.totalAmount)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './FruitManager.css';
 import type { SellerProductDto } from '../../services/sellerFruitService';
+import type { CategoryFilterItemDto } from '../../services/categoryService';
 import Pagination from '../common/pagination/Pagination';
 import LoadingModal from '../common/loading/LoadingModal';
 
@@ -10,20 +11,31 @@ export type FruitData = SellerProductDto;
 export type Props = {
     fruits: FruitData[];
     isLoading: boolean;
+    categories: CategoryFilterItemDto[];
     editingFruitId: number | null;
     editForm: {
         name: string;
+        description: string;
+        categoryId: string;
         price: string;
         stock: string;
         imageUrl: string;
     };
-    onCreate: (data: { name: string; price: string; stock: string; imageUrl?: string }) => Promise<boolean>;
+    onCreate: (data: {
+        name: string;
+        description: string;
+        categoryId: string;
+        price: string;
+        stock: string;
+        imageFile?: File | null;
+    }) => Promise<boolean>;
     onStartEdit: (fruit: FruitData) => void;
     onCancelEdit: () => void;
     onEditFieldChange: (
-        field: 'name' | 'price' | 'stock' | 'imageUrl',
+        field: 'name' | 'description' | 'categoryId' | 'price' | 'stock' | 'imageUrl',
         value: string,
     ) => void;
+    onEditImageFileChange: (file: File | null) => void;
     onSaveEdit: (id: number) => void;
     onSoftDelete: (id: number) => void;
     onReactivate: (id: number) => void;
@@ -36,12 +48,14 @@ const ITEMS_PER_PAGE = 10;
 const FruitManagerView: React.FC<Props> = ({
     fruits,
     isLoading,
+    categories,
     editingFruitId,
     editForm,
     onCreate,
     onStartEdit,
     onCancelEdit,
     onEditFieldChange,
+    onEditImageFileChange,
     onSaveEdit,
     onSoftDelete,
     onReactivate,
@@ -52,10 +66,13 @@ const FruitManagerView: React.FC<Props> = ({
     const [currentPage, setCurrentPage] = React.useState(1);
     const [newFruit, setNewFruit] = React.useState({
         name: '',
+        description: '',
+        categoryId: '',
         price: '',
         stock: '',
-        imageUrl: '',
+        imageFile: null as File | null,
     });
+    const [newImagePreview, setNewImagePreview] = React.useState('');
 
     const totalPages = Math.max(1, Math.ceil(fruits.length / ITEMS_PER_PAGE));
     const paginatedFruits = fruits.slice(
@@ -68,6 +85,23 @@ const FruitManagerView: React.FC<Props> = ({
             setCurrentPage(totalPages);
         }
     }, [currentPage, totalPages]);
+
+    React.useEffect(() => {
+        return () => {
+            if (newImagePreview.startsWith('blob:')) {
+                URL.revokeObjectURL(newImagePreview);
+            }
+        };
+    }, [newImagePreview]);
+
+    const getCategoryName = (categoryId?: number) => {
+        if (!categoryId) return 'Chưa phân loại';
+        const category = categories.find((item) => item.categoryId === categoryId);
+        return category?.categoryName || `#${categoryId}`;
+    };
+    const editingFruit = editingFruitId
+        ? fruits.find((fruit) => fruit.productId === editingFruitId) || null
+        : null;
 
     return (
         <>
@@ -108,13 +142,23 @@ const FruitManagerView: React.FC<Props> = ({
                             event.preventDefault();
                             const created = await onCreate({
                                 name: newFruit.name,
+                                description: newFruit.description,
+                                categoryId: newFruit.categoryId,
                                 price: newFruit.price,
                                 stock: newFruit.stock,
-                                imageUrl: newFruit.imageUrl || undefined,
+                                imageFile: newFruit.imageFile,
                             });
                             if (created) {
                                 setIsAdding(false);
-                                setNewFruit({ name: '', price: '', stock: '', imageUrl: '' });
+                                setNewImagePreview('');
+                                setNewFruit({
+                                    name: '',
+                                    description: '',
+                                    categoryId: '',
+                                    price: '',
+                                    stock: '',
+                                    imageFile: null,
+                                });
                             }
                         }}
                     >
@@ -150,17 +194,76 @@ const FruitManagerView: React.FC<Props> = ({
                                 />
                             </div>
                             <div className="seller-field">
-                                <label htmlFor="fruit-image">Ảnh (URL)</label>
+                                <label htmlFor="fruit-category">Danh mục</label>
+                                <select
+                                    id="fruit-category"
+                                    value={newFruit.categoryId}
+                                    onChange={(e) => setNewFruit({ ...newFruit, categoryId: e.target.value })}
+                                >
+                                    <option value="">Chọn danh mục</option>
+                                    {categories.map((category) => (
+                                        <option key={category.categoryId} value={category.categoryId}>
+                                            {category.categoryName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="seller-field seller-field-full">
+                                <label htmlFor="fruit-description">Mô tả</label>
+                                <textarea
+                                    id="fruit-description"
+                                    rows={3}
+                                    value={newFruit.description}
+                                    onChange={(e) => setNewFruit({ ...newFruit, description: e.target.value })}
+                                />
+                            </div>
+                            <div className="seller-field seller-field-full">
+                                <label htmlFor="fruit-image">Ảnh từ máy</label>
                                 <input
                                     id="fruit-image"
-                                    type="text"
-                                    value={newFruit.imageUrl}
-                                    onChange={(e) => setNewFruit({ ...newFruit, imageUrl: e.target.value })}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0] || null;
+                                        setNewFruit({ ...newFruit, imageFile: file });
+                                        if (!file) {
+                                            if (newImagePreview.startsWith('blob:')) {
+                                                URL.revokeObjectURL(newImagePreview);
+                                            }
+                                            setNewImagePreview('');
+                                            return;
+                                        }
+                                        if (newImagePreview.startsWith('blob:')) {
+                                            URL.revokeObjectURL(newImagePreview);
+                                        }
+                                        const objectUrl = URL.createObjectURL(file);
+                                        setNewImagePreview(objectUrl);
+                                    }}
                                 />
+                                {newImagePreview && (
+                                    <img src={newImagePreview} alt="Xem trước ảnh sản phẩm" className="seller-fruit-image-preview" />
+                                )}
                             </div>
                         </div>
                         <div className="seller-form-actions">
-                            <button type="button" className="seller-ghost-btn" onClick={() => setIsAdding(false)}>Hủy</button>
+                            <button
+                                type="button"
+                                className="seller-ghost-btn"
+                                onClick={() => {
+                                    setIsAdding(false);
+                                    setNewImagePreview('');
+                                    setNewFruit({
+                                        name: '',
+                                        description: '',
+                                        categoryId: '',
+                                        price: '',
+                                        stock: '',
+                                        imageFile: null,
+                                    });
+                                }}
+                            >
+                                Hủy
+                            </button>
                             <button type="submit" className="btn-primary-admin">Tạo sản phẩm</button>
                         </div>
                     </form>
@@ -172,6 +275,8 @@ const FruitManagerView: React.FC<Props> = ({
                     <thead>
                         <tr>
                             <th>Sản phẩm</th>
+                            <th>Danh mục</th>
+                            <th>Mô tả</th>
                             <th>Giá</th>
                             <th>Tồn kho</th>
                             <th>Trạng thái</th>
@@ -181,12 +286,11 @@ const FruitManagerView: React.FC<Props> = ({
                     <tbody>
                         {fruits.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="seller-empty-state">Chưa có sản phẩm nào trong cửa hàng.</td>
+                                <td colSpan={7} className="seller-empty-state">Chưa có sản phẩm nào trong cửa hàng.</td>
                             </tr>
                         ) : (
                             paginatedFruits.map((fruit) => {
                                 const isActive = fruit.isActive !== false;
-                                const isEditing = editingFruitId === fruit.productId;
 
                                 return (
                                     <tr key={fruit.productId}>
@@ -200,45 +304,24 @@ const FruitManagerView: React.FC<Props> = ({
                                                     )}
                                                 </span>
                                                 <div>
-                                                    {isEditing ? (
-                                                        <input
-                                                            type="text"
-                                                            value={editForm.name}
-                                                            onChange={(event) => onEditFieldChange('name', event.target.value)}
-                                                        />
-                                                    ) : (
-                                                        <>
-                                                            <span className="seller-primary-text">{fruit.name}</span>
-                                                            <span className="seller-secondary-text">#{fruit.productId}</span>
-                                                        </>
-                                                    )}
+                                                    <>
+                                                        <span className="seller-primary-text">{fruit.name}</span>
+                                                        <span className="seller-secondary-text">#{fruit.productId}</span>
+                                                    </>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            {isEditing ? (
-                                                <input
-                                                    type="text"
-                                                    inputMode="decimal"
-                                                    pattern="^\d+(\.\d+)?$"
-                                                    value={editForm.price}
-                                                    onChange={(event) => onEditFieldChange('price', event.target.value)}
-                                                />
-                                            ) : (
-                                                `${fruit.price.toLocaleString('vi-VN')}đ`
-                                            )}
+                                            {getCategoryName(fruit.categoryId)}
                                         </td>
                                         <td>
-                                            {isEditing ? (
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={editForm.stock}
-                                                    onChange={(event) => onEditFieldChange('stock', event.target.value)}
-                                                />
-                                            ) : (
-                                                fruit.stock
-                                            )}
+                                            {fruit.description || 'N/A'}
+                                        </td>
+                                        <td>
+                                            {`${fruit.price.toLocaleString('vi-VN')}đ`}
+                                        </td>
+                                        <td>
+                                            {fruit.stock}
                                         </td>
                                         <td>
                                             <span className={`seller-status-chip ${isActive ? 'is-active' : 'is-discontinued'}`}>
@@ -247,44 +330,21 @@ const FruitManagerView: React.FC<Props> = ({
                                         </td>
                                         <td>
                                             <div className="seller-inline-actions">
-                                                {isEditing ? (
-                                                    <>
-                                                        <input
-                                                            type="text"
-                                                            value={editForm.imageUrl}
-                                                            onChange={(event) => onEditFieldChange('imageUrl', event.target.value)}
-                                                            placeholder="Ảnh (URL)"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            className="btn-primary-admin"
-                                                            onClick={() => onSaveEdit(fruit.productId)}
-                                                        >
-                                                            Lưu
-                                                        </button>
-                                                        <button type="button" className="seller-ghost-btn" onClick={onCancelEdit}>
-                                                            Hủy
-                                                        </button>
-                                                    </>
+                                                <button type="button" className="seller-secondary-btn" onClick={() => onStartEdit(fruit)}>
+                                                    Chỉnh sửa
+                                                </button>
+                                                {isActive ? (
+                                                    <button type="button" className="seller-ghost-btn seller-danger-btn" onClick={() => onSoftDelete(fruit.productId)}>
+                                                        Ngừng bán
+                                                    </button>
                                                 ) : (
-                                                    <>
-                                                        <button type="button" className="seller-secondary-btn" onClick={() => onStartEdit(fruit)}>
-                                                            Chỉnh sửa
-                                                        </button>
-                                                        {isActive ? (
-                                                            <button type="button" className="seller-ghost-btn seller-danger-btn" onClick={() => onSoftDelete(fruit.productId)}>
-                                                                Ngừng bán
-                                                            </button>
-                                                        ) : (
-                                                            <button type="button" className="seller-ghost-btn" onClick={() => onReactivate(fruit.productId)}>
-                                                                Mở bán lại
-                                                            </button>
-                                                        )}
-                                                        <button type="button" className="seller-ghost-btn seller-danger-btn" onClick={() => onDelete(fruit.productId)}>
-                                                            Xóa
-                                                        </button>
-                                                    </>
+                                                    <button type="button" className="seller-ghost-btn" onClick={() => onReactivate(fruit.productId)}>
+                                                        Mở bán lại
+                                                    </button>
                                                 )}
+                                                <button type="button" className="seller-ghost-btn seller-danger-btn" onClick={() => onDelete(fruit.productId)}>
+                                                    Xóa
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -300,6 +360,98 @@ const FruitManagerView: React.FC<Props> = ({
                 />
                 </section>
             </div>
+            {editingFruitId && (
+                <div className="seller-fruit-modal-overlay" onClick={onCancelEdit}>
+                    <div className="seller-fruit-modal" onClick={(event) => event.stopPropagation()}>
+                        <div className="seller-fruit-modal-header">
+                            <div>
+                                <h3>Cập nhật sản phẩm</h3>
+                                <p>#{editingFruitId} - Chỉnh sửa thông tin sản phẩm</p>
+                            </div>
+                            <button type="button" className="seller-secondary-btn" onClick={onCancelEdit}>
+                                Đóng
+                            </button>
+                        </div>
+                        <div className="seller-form-grid">
+                            <div className="seller-field">
+                                <label>Tên sản phẩm</label>
+                                <input
+                                    type="text"
+                                    value={editForm.name}
+                                    onChange={(event) => onEditFieldChange('name', event.target.value)}
+                                />
+                            </div>
+                            <div className="seller-field">
+                                <label>Danh mục</label>
+                                <select
+                                    value={editForm.categoryId}
+                                    onChange={(event) => onEditFieldChange('categoryId', event.target.value)}
+                                >
+                                    <option value="">Chọn danh mục</option>
+                                    {categories.map((category) => (
+                                        <option key={category.categoryId} value={category.categoryId}>
+                                            {category.categoryName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="seller-field seller-field-full">
+                                <label>Mô tả</label>
+                                <textarea
+                                    rows={3}
+                                    value={editForm.description}
+                                    onChange={(event) => onEditFieldChange('description', event.target.value)}
+                                />
+                            </div>
+                            <div className="seller-field">
+                                <label>Giá (VNĐ)</label>
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={editForm.price}
+                                    onChange={(event) => onEditFieldChange('price', event.target.value)}
+                                />
+                            </div>
+                            <div className="seller-field">
+                                <label>Tồn kho</label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={editForm.stock}
+                                    onChange={(event) => onEditFieldChange('stock', event.target.value)}
+                                />
+                            </div>
+                            <div className="seller-field seller-field-full">
+                                <label>Ảnh từ máy (tùy chọn)</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(event) => onEditImageFileChange(event.target.files?.[0] || null)}
+                                />
+                                {editingFruit?.imageUrl && (
+                                    <img
+                                        src={editingFruit.imageUrl}
+                                        alt={editingFruit.name}
+                                        className="seller-fruit-image-preview"
+                                    />
+                                )}
+                            </div>
+                        </div>
+                        <div className="seller-form-actions">
+                            <button type="button" className="seller-ghost-btn" onClick={onCancelEdit}>
+                                Hủy
+                            </button>
+                            <button
+                                type="button"
+                                className="btn-primary-admin"
+                                onClick={() => onSaveEdit(editingFruitId)}
+                            >
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <LoadingModal
                 isOpen={isLoading}
                 message="Đang tải kho hàng..."
