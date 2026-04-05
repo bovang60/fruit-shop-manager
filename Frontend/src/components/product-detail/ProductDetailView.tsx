@@ -117,7 +117,18 @@ export default function ProductDetailView({
                   {product.reviewCount !== null && product.reviewCount !== undefined && (
                     <span className="product-detail-reviews">| {product.reviewCount ?? 0} đánh giá</span>
                   )}
-                  <span className="product-detail-shop">Cửa hàng: {product.shopName || "Quản trị viên"}</span>
+                  <span className="product-detail-shop">
+                    Cửa hàng: {product.shopName || "Quản trị viên"}
+                    {product.shopId && (
+                      <button 
+                        className="view-shop-btn-small" 
+                        style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', background: 'var(--brand-green)', color: 'white', border: 'none', cursor: 'pointer' }}
+                        onClick={() => navigate(`/home?shopId=${product.shopId}`)}
+                      >
+                        Xem Shop
+                      </button>
+                    )}
+                  </span>
                   <span className="product-detail-category">Danh mục: {product.categoryName || "Chưa phân loại"}</span>
                 </div>
 

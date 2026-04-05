@@ -105,8 +105,16 @@ export default function OrderHistoryView({
                       <span className="order-card-label">Ngày đặt:</span>
                       <span className="order-card-value">{formatDate(order.createdAt)}</span>
                     </div>
+                    {order.discountValue != null && order.discountValue > 0 && (
+                      <div className="order-card-info-row">
+                        <span className="order-card-label">Giảm giá:</span>
+                        <span className="order-card-value" style={{ color: '#e53935' }}>
+                          -{formatCurrency(order.discountValue)}
+                        </span>
+                      </div>
+                    )}
                     <div className="order-card-info-row">
-                      <span className="order-card-label">Tổng tiền:</span>
+                      <span className="order-card-label">Tổng thanh toán:</span>
                       <span className="order-card-value order-card-total">
                         {order.totalPrice != null ? formatCurrency(order.totalPrice) : 'N/A'}
                       </span>

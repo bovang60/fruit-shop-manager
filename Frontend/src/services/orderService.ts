@@ -1,12 +1,18 @@
 import { callApiWithMethod, type ApiResponse } from '../utils/apiClient';
 
-export interface OrderRequest {
-  customerName: string;
-  address: string;
-  phone: string;
-  note?: string;
-  paymentMethod: string;
+export interface ShopCheckoutOption {
+  shopId: number;
   shippingMethodId: number;
+  voucherId?: number;
+  note?: string;
+}
+
+export interface OrderRequest {
+  receiverName: string;
+  shippingAddress: string;
+  receiverPhone: string;
+  paymentMethod: string;
+  shops: ShopCheckoutOption[];
 }
 
 export interface OrderItemDto {
@@ -30,6 +36,7 @@ export interface OrderDto {
   totalPrice: number;
   shippingFee?: number;
   subTotal?: number;
+  discountValue?: number;
   shopId?: number;
   shopName?: string;
   status: string;
@@ -64,6 +71,7 @@ interface BackendOrderDto {
   shippingAddress: string;
   subTotal?: number;
   shippingFee?: number;
+  discountValue?: number;
   totalAmount: number;
   status: string;
   paymentMethod?: string;
@@ -97,6 +105,7 @@ function mapOrderDto(order: BackendOrderDto): OrderDto {
     totalPrice: order.totalAmount,
     shippingFee: order.shippingFee,
     subTotal: order.subTotal,
+    discountValue: order.discountValue,
     shopId: order.shopId,
     shopName: order.shopName,
     status: order.status,
@@ -108,14 +117,14 @@ function mapOrderDto(order: BackendOrderDto): OrderDto {
 /**
  * Create a new order from current cart
  *
- * Endpoint: POST /api/orders
+ * Endpoint: POST /api/orders/checkout
  */
 export async function createOrder(userId: number, request: OrderRequest): Promise<ApiResponse<OrderResponseDto>> {
   try {
-    return await callApiWithMethod<OrderRequest, ApiResponse<OrderResponseDto>>(
+    return await callApiWithMethod<OrderRequest & { userId: number }, ApiResponse<OrderResponseDto>>(
       'POST',
-      '/api/orders',
-      request,
+      '/api/orders/checkout',
+      { ...request, userId },
       { userId: String(userId) }
     );
   } catch (error) {

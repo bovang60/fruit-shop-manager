@@ -75,6 +75,7 @@ export interface ProductListParams {
   organic?: boolean;
   sortBy?: string;
   sortOrder?: string;
+  shopId?: number;
 }
 
 export interface AddToCartRequest {
@@ -110,6 +111,7 @@ export interface ProductDetailDto {
   rating: number;
   reviewCount: number;
   categoryName: string;
+  shopId: number;
   shopName: string;
 }
 
@@ -130,7 +132,8 @@ export interface ProductDetailDto {
  *   search: 'táo',
  *   category: 'seasonal',
  *   sortBy: 'price',
- *   sortOrder: 'asc'
+ *   sortOrder: 'asc',
+ *   shopId: 123
  * })
  */
 export async function getProducts(
@@ -157,6 +160,7 @@ export async function getProducts(
       queryParts.push(`organic=${params.organic}`);
     if (params.sortBy) queryParts.push(`sortBy=${params.sortBy}`);
     if (params.sortOrder) queryParts.push(`sortOrder=${params.sortOrder}`);
+    if (params.shopId !== undefined) queryParts.push(`shopId=${params.shopId}`);
 
     const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
     const url = `/api/products${queryString}`;

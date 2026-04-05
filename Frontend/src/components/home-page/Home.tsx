@@ -1,5 +1,6 @@
 import HomeView from './HomeView'
 import { useMemo, useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   getProducts,
   getNewArrivals,
@@ -25,6 +26,9 @@ import { getUserFromStorage } from '../../services/authService'
 
 export default function Home() {
   const { showNotice, showError } = usePopup()
+  const [searchParams] = useSearchParams()
+  const shopIdParam = searchParams.get('shopId')
+  
   // State management
   const [products, setProducts] = useState<Product[]>([])
   const [newArrivals, setNewArrivals] = useState<Product[]>([])
@@ -46,8 +50,18 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     sortBy: 'popularity',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
+    shopId: shopIdParam ? parseInt(shopIdParam, 10) : undefined
   })
+
+  // Sync URL search params with filters in case of in-page navigation
+  useEffect(() => {
+    const newShopId = shopIdParam ? parseInt(shopIdParam, 10) : undefined;
+    if (filters.shopId !== newShopId) {
+      setFilters(prev => ({ ...prev, shopId: newShopId }));
+      setPage(1);
+    }
+  }, [shopIdParam]);
 
   // Temporary search input state (does NOT trigger API until submitted)
   const [searchInput, setSearchInput] = useState('')
@@ -81,7 +95,8 @@ export default function Home() {
         origin: filters.origin,
         organic: filters.organic,
         sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder
+        sortOrder: filters.sortOrder,
+        shopId: filters.shopId
       })
 
       if (response.resultCd === 0 && response.data) {
