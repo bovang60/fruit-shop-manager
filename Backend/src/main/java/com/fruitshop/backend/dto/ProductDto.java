@@ -20,6 +20,8 @@ public class ProductDto {
     private BigDecimal rating;
     private Integer reviewCount;
     private Integer discount;
+    private Integer shopId;
+    private String shopName;
     private List<String> tags;
     private Boolean isFavorite;
 }

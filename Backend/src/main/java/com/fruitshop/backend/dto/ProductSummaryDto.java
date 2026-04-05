@@ -11,6 +11,7 @@ public class ProductSummaryDto {
     private String name;
     private BigDecimal price;
     private String imageUrl;
+    private String shopName;
     private List<String> tags;
     private BigDecimal rating;
     private Integer soldCount;

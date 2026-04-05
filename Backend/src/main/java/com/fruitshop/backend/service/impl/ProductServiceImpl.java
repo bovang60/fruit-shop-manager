@@ -192,6 +192,8 @@ public class ProductServiceImpl implements ProductService {
         dto.setRating(product.getRating());
         dto.setReviewCount(product.getReviewCount());
         dto.setDiscount(product.getDiscount());
+        dto.setShopId(product.getShop() != null ? product.getShop().getShopId() : null);
+        dto.setShopName(product.getShop() != null ? product.getShop().getShopName() : null);
         dto.setTags(generateTags(product));
         dto.setIsFavorite(false); // TODO: Implement favorite logic when user authentication is ready
         return dto;
@@ -203,6 +205,7 @@ public class ProductServiceImpl implements ProductService {
         dto.setName(product.getName());
         dto.setPrice(product.getPrice());
         dto.setImageUrl(product.getImageUrl());
+        dto.setShopName(product.getShop() != null ? product.getShop().getShopName() : null);
         dto.setTags(generateTags(product));
         dto.setRating(product.getRating());
         dto.setSoldCount(product.getSoldCount());
