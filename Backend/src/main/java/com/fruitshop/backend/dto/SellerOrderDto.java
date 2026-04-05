@@ -20,6 +20,7 @@ public class SellerOrderDto {
     private String note;
     private BigDecimal subTotal;
     private BigDecimal shippingFee;
+    private BigDecimal discountValue;
     private String paymentMethod;
     private String paymentStatus;
     private Order.OrderStatus status;
