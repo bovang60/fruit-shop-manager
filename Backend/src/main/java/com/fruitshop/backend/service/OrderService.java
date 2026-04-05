@@ -16,7 +16,6 @@ public interface OrderService {
     ApiResponse<String> updateOrderStatus(Integer orderId, OrderStatusDto dto, Integer userId);
     ApiResponse<String> cancelOrder(Integer orderId, Integer userId);
     ApiResponse<String> completeOrder(Integer orderId, Integer userId);
-    ApiResponse<com.fruitshop.backend.dto.OrderResponse> createOrder(Integer userId, com.fruitshop.backend.dto.OrderRequest request);
     List<Order> getOrdersByShop(Integer shopId);
     Order getOrderDetail(Integer orderId);
     Order updateOrderStatus(Integer orderId, Order.OrderStatus status);

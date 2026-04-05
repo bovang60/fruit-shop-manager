@@ -163,8 +163,8 @@ public class ProductServiceImpl implements ProductService {
                 break;
             case "popularity":
             default:
-                // Sort by combination of soldCount and viewCount
-                sort = Sort.by("soldCount").and(Sort.by("viewCount"));
+                // Sort by total quantity sold in COMPLETED orders
+                sort = Sort.by("completedOrderSoldCount").and(Sort.by("viewCount"));
                 break;
         }
 

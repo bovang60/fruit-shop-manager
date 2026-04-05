@@ -3,22 +3,20 @@ package com.fruitshop.backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "carts", indexes = {
-    @Index(name = "idx_cart_customer_status", columnList = "customer_id, status"),
-    @Index(name = "idx_cart_customer_product_status", columnList = "customer_id, product_id, status"),
-    @Index(name = "idx_cart_seller_status", columnList = "sheller_id, status")
+    @Index(name = "idx_cart_customer_status", columnList = "customer_id, status")
+}, uniqueConstraints = {
+    @UniqueConstraint(name = "uk_cart_customer_shop_status", columnNames = {"customer_id", "shop_id", "status"})
 })
 public class Cart {
 
     // ========== Status Constants ==========
     public static final int STATUS_IN_CART = -2;
-    public static final int STATUS_PENDING = 0;
-    public static final int STATUS_CONFIRMED = 1;
-    public static final int STATUS_COMPLETED = 2;
-    public static final int STATUS_CANCELLED = -1;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,23 +24,18 @@ public class Cart {
     private Integer cartId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sheller_id", nullable = false,
-            foreignKey = @ForeignKey(name = "FKb5o626f86h46m4s7ms6ginnop"))
-    private User seller;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private User customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "shop_id", nullable = false, foreignKey = @ForeignKey(name = "FK_carts_shop"))
+    private Shop shop;
 
     @Column(name = "status", nullable = false)
-    private Integer status = STATUS_PENDING;
+    private Integer status = STATUS_IN_CART;
 
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<CartItem> items = new ArrayList<>();
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
