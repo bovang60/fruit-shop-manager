@@ -77,6 +77,9 @@ public class Product {
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @org.hibernate.annotations.Formula("(SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE oi.product_id = id AND o.status = 'COMPLETED')")
+    private Integer completedOrderSoldCount;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

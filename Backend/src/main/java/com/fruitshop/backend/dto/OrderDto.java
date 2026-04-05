@@ -14,6 +14,7 @@ public class OrderDto {
     private String receiverPhone;
     private String shippingAddress;
     private BigDecimal subTotal;
+    private BigDecimal discountValue;
     private BigDecimal shippingFee;
     private BigDecimal totalAmount;
     private String status;

@@ -3,6 +3,8 @@ package com.fruitshop.backend.service.impl;
 import com.fruitshop.backend.dto.*;
 import com.fruitshop.backend.model.*;
 import com.fruitshop.backend.repository.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,14 +14,12 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import lombok.extern.slf4j.Slf4j;
-
 import com.fruitshop.backend.service.OrderService;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderServiceImpl implements com.fruitshop.backend.service.OrderService {
+public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -28,185 +28,313 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final ShippingMethodRepository shippingMethodRepository;
+    private final VoucherRepository voucherRepository;
+    private final OrderVoucherRepository orderVoucherRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    // =====================================================================
+    //  CHECKOUT — Cart-per-shop → Order-per-shop (production-ready)
+    // =====================================================================
     @Override
     @Transactional
-    public ApiResponse<OrderResponse> createOrder(Integer userId, OrderRequest request) {
-        log.info("createOrder -> userId: {}", userId);
+    public ApiResponse<List<OrderDto>> checkout(CheckoutRequestDto dto) {
+        // 1. Find user
+        Optional<User> userOpt = userRepository.findById(dto.getUserId());
+        if (userOpt.isEmpty()) {
+            return ApiResponse.error("User not found");
+        }
+        User user = userOpt.get();
 
-        // Fetch user from db
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Validate Shipping Method
-        if (request.getShippingMethodId() == null) {
-            return ApiResponse.error("Shipping method is required");
+        // 2. Find all in-cart carts for user (each cart = 1 shop)
+        // Validate shops payload
+        if (dto.getShops() == null || dto.getShops().isEmpty()) {
+            return ApiResponse.error("No shop selected for checkout");
         }
 
-        ShippingMethod shippingMethod = shippingMethodRepository.findById(request.getShippingMethodId()).orElse(null);
-        if (shippingMethod == null) {
-            return ApiResponse.error("Shipping method not found");
+        List<Integer> selectedShopIds = dto.getShops().stream()
+                .map(ShopCheckoutDto::getShopId)
+                .collect(Collectors.toList());
+
+        List<Cart> carts = cartRepository.findByCustomerIdAndStatusWithItems(
+                dto.getUserId(), Cart.STATUS_IN_CART);
+
+        // Filter carts
+        carts = carts.stream()
+                .filter(c -> selectedShopIds.contains(c.getShop().getShopId()))
+                .collect(Collectors.toList());
+
+        if (carts.isEmpty()) {
+            return ApiResponse.error("Cart is empty or no valid items selected");
         }
 
-        if (Boolean.FALSE.equals(shippingMethod.getIsAvailable())) {
-            return ApiResponse.error("Shipping method is not available");
-        }
+        // Map payload config by shopId
+        Map<Integer, ShopCheckoutDto> shopConfigMap = dto.getShops().stream()
+                .collect(Collectors.toMap(ShopCheckoutDto::getShopId, s -> s));
 
-        BigDecimal shippingFee = shippingMethod.getFixedFee() != null ? shippingMethod.getFixedFee() : BigDecimal.ZERO;
-
-        // Fetch user's cart items
-        List<Cart> cartItems = cartRepository.findByCustomerUserIdAndStatus(userId, Cart.STATUS_IN_CART);
-        if (cartItems.isEmpty()) {
-            return ApiResponse.error("Cart is empty. Cannot create order.");
-        }
-
-        log.info("createOrder -> cartItems count: {}", cartItems.size());
-
-        // --- SORT product IDs and lock to prevent deadlock + race condition ---
-        List<Integer> productIds = cartItems.stream()
-                .map(c -> c.getProduct().getProductId())
+        // 3. Collect all product IDs, sort & lock to prevent deadlock + race condition
+        List<Integer> allProductIds = carts.stream()
+                .flatMap(cart -> cart.getItems().stream())
+                .map(item -> item.getProduct().getProductId())
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
 
-        List<Product> lockedProducts = productRepository.findByIdsForUpdate(productIds);
+        List<Product> lockedProducts = productRepository.findByIdsForUpdate(allProductIds);
         Map<Integer, Product> productMap = lockedProducts.stream()
                 .collect(Collectors.toMap(Product::getProductId, p -> p));
 
-        // Validate stock for all items
-        for (Cart cartItem : cartItems) {
-            Product lockedProduct = productMap.get(cartItem.getProduct().getProductId());
-            if (lockedProduct == null) {
-                return ApiResponse.error("Product not found: " + cartItem.getProduct().getProductId());
-            }
-            if (lockedProduct.getStock() < cartItem.getQuantity()) {
-                return ApiResponse.error("Not enough stock for \"" + lockedProduct.getName()
-                        + "\". Available: " + lockedProduct.getStock()
-                        + ", Requested: " + cartItem.getQuantity());
-            }
-        }
-
-        // 1. Calculate totalAmount
-        BigDecimal subTotal = BigDecimal.ZERO;
-        for (Cart item : cartItems) {
-            Product p = productMap.get(item.getProduct().getProductId());
-            if (p != null && p.getPrice() != null) {
-                subTotal = subTotal.add(p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+        // 4. Validate stock for ALL items across ALL carts
+        for (Cart cart : carts) {
+            for (CartItem cartItem : cart.getItems()) {
+                Product lockedProduct = productMap.get(cartItem.getProduct().getProductId());
+                if (lockedProduct == null) {
+                    return ApiResponse.error("Product not found: " + cartItem.getProduct().getProductId());
+                }
+                if (lockedProduct.getStock() < cartItem.getQuantity()) {
+                    return ApiResponse.error(
+                            "Not enough stock for \"" + lockedProduct.getName()
+                                    + "\". Available: " + lockedProduct.getStock()
+                                    + ", Requested: " + cartItem.getQuantity());
+                }
             }
         }
 
-        BigDecimal totalAmount = subTotal.add(shippingFee);
-        log.info("createOrder -> subTotal: {}, shippingFee: {}, totalAmount: {}", subTotal, shippingFee, totalAmount);
+        // 5. Parse payment method
+        Transaction.PaymentMethod paymentMethod;
+        try {
+            paymentMethod = Transaction.PaymentMethod.valueOf(dto.getPaymentMethod().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error("Invalid payment method: " + dto.getPaymentMethod());
+        }
 
-        // 2. Create Transaction
+        // 6. Calculate total payment across all carts, INCLUDING shipping fees
+        BigDecimal totalPayment = BigDecimal.ZERO;
+        
+        // Caching validated shipping methods
+        Map<Integer, ShippingMethod> validatedShippingMethods = new HashMap<>();
+        Map<Integer, Voucher> validatedVouchers = new HashMap<>();
+        Map<Integer, BigDecimal> shopDiscounts = new HashMap<>();
+
+        for (Cart cart : carts) {
+            ShopCheckoutDto config = shopConfigMap.get(cart.getShop().getShopId());
+            if (config == null || config.getShippingMethodId() == null) {
+                return ApiResponse.error("Missing shipping method config for shop: " + cart.getShop().getShopName());
+            }
+
+            // Validate shipping method
+            ShippingMethod shippingMethod = validatedShippingMethods.computeIfAbsent(
+                config.getShippingMethodId(), 
+                id -> shippingMethodRepository.findById(id).orElse(null)
+            );
+            
+            if (shippingMethod == null || !shippingMethod.getIsAvailable()) {
+                return ApiResponse.error("Invalid or unavailable shipping method selected for shop: " + cart.getShop().getShopName());
+            }
+
+            BigDecimal shopSubTotal = BigDecimal.ZERO;
+            for (CartItem item : cart.getItems()) {
+                Product p = productMap.get(item.getProduct().getProductId());
+                shopSubTotal = shopSubTotal.add(
+                        p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            }
+            
+            // Handle Voucher calculation
+            BigDecimal discount = BigDecimal.ZERO;
+            if (config.getVoucherId() != null) {
+                Voucher voucher = voucherRepository.findById(config.getVoucherId()).orElse(null);
+                if (voucher == null) {
+                    return ApiResponse.error("Voucher not found for shop: " + cart.getShop().getShopName());
+                }
+                if (!voucher.getShop().getShopId().equals(cart.getShop().getShopId())) {
+                    return ApiResponse.error("Voucher does not belong to shop: " + cart.getShop().getShopName());
+                }
+                if (!"ACTIVE".equalsIgnoreCase(voucher.getStatus())) {
+                    return ApiResponse.error("Voucher is not active: " + voucher.getCode());
+                }
+                if (voucher.getExpiredDate() != null && voucher.getExpiredDate().isBefore(java.time.LocalDateTime.now())) {
+                    return ApiResponse.error("Voucher has expired: " + voucher.getCode());
+                }
+                if (shopSubTotal.compareTo(voucher.getMinOrderValue()) < 0) {
+                    return ApiResponse.error("Order value does not meet the minimum requirement for voucher: " + voucher.getCode());
+                }
+
+                if (voucher.getDiscountType() == Voucher.DiscountType.PERCENT) {
+                    discount = shopSubTotal.multiply(voucher.getDiscountValue()).divide(BigDecimal.valueOf(100));
+                } else {
+                    discount = voucher.getDiscountValue();
+                }
+                
+                // Ensure discount doesn't exceed subtotal (prevent negative payment)
+                discount = discount.min(shopSubTotal);
+                
+                validatedVouchers.put(cart.getShop().getShopId(), voucher);
+            }
+            shopDiscounts.put(cart.getShop().getShopId(), discount);
+
+            // Subtotal - Discount + Shipping Fee
+            totalPayment = totalPayment.add(shopSubTotal).subtract(discount).add(shippingMethod.getFixedFee());
+        }
+
+        // 7. Create Transaction FIRST
         Transaction transaction = new Transaction();
         transaction.setUser(user);
-        transaction.setTotalPayment(totalAmount);
+        transaction.setTotalPayment(totalPayment);
+        transaction.setPaymentMethod(paymentMethod);
         transaction.setPaymentStatus(Transaction.PaymentStatus.UNPAID);
-        try {
-            transaction.setPaymentMethod(Transaction.PaymentMethod.valueOf(request.getPaymentMethod().toUpperCase()));
-        } catch (Exception e) {
-            transaction.setPaymentMethod(Transaction.PaymentMethod.COD);
-        }
         transaction = transactionRepository.save(transaction);
 
-        // 3. Get shop from first cart item
-        Shop shop = null;
-        if (cartItems.get(0).getProduct() != null && cartItems.get(0).getProduct().getShop() != null) {
-            shop = cartItems.get(0).getProduct().getShop();
-        }
-        if (shop == null) {
-            return ApiResponse.error("Product is not assigned to any shop");
-        }
+        // 8. For each Cart (= 1 shop): create Order + OrderItems, deduct stock
+        List<OrderDto> orderDtos = new ArrayList<>();
 
-        // 4. Create and Save Order Entity
-        Order order = new Order();
-        order.setTransaction(transaction);
-        order.setShop(shop);
-        order.setUser(user);
-        order.setReceiverName(request.getCustomerName());
-        order.setReceiverPhone(request.getPhone());
-        order.setShippingAddress(request.getAddress());
-        order.setNote(request.getNote());
-        order.setSubTotal(subTotal);
-        order.setShippingFee(shippingFee);
-        order.setStatus(Order.OrderStatus.PENDING);
-        order.setCreatedAt(java.time.LocalDateTime.now());
-
-        Order savedOrder;
-        try {
-            savedOrder = orderRepository.save(order);
-            log.info("Saved order successfully! ID: {}", savedOrder.getOrderId());
-        } catch (Exception e) {
-            log.error("Failed to save order", e);
-            return ApiResponse.error("Error saving order");
-        }
-
-        // 4b. Create OrderItems + DEDUCT STOCK
-        List<OrderItem> orderItems = new ArrayList<>();
-        for (Cart cartItem : cartItems) {
-            Product product = productMap.get(cartItem.getProduct().getProductId());
-
-            // Create OrderItem
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(savedOrder);
-            orderItem.setProduct(product);
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(product.getPrice());
-            orderItems.add(orderItem);
-
-            // DEDUCT STOCK (FIX: was missing before)
-            product.setStock(product.getStock() - cartItem.getQuantity());
-            if (product.getSoldCount() != null) {
-                product.setSoldCount(product.getSoldCount() + cartItem.getQuantity());
-            } else {
-                product.setSoldCount(cartItem.getQuantity());
+        for (Cart cart : carts) {
+            Shop shop = cart.getShop();
+            if (shop == null) {
+                return ApiResponse.error("Cart is not associated with a shop");
             }
+
+            // Calculate sub total for this shop's order
+            BigDecimal subTotal = BigDecimal.ZERO;
+            for (CartItem item : cart.getItems()) {
+                Product p = productMap.get(item.getProduct().getProductId());
+                subTotal = subTotal.add(
+                        p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            }
+
+            ShopCheckoutDto config = shopConfigMap.get(shop.getShopId());
+            ShippingMethod shopShipping = validatedShippingMethods.get(config.getShippingMethodId());
+            BigDecimal shippingFee = shopShipping != null ? shopShipping.getFixedFee() : BigDecimal.ZERO;
+            BigDecimal appliedDiscount = shopDiscounts.getOrDefault(shop.getShopId(), BigDecimal.ZERO);
+
+            // Save Order
+            Order order = new Order();
+            order.setTransaction(transaction);
+            order.setShop(shop);
+            order.setUser(user);
+            order.setReceiverName(dto.getReceiverName());
+            order.setReceiverPhone(dto.getReceiverPhone());
+            order.setShippingAddress(dto.getShippingAddress());
+            order.setSubTotal(subTotal);
+            order.setShippingFee(shippingFee);
+            order.setStatus(Order.OrderStatus.PENDING);
+            order.setNote(config.getNote());
+            order = orderRepository.save(order);
+
+            // Save OrderVoucher if voucher was applied
+            Voucher appliedVoucher = validatedVouchers.get(shop.getShopId());
+            if (appliedVoucher != null) {
+                OrderVoucherId orderVoucherId = new OrderVoucherId(order.getOrderId(), appliedVoucher.getVoucherId());
+
+                OrderVoucher orderVoucher = new OrderVoucher();
+                orderVoucher.setId(orderVoucherId);
+                orderVoucher.setOrder(order);
+                orderVoucher.setVoucher(appliedVoucher);
+                orderVoucher.setAppliedValue(appliedDiscount);
+                
+                orderVoucherRepository.save(orderVoucher);
+            }
+
+            // Copy CartItems → OrderItems & deduct stock
+            List<OrderItem> batchOrderItems = new ArrayList<>();
+            List<OrderItemDto> orderItemDtos = new ArrayList<>();
+
+            for (CartItem cartItem : cart.getItems()) {
+                Product product = productMap.get(cartItem.getProduct().getProductId());
+
+                // Create OrderItem (snapshot of cart item)
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrder(order);
+                orderItem.setProduct(product);
+                orderItem.setQuantity(cartItem.getQuantity());
+                orderItem.setPrice(product.getPrice());
+                batchOrderItems.add(orderItem);
+
+                // Deduct stock
+                product.setStock(product.getStock() - cartItem.getQuantity());
+
+                // Build DTO
+                OrderItemDto itemDto = new OrderItemDto();
+                itemDto.setOrderItemId(orderItem.getOrderItemId());
+                itemDto.setProductId(product.getProductId());
+                itemDto.setProductName(product.getName());
+                itemDto.setImageUrl(product.getImageUrl());
+                itemDto.setQuantity(cartItem.getQuantity());
+                itemDto.setPrice(product.getPrice());
+                itemDto.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+                orderItemDtos.add(itemDto);
+            }
+
+            // Batch save order items
+            orderItemRepository.saveAll(batchOrderItems);
+
+            // Build OrderDto
+            OrderDto orderDto = new OrderDto();
+            orderDto.setOrderId(order.getOrderId());
+            orderDto.setShopId(shop.getShopId());
+            orderDto.setShopName(shop.getShopName());
+            orderDto.setReceiverName(order.getReceiverName());
+            orderDto.setReceiverPhone(order.getReceiverPhone());
+            orderDto.setShippingAddress(order.getShippingAddress());
+            orderDto.setSubTotal(subTotal);
+            orderDto.setDiscountValue(appliedDiscount);
+            orderDto.setShippingFee(order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO);
+            orderDto.setTotalAmount(subTotal.subtract(appliedDiscount).add(orderDto.getShippingFee()));
+            orderDto.setStatus(order.getStatus().name());
+            if (order.getTransaction() != null) {
+                orderDto.setPaymentMethod(order.getTransaction().getPaymentMethod().name());
+                orderDto.setPaymentStatus(order.getTransaction().getPaymentStatus().name());
+            }
+            orderDto.setNote(order.getNote());
+            orderDto.setCreatedAt(order.getCreatedAt());
+            orderDto.setItems(orderItemDtos);
+            orderDtos.add(orderDto);
         }
 
-        try {
-            orderItemRepository.saveAll(orderItems);
-            productRepository.saveAll(lockedProducts); // Batch save stock changes
-        } catch (Exception e) {
-            log.error("Error saving order items or updating stock", e);
-            return ApiResponse.error("Error saving order items");
-        }
+        // 9. Batch save product stock changes
+        productRepository.saveAll(lockedProducts);
 
-        // 5. Delete cart items after successful checkout
-        cartRepository.deleteAll(cartItems);
-        log.info("createOrder -> {} cart items removed from cart for userId: {}", cartItems.size(), userId);
+        // 10. DELETE all carts + cart items (Cart is temporary, Order is history)
+        cartRepository.deleteAll(carts);
+        log.info("Checkout complete: {} orders created, cart cleared for userId: {}",
+                orderDtos.size(), dto.getUserId());
 
-        // 6. Log SELLER notification
-        List<User> sellers = userRepository.findByRole(User.Role.SELLER);
-        for (User seller : sellers) {
-            log.info("New order {} created. Seller {} notified.", savedOrder.getOrderId(), seller.getUserId());
-        }
-
-        // 7. Build Response
-        OrderResponse response = new OrderResponse();
-        response.setOrderId(savedOrder.getOrderId());
-        response.setTotalAmount(totalAmount);
-        response.setShippingFee(shippingFee);
-        response.setStatus(savedOrder.getStatus().name());
-        response.setCreatedAt(savedOrder.getCreatedAt());
-
-        return ApiResponse.success("Order saved successfully", response);
+        return ApiResponse.success("Order placed successfully", orderDtos);
     }
 
+    // =====================================================================
+    //  UPDATE ORDER STATUS (seller-facing, by entity)
+    // =====================================================================
     @Override
     @Transactional
     public Order updateOrderStatus(Integer orderId, Order.OrderStatus newStatus) {
         Order order = getOrderDetail(orderId);
 
-        // Logic chặn: Nếu đơn đã hủy hoặc đã hoàn thành thì không cho đổi trạng thái nữa
         if (order.getStatus() == Order.OrderStatus.CANCELLED ||
+                order.getStatus() == Order.OrderStatus.REJECTED ||
                 order.getStatus() == Order.OrderStatus.COMPLETED) {
             throw new IllegalStateException("Đơn hàng đã đóng, không thể thay đổi trạng thái!");
+        }
+
+        // Auto restore stock when seller REJECTS a PENDING order
+        if (order.getStatus() == Order.OrderStatus.PENDING && newStatus == Order.OrderStatus.REJECTED) {
+            List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
+            for (OrderItem item : items) {
+                Product product = productRepository.findByIdForUpdate(item.getProduct().getProductId())
+                        .orElseThrow(() -> new RuntimeException("Product not found: " + item.getProduct().getProductId()));
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+            log.info("Seller rejected order {} -> stock restored for {} items", orderId, items.size());
         }
 
         order.setStatus(newStatus);
         return orderRepository.save(order);
     }
+
+    // =====================================================================
+    //  SALES REPORT
+    // =====================================================================
     @Override
     public SalesReportDto getShopSalesReport(Integer shopId) {
         Integer totalOrders = Math.toIntExact(orderRepository.countByShop_ShopId(shopId));
@@ -222,177 +350,11 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
                 .totalFruitsSold(quantitySold != null ? quantitySold : 0)
                 .build();
     }
-    public ApiResponse<List<OrderDto>> checkout(CheckoutRequestDto dto) {
-        // 1. Find user
-        Optional<User> userOpt = userRepository.findById(dto.getUserId());
-        if (userOpt.isEmpty()) {
-            return ApiResponse.error("User not found");
-        }
-        User user = userOpt.get();
 
-        // 2. Find pending cart items for user
-        List<Cart> cartItems = cartRepository.findByCustomerUserIdAndStatus(dto.getUserId(), Cart.STATUS_IN_CART);
-        if (cartItems.isEmpty()) {
-            return ApiResponse.error("Cart is empty");
-        }
+    // =====================================================================
 
-        // 3. Sort product IDs and lock (PESSIMISTIC_WRITE, prevents deadlock + race condition)
-        List<Integer> productIds = cartItems.stream()
-                .map(c -> c.getProduct().getProductId())
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
-
-        List<Product> lockedProducts = productRepository.findByIdsForUpdate(productIds);
-        Map<Integer, Product> productMap = lockedProducts.stream()
-                .collect(Collectors.toMap(Product::getProductId, p -> p));
-
-        // Validate stock
-        for (Cart cartItem : cartItems) {
-            Product lockedProduct = productMap.get(cartItem.getProduct().getProductId());
-            if (lockedProduct == null) {
-                throw new RuntimeException("Product not found: " + cartItem.getProduct().getProductId());
-            }
-            if (lockedProduct.getStock() < cartItem.getQuantity()) {
-                throw new RuntimeException(
-                        "Not enough stock for \"" + lockedProduct.getName()
-                                + "\". Available: " + lockedProduct.getStock()
-                                + ", Requested: " + cartItem.getQuantity());
-            }
-        }
-
-        // 4. Parse payment method
-        Transaction.PaymentMethod paymentMethod;
-        try {
-            paymentMethod = Transaction.PaymentMethod.valueOf(dto.getPaymentMethod().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid payment method: " + dto.getPaymentMethod());
-        }
-
-        // 5. Group cart items by shop
-        List<Cart> invalidShopItems = cartItems.stream()
-                .filter(item -> item.getProduct() == null || item.getProduct().getShop() == null)
-                .toList();
-        if (!invalidShopItems.isEmpty()) {
-            return ApiResponse.error("Some products are not mapped to any shop");
-        }
-
-        Map<Integer, List<Cart>> itemsByShop = cartItems.stream()
-                .collect(Collectors.groupingBy(item -> item.getProduct().getShop().getShopId()));
-
-        // 6. Calculate total payment
-        BigDecimal totalPayment = BigDecimal.ZERO;
-        for (Cart item : cartItems) {
-            Product p = productMap.get(item.getProduct().getProductId());
-            totalPayment = totalPayment.add(
-                    p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-        }
-
-        // 7. Create transaction FIRST
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setTotalPayment(totalPayment);
-        transaction.setPaymentMethod(paymentMethod);
-        transaction.setPaymentStatus(paymentMethod == Transaction.PaymentMethod.COD
-                ? Transaction.PaymentStatus.UNPAID
-                : Transaction.PaymentStatus.UNPAID);
-        transaction = transactionRepository.save(transaction);
-
-        // 8. For each shop group: create Order, then OrderItems, deduct stock
-        List<OrderDto> orderDtos = new ArrayList<>();
-
-        for (Map.Entry<Integer, List<Cart>> entry : itemsByShop.entrySet()) {
-            List<Cart> shopItems = entry.getValue();
-            Shop shop = shopItems.get(0).getProduct().getShop();
-
-            // Calculate sub total for this shop's order
-            BigDecimal subTotal = BigDecimal.ZERO;
-            for (Cart item : shopItems) {
-                Product p = productMap.get(item.getProduct().getProductId());
-                subTotal = subTotal.add(
-                        p.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-            }
-
-            // Save Order FIRST (before OrderItems — FK constraint)
-            Order order = new Order();
-            order.setTransaction(transaction);
-            order.setShop(shop);
-            order.setUser(user);
-            order.setReceiverName(dto.getReceiverName());
-            order.setReceiverPhone(dto.getReceiverPhone());
-            order.setShippingAddress(dto.getShippingAddress());
-            order.setSubTotal(subTotal);
-            order.setShippingFee(BigDecimal.ZERO);
-            order.setStatus(Order.OrderStatus.PENDING);
-            order.setNote(dto.getNote());
-            order = orderRepository.save(order);
-
-            // Save OrderItems and deduct stock
-            List<OrderItem> batchOrderItems = new ArrayList<>();
-            List<OrderItemDto> orderItemDtos = new ArrayList<>();
-            for (Cart cartItem : shopItems) {
-                Product product = productMap.get(cartItem.getProduct().getProductId());
-
-                // Create OrderItem
-                OrderItem orderItem = new OrderItem();
-                orderItem.setOrder(order);
-                orderItem.setProduct(product);
-                orderItem.setQuantity(cartItem.getQuantity());
-                orderItem.setPrice(product.getPrice());
-                batchOrderItems.add(orderItem);
-
-                // Deduct stock (already locked by PESSIMISTIC_WRITE)
-                product.setStock(product.getStock() - cartItem.getQuantity());
-
-                // Build DTO
-                OrderItemDto itemDto = new OrderItemDto();
-                itemDto.setOrderItemId(orderItem.getOrderItemId());
-                itemDto.setProductId(product.getProductId());
-                itemDto.setProductName(product.getName());
-                itemDto.setImageUrl(product.getImageUrl());
-                itemDto.setQuantity(cartItem.getQuantity());
-                itemDto.setPrice(product.getPrice());
-                itemDto.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
-                orderItemDtos.add(itemDto);
-            }
-
-            // Batch save
-            orderItemRepository.saveAll(batchOrderItems);
-
-            // Build OrderDto
-            OrderDto orderDto = new OrderDto();
-            orderDto.setOrderId(order.getOrderId());
-            orderDto.setShopId(shop.getShopId());
-            orderDto.setShopName(shop.getShopName());
-            orderDto.setReceiverName(order.getReceiverName());
-            orderDto.setReceiverPhone(order.getReceiverPhone());
-            orderDto.setShippingAddress(order.getShippingAddress());
-            BigDecimal subTotalCheckout = order.getSubTotal() != null ? order.getSubTotal() : BigDecimal.ZERO;
-            BigDecimal shippingFeeCheckout = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
-
-            orderDto.setSubTotal(subTotalCheckout);
-            orderDto.setShippingFee(shippingFeeCheckout);
-            orderDto.setTotalAmount(subTotalCheckout.add(shippingFeeCheckout));
-            orderDto.setStatus(order.getStatus().name());
-            if (order.getTransaction() != null) {
-                orderDto.setPaymentMethod(order.getTransaction().getPaymentMethod().name());
-                orderDto.setPaymentStatus(order.getTransaction().getPaymentStatus().name());
-            }
-            orderDto.setNote(order.getNote());
-            orderDto.setCreatedAt(order.getCreatedAt());
-            orderDto.setItems(orderItemDtos);
-            orderDtos.add(orderDto);
-        }
-
-        // 9. Batch save product stock changes
-        productRepository.saveAll(lockedProducts);
-
-        // 10. Delete cart items as they are now Orders
-        cartRepository.deleteAll(cartItems);
-
-        return ApiResponse.success("Order placed successfully", orderDtos);
-    }
-
+    //  ORDER HISTORY
+    // =====================================================================
     @Override
     @Transactional(readOnly = true)
     public ApiResponse<List<OrderDto>> getOrderHistory(Integer userId) {
@@ -426,6 +388,9 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         }
     }
 
+    // =====================================================================
+    //  ORDER DETAIL
+    // =====================================================================
     @Override
     @Transactional(readOnly = true)
     public ApiResponse<OrderDto> getOrderDetail(Integer orderId, Integer userId) {
@@ -453,6 +418,9 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         }
     }
 
+    // =====================================================================
+    //  CONFIRM ORDER (Seller: PENDING → SHIPPING)
+    // =====================================================================
     @Override
     @Transactional
     public ApiResponse<String> confirmOrder(Integer orderId, Integer userId) {
@@ -468,7 +436,6 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
 
         Order order = orderOpt.get();
 
-        // FIX: Verify seller owns this order's shop
         if (order.getShop() == null || order.getShop().getOwner() == null
                 || !order.getShop().getOwner().getUserId().equals(userId)) {
             return ApiResponse.error("This order does not belong to your shop");
@@ -478,13 +445,15 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
             return ApiResponse.error("Order cannot be confirmed");
         }
 
-        // AUTO FLOW: Immediately set order.status = SHIPPING
         order.setStatus(Order.OrderStatus.SHIPPING);
         orderRepository.save(order);
 
         return ApiResponse.success("Order confirmed and moved to SHIPPING", null);
     }
 
+    // =====================================================================
+    //  UPDATE ORDER STATUS (Seller: SHIPPING→DELIVERED, PENDING→REJECTED)
+    // =====================================================================
     @Override
     @Transactional
     public ApiResponse<String> updateOrderStatus(Integer orderId, OrderStatusDto dto, Integer userId) {
@@ -500,7 +469,6 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
 
         Order order = orderOpt.get();
 
-        // FIX: Verify seller owns this order's shop
         if (order.getShop() == null || order.getShop().getOwner() == null
                 || !order.getShop().getOwner().getUserId().equals(userId)) {
             return ApiResponse.error("This order does not belong to your shop");
@@ -528,7 +496,6 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
 
         // SELLER valid flow 2: PENDING -> REJECTED (auto restore stock)
         if (currentStatus == Order.OrderStatus.PENDING && newStatus == Order.OrderStatus.REJECTED) {
-            // Restore stock (same logic as cancelOrder)
             List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
             for (OrderItem item : items) {
                 Product product = productRepository.findByIdForUpdate(item.getProduct().getProductId())
@@ -545,6 +512,9 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         return ApiResponse.error("Cannot transition order status from " + currentStatus + " to " + newStatus);
     }
 
+    // =====================================================================
+    //  CANCEL ORDER (User: only PENDING)
+    // =====================================================================
     @Override
     @Transactional
     public ApiResponse<String> cancelOrder(Integer orderId, Integer userId) {
@@ -555,17 +525,15 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
 
         Order order = orderOpt.get();
 
-        // Verify order belongs to user
         if (!order.getUser().getUserId().equals(userId)) {
             return ApiResponse.error("Order does not belong to this user");
         }
 
-        // Only PENDING orders can be cancelled
         if (order.getStatus() != Order.OrderStatus.PENDING) {
             return ApiResponse.error("Only pending orders can be cancelled. Current status: " + order.getStatus());
         }
 
-        // FIX: Restore stock with PESSIMISTIC LOCK to prevent lost update
+        // Restore stock with PESSIMISTIC LOCK
         List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
         for (OrderItem item : items) {
             Product product = productRepository.findByIdForUpdate(item.getProduct().getProductId())
@@ -574,13 +542,15 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
             productRepository.save(product);
         }
 
-        // Update order status
         order.setStatus(Order.OrderStatus.CANCELLED);
         orderRepository.save(order);
 
         return ApiResponse.success("Order cancelled successfully", null);
     }
 
+    // =====================================================================
+    //  COMPLETE ORDER (User: SHIPPING → COMPLETED)
+    // =====================================================================
     @Override
     @Transactional
     public ApiResponse<String> completeOrder(Integer orderId, Integer userId) {
@@ -591,12 +561,10 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
 
         Order order = orderOpt.get();
 
-        // Check ownership
         if (!order.getUser().getUserId().equals(userId)) {
             return ApiResponse.error("Unauthorized");
         }
 
-        // Check terminal states first
         if (order.getStatus() == Order.OrderStatus.COMPLETED) {
             return ApiResponse.error("Order already completed");
         }
@@ -604,7 +572,6 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
             return ApiResponse.error("Cannot complete cancelled order");
         }
 
-        // Only SHIPPING can be completed by user
         if (order.getStatus() != Order.OrderStatus.SHIPPING) {
             return ApiResponse.error("Order must be in SHIPPING status to complete");
         }
@@ -661,10 +628,22 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         dto.setShippingAddress(order.getShippingAddress() != null ? order.getShippingAddress() : "");
         BigDecimal subTotal = order.getSubTotal() != null ? order.getSubTotal() : BigDecimal.ZERO;
         BigDecimal shippingFee = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
+        
+        // Load OrderVoucher purely for Order History details
+        List<OrderVoucher> orderVouchers = entityManager
+                .createQuery("SELECT ov FROM OrderVoucher ov WHERE ov.order.orderId = :orderId", OrderVoucher.class)
+                .setParameter("orderId", order.getOrderId())
+                .getResultList();
+                
+        BigDecimal discountValue = BigDecimal.ZERO;
+        if (!orderVouchers.isEmpty()) {
+            discountValue = orderVouchers.get(0).getAppliedValue();
+        }
 
         dto.setSubTotal(subTotal);
+        dto.setDiscountValue(discountValue);
         dto.setShippingFee(shippingFee);
-        dto.setTotalAmount(subTotal.add(shippingFee));
+        dto.setTotalAmount(subTotal.subtract(discountValue).add(shippingFee));
         dto.setStatus(order.getStatus().name());
         if (order.getTransaction() != null) {
             dto.setPaymentMethod(order.getTransaction().getPaymentMethod().name());
@@ -675,6 +654,7 @@ public class OrderServiceImpl implements com.fruitshop.backend.service.OrderServ
         dto.setItems(itemDtos);
         return dto;
     }
+
     @Override
     public List<Order> getOrdersByShop(Integer shopId) {
         return orderRepository.findByShop_ShopIdOrderByCreatedAtDesc(shopId);

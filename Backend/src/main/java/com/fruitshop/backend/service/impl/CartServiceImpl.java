@@ -12,18 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.*;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
     // =====================================================================
-    //  ADD TO CART — Customer adds product, creates Cart(status=0)
+    //  ADD TO CART — Auto-groups by shop
     // =====================================================================
     @Override
     @Transactional
@@ -59,60 +59,67 @@ public class CartServiceImpl implements CartService {
             return ApiResponse.error("Product stock is invalid");
         }
 
+        // --- Get shop from product ---
+        Shop shop = product.getShop();
+        if (shop == null) {
+            return ApiResponse.error("Product is not assigned to any shop");
+        }
+
         // --- Prevent customer buying own product ---
-        if (product.getShop() != null && product.getShop().getOwner() != null
-                && product.getShop().getOwner().getUserId().equals(userId)) {
+        if (shop.getOwner() != null && shop.getOwner().getUserId().equals(userId)) {
             return ApiResponse.error("You cannot add your own product to cart");
         }
 
-        // --- Get seller from product → shop → owner ---
-        User seller = null;
-        if (product.getShop() != null && product.getShop().getOwner() != null) {
-            seller = product.getShop().getOwner();
+        // --- Find or create Cart for this customer + shop ---
+        Optional<Cart> existingCartOpt = cartRepository
+                .findByCustomerAndShopAndStatus(customer, shop, Cart.STATUS_IN_CART);
+
+        Cart cart;
+        if (existingCartOpt.isPresent()) {
+            cart = existingCartOpt.get();
+        } else {
+            cart = new Cart();
+            cart.setCustomer(customer);
+            cart.setShop(shop);
+            cart.setStatus(Cart.STATUS_IN_CART);
+            cart = cartRepository.save(cart);
+            log.info("Created new cart for customer={}, shop={}", userId, shop.getShopId());
         }
-        if (seller == null) {
-            return ApiResponse.error("Product is not assigned to any shop/seller");
-        }
 
-        // --- Check if same product already in cart → merge quantity ---
-        Optional<Cart> existingCart = cartRepository
-                .findByCustomerAndProductAndStatus(customer, product, Cart.STATUS_IN_CART);
+        // --- Find or create CartItem for this product in the cart ---
+        Optional<CartItem> existingItemOpt = cartItemRepository.findByCartAndProduct(cart, product);
 
-        if (existingCart.isPresent()) {
-            Cart cart = existingCart.get();
-            int newQty = cart.getQuantity() + dto.getQuantity();
+        if (existingItemOpt.isPresent()) {
+            CartItem existingItem = existingItemOpt.get();
+            int newQty = existingItem.getQuantity() + dto.getQuantity();
 
-            // Validate stock (soft check, real validation at checkout)
+            // Validate stock
             if (newQty > product.getStock()) {
                 return ApiResponse.error("Not enough stock. Available: " + product.getStock());
             }
 
-            cart.setQuantity(newQty);
-            cartRepository.save(cart);
-            log.info("Updated pending cart {} quantity to {} for product: {}",
-                    cart.getCartId(), newQty, product.getName());
+            existingItem.setQuantity(newQty);
+            cartItemRepository.save(existingItem);
+            log.info("Updated cart item quantity to {} for product: {}", newQty, product.getName());
         } else {
             // Validate stock
             if (dto.getQuantity() > product.getStock()) {
                 return ApiResponse.error("Not enough stock. Available: " + product.getStock());
             }
 
-            Cart newCart = new Cart();
-            newCart.setCustomer(customer);
-            newCart.setSeller(seller);
-            newCart.setProduct(product);
-            newCart.setQuantity(dto.getQuantity());
-            newCart.setStatus(Cart.STATUS_IN_CART);
-            cartRepository.save(newCart);
-            log.info("Created new cart for customer={}, product={}, qty={}",
-                    userId, product.getName(), dto.getQuantity());
+            CartItem newItem = new CartItem();
+            newItem.setCart(cart);
+            newItem.setProduct(product);
+            newItem.setQuantity(dto.getQuantity());
+            cartItemRepository.save(newItem);
+            log.info("Added new item to cart: product={}, qty={}", product.getName(), dto.getQuantity());
         }
 
         return ApiResponse.success("Added to cart", buildCartDto(userId));
     }
 
     // =====================================================================
-    //  GET CART — All pending items for a customer
+    //  GET CART — All in-cart items grouped by shop
     // =====================================================================
     @Override
     @Transactional(readOnly = true)
@@ -121,17 +128,18 @@ public class CartServiceImpl implements CartService {
     }
 
     // =====================================================================
-    //  UPDATE CART ITEM — Change quantity of a pending cart item
+    //  UPDATE CART ITEM — Change quantity of a CartItem
     // =====================================================================
     @Override
     @Transactional
-    public ApiResponse<CartDto> updateCartItem(Integer userId, Integer cartId, Integer quantity) {
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
-        if (cartOpt.isEmpty()) {
+    public ApiResponse<CartDto> updateCartItem(Integer userId, Integer cartItemId, Integer quantity) {
+        Optional<CartItem> itemOpt = cartItemRepository.findById(cartItemId);
+        if (itemOpt.isEmpty()) {
             return ApiResponse.error("Cart item not found");
         }
 
-        Cart cart = cartOpt.get();
+        CartItem item = itemOpt.get();
+        Cart cart = item.getCart();
 
         // Verify ownership
         if (!cart.getCustomer().getUserId().equals(userId)) {
@@ -143,13 +151,16 @@ public class CartServiceImpl implements CartService {
             return ApiResponse.error("Only items currently in cart can be modified");
         }
 
+        // If quantity <= 0, remove item
         if (quantity == null || quantity <= 0) {
-            cartRepository.delete(cart);
+            cartItemRepository.delete(item);
+            // If cart has no more items, remove the cart too
+            cleanupEmptyCart(cart);
             return ApiResponse.success("Item removed from cart", buildCartDto(userId));
         }
 
         // Validate stock
-        Product product = cart.getProduct();
+        Product product = item.getProduct();
         if (product.getStock() == null) {
             return ApiResponse.error("Product stock is invalid");
         }
@@ -157,24 +168,25 @@ public class CartServiceImpl implements CartService {
             return ApiResponse.error("Not enough stock. Available: " + product.getStock());
         }
 
-        cart.setQuantity(quantity);
-        cartRepository.save(cart);
+        item.setQuantity(quantity);
+        cartItemRepository.save(item);
 
         return ApiResponse.success("Cart updated", buildCartDto(userId));
     }
 
     // =====================================================================
-    //  REMOVE CART ITEM — Delete a pending cart item
+    //  REMOVE CART ITEM — Delete a CartItem
     // =====================================================================
     @Override
     @Transactional
-    public ApiResponse<String> removeCartItem(Integer userId, Integer cartId) {
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
-        if (cartOpt.isEmpty()) {
+    public ApiResponse<String> removeCartItem(Integer userId, Integer cartItemId) {
+        Optional<CartItem> itemOpt = cartItemRepository.findById(cartItemId);
+        if (itemOpt.isEmpty()) {
             return ApiResponse.error("Cart item not found");
         }
 
-        Cart cart = cartOpt.get();
+        CartItem item = itemOpt.get();
+        Cart cart = item.getCart();
 
         // Verify ownership
         if (!cart.getCustomer().getUserId().equals(userId)) {
@@ -186,26 +198,28 @@ public class CartServiceImpl implements CartService {
             return ApiResponse.error("Only items currently in cart can be removed");
         }
 
-        cartRepository.delete(cart);
+        cartItemRepository.delete(item);
+        // If cart has no more items, remove the cart too
+        cleanupEmptyCart(cart);
+
         return ApiResponse.success("Item removed from cart", null);
     }
 
     // =====================================================================
-    //  CLEAR CART — Delete all pending cart items for a customer
+    //  CLEAR CART — Delete all carts + items for a customer
     // =====================================================================
     @Override
     @Transactional
     public ApiResponse<String> clearCart(Integer userId) {
-        List<Cart> pendingCarts = cartRepository
+        List<Cart> carts = cartRepository
                 .findByCustomerUserIdAndStatus(userId, Cart.STATUS_IN_CART);
-        if (pendingCarts.isEmpty()) {
+        if (carts.isEmpty()) {
             return ApiResponse.error("Cart is already empty");
         }
-        cartRepository.deleteAll(pendingCarts);
+        // CascadeType.ALL + orphanRemoval will delete CartItems too
+        cartRepository.deleteAll(carts);
         return ApiResponse.success("Cart cleared", null);
     }
-
-    // Removed order lifecycle methods (checkout, cancel, confirm, complete, history) to enforce single responsibility
 
     // =====================================================================
     //  DEBUG (DEV only)
@@ -214,68 +228,105 @@ public class CartServiceImpl implements CartService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getCartDebug(Integer userId) {
         List<Cart> carts = cartRepository
-                .findByCustomerUserIdAndStatus(userId, Cart.STATUS_IN_CART);
+                .findByCustomerIdAndStatusWithItems(userId, Cart.STATUS_IN_CART);
         List<Map<String, Object>> debugItems = new ArrayList<>();
 
         for (Cart cart : carts) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("cartId", cart.getCartId());
-            map.put("productId", cart.getProduct() != null ? cart.getProduct().getProductId() : null);
-            map.put("productName", cart.getProduct() != null ? cart.getProduct().getName() : null);
-            map.put("price", cart.getProduct() != null ? cart.getProduct().getPrice() : null);
-            map.put("quantity", cart.getQuantity());
-            map.put("status", cart.getStatus());
-            map.put("sellerId", cart.getSeller() != null ? cart.getSeller().getUserId() : null);
-            debugItems.add(map);
+            for (CartItem item : cart.getItems()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("cartId", cart.getCartId());
+                map.put("shopId", cart.getShop() != null ? cart.getShop().getShopId() : null);
+                map.put("shopName", cart.getShop() != null ? cart.getShop().getShopName() : null);
+                map.put("cartItemId", item.getCartItemId());
+                map.put("productId", item.getProduct() != null ? item.getProduct().getProductId() : null);
+                map.put("productName", item.getProduct() != null ? item.getProduct().getName() : null);
+                map.put("price", item.getProduct() != null ? item.getProduct().getPrice() : null);
+                map.put("quantity", item.getQuantity());
+                map.put("status", cart.getStatus());
+                debugItems.add(map);
+            }
         }
         return debugItems;
     }
 
     // =====================================================================
-    //  HELPER: Build CartDto from customer's pending items
+    //  HELPER: Build CartDto grouped by shop
     // =====================================================================
     private CartDto buildCartDto(Integer userId) {
-        List<Cart> pendingCarts = cartRepository
-                .findByCustomerUserIdAndStatus(userId, Cart.STATUS_IN_CART);
+        List<Cart> carts = cartRepository
+                .findByCustomerIdAndStatusWithItems(userId, Cart.STATUS_IN_CART);
 
-        List<CartItemDto> itemDtos = new ArrayList<>();
+        List<ShopCartDto> shopCartDtos = new ArrayList<>();
         BigDecimal totalPrice = BigDecimal.ZERO;
+        int totalItems = 0;
 
-        for (Cart cart : pendingCarts) {
-            CartItemDto dto = toCartItemDto(cart);
-            itemDtos.add(dto);
-            if (dto.getSubtotal() != null) {
-                totalPrice = totalPrice.add(dto.getSubtotal());
+        for (Cart cart : carts) {
+            ShopCartDto shopCartDto = new ShopCartDto();
+            shopCartDto.setCartId(cart.getCartId());
+
+            if (cart.getShop() != null) {
+                shopCartDto.setShopId(cart.getShop().getShopId());
+                shopCartDto.setShopName(cart.getShop().getShopName());
             }
+
+            List<CartItemDto> itemDtos = new ArrayList<>();
+            BigDecimal shopSubtotal = BigDecimal.ZERO;
+
+            for (CartItem item : cart.getItems()) {
+                CartItemDto dto = toCartItemDto(item);
+                itemDtos.add(dto);
+                if (dto.getSubtotal() != null) {
+                    shopSubtotal = shopSubtotal.add(dto.getSubtotal());
+                }
+                totalItems++;
+            }
+
+            shopCartDto.setItems(itemDtos);
+            shopCartDto.setShopSubtotal(shopSubtotal);
+            shopCartDtos.add(shopCartDto);
+
+            totalPrice = totalPrice.add(shopSubtotal);
         }
 
         CartDto cartDto = new CartDto();
         cartDto.setUserId(userId);
-        cartDto.setTotalItems(itemDtos.size());
+        cartDto.setTotalItems(totalItems);
         cartDto.setTotalPrice(totalPrice);
-        cartDto.setItems(itemDtos);
+        cartDto.setShopCarts(shopCartDtos);
         return cartDto;
     }
 
     // =====================================================================
-    //  HELPER: Convert Cart entity → CartItemDto
+    //  HELPER: Convert CartItem → CartItemDto
     // =====================================================================
-    private CartItemDto toCartItemDto(Cart cart) {
+    private CartItemDto toCartItemDto(CartItem item) {
         CartItemDto dto = new CartItemDto();
-        dto.setCartItemId(cart.getCartId());
+        dto.setCartItemId(item.getCartItemId());
 
-        if (cart.getProduct() != null) {
-            dto.setProductId(cart.getProduct().getProductId());
-            dto.setProductName(cart.getProduct().getName());
-            dto.setPrice(cart.getProduct().getPrice());
-            dto.setImageUrl(cart.getProduct().getImageUrl());
+        if (item.getProduct() != null) {
+            dto.setProductId(item.getProduct().getProductId());
+            dto.setProductName(item.getProduct().getName());
+            dto.setPrice(item.getProduct().getPrice());
+            dto.setImageUrl(item.getProduct().getImageUrl());
 
-            BigDecimal price = cart.getProduct().getPrice() != null
-                    ? cart.getProduct().getPrice() : BigDecimal.ZERO;
-            dto.setSubtotal(price.multiply(BigDecimal.valueOf(cart.getQuantity())));
+            BigDecimal price = item.getProduct().getPrice() != null
+                    ? item.getProduct().getPrice() : BigDecimal.ZERO;
+            dto.setSubtotal(price.multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
-        dto.setQuantity(cart.getQuantity());
+        dto.setQuantity(item.getQuantity());
         return dto;
+    }
+
+    // =====================================================================
+    //  HELPER: Remove cart if it has no more items
+    // =====================================================================
+    private void cleanupEmptyCart(Cart cart) {
+        // Refresh the items list
+        List<CartItem> remaining = cartItemRepository.findByCart(cart);
+        if (remaining.isEmpty()) {
+            cartRepository.delete(cart);
+            log.info("Removed empty cart: cartId={}", cart.getCartId());
+        }
     }
 }

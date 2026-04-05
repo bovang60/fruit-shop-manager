@@ -33,6 +33,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     // Search and filter products
     @Query("SELECT p FROM Product p LEFT JOIN p.category c WHERE " +
+            "(:shopId IS NULL OR p.shop.shopId = :shopId) AND " +
             "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
             "(:categoryId IS NULL OR c.categoryId = :categoryId) AND " +
             "(:category IS NULL OR LOWER(c.categoryName) = LOWER(:category)) AND " +
@@ -42,6 +43,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             "(:organic IS NULL OR p.isOrganic = :organic) AND " +
             "(p.isActive IS NULL OR p.isActive = true)")
     Page<Product> searchProducts(
+            @Param("shopId") Integer shopId,
             @Param("search") String search,
             @Param("categoryId") Integer categoryId,
             @Param("category") String category,

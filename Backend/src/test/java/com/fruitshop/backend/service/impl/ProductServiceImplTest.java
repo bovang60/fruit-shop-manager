@@ -122,12 +122,12 @@ class ProductServiceImplTest {
         Page<Product> productPage = new PageImpl<>(products);
 
         when(productRepository.searchProducts(
-                any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+                any(), any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                null, null, null, null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null, null, null);
 
         // Assert
         assertNotNull(response);
@@ -140,7 +140,7 @@ class ProductServiceImplTest {
         assertEquals(3, response.getData().getPagination().getTotalItems());
 
         verify(productRepository, times(1)).searchProducts(
-                any(), any(), any(), any(), any(), any(), any(), any(Pageable.class));
+                any(), any(), any(), any(), any(), any(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -150,12 +150,12 @@ class ProductServiceImplTest {
         Page<Product> productPage = new PageImpl<>(products);
 
         when(productRepository.searchProducts(
-                eq("táo"), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+                any(), eq("táo"), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                1, 25, "táo", null, null, null, null, null, null, null);
+                1, 25, "táo", null, null, null, null, null, null, null, null);
 
         // Assert
         assertNotNull(response);
@@ -166,7 +166,7 @@ class ProductServiceImplTest {
         assertEquals("táo", response.getData().getAppliedFilters().get("search"));
 
         verify(productRepository, times(1)).searchProducts(
-                eq("táo"), any(), any(), any(), any(), any(), any(), any(Pageable.class));
+                any(), eq("táo"), any(), any(), any(), any(), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -178,12 +178,12 @@ class ProductServiceImplTest {
         Page<Product> productPage = new PageImpl<>(products);
 
         when(productRepository.searchProducts(
-                any(), any(), any(), eq(minPrice), eq(maxPrice), any(), any(), any(Pageable.class)))
+                any(), any(), any(), any(), eq(minPrice), eq(maxPrice), any(), any(), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                1, 25, null, null, minPrice, maxPrice, null, null, null, null);
+                1, 25, null, null, minPrice, maxPrice, null, null, null, null, null);
 
         // Assert
         assertNotNull(response);
@@ -193,7 +193,7 @@ class ProductServiceImplTest {
         assertTrue(response.getData().getAppliedFilters().containsKey("maxPrice"));
 
         verify(productRepository, times(1)).searchProducts(
-                any(), any(), any(), eq(minPrice), eq(maxPrice), any(), any(), any(Pageable.class));
+                any(), any(), any(), any(), eq(minPrice), eq(maxPrice), any(), any(), any(Pageable.class));
     }
 
     @Test
@@ -203,12 +203,12 @@ class ProductServiceImplTest {
         Page<Product> productPage = new PageImpl<>(products);
 
         when(productRepository.searchProducts(
-                any(), any(), any(), any(), any(), any(), eq(true), any(Pageable.class)))
+                any(), any(), any(), any(), any(), any(), any(), eq(true), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                1, 25, null, null, null, null, null, true, null, null);
+                1, 25, null, null, null, null, null, true, null, null, null);
 
         // Assert
         assertNotNull(response);
@@ -218,7 +218,7 @@ class ProductServiceImplTest {
         assertEquals(true, response.getData().getAppliedFilters().get("organic"));
 
         verify(productRepository, times(1)).searchProducts(
-                any(), any(), any(), any(), any(), any(), eq(true), any(Pageable.class));
+                any(), any(), any(), any(), any(), any(), any(), eq(true), any(Pageable.class));
     }
 
     @Test
@@ -228,12 +228,12 @@ class ProductServiceImplTest {
         Page<Product> productPage = new PageImpl<>(products);
 
         when(productRepository.searchProducts(
-                any(), any(), any(), any(), any(), eq(Product.Origin.LOCAL), any(), any(Pageable.class)))
+                any(), any(), any(), any(), any(), any(), eq(Product.Origin.LOCAL), any(), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                1, 25, null, null, null, null, "local", null, null, null);
+                1, 25, null, null, null, null, "local", null, null, null, null);
 
         // Assert
         assertNotNull(response);
@@ -242,7 +242,7 @@ class ProductServiceImplTest {
         assertEquals("Xoài cát Hòa Lộc", response.getData().getProducts().get(0).getName());
 
         verify(productRepository, times(1)).searchProducts(
-                any(), any(), any(), any(), any(), eq(Product.Origin.LOCAL), any(), any(Pageable.class));
+                any(), any(), any(), any(), any(), any(), eq(Product.Origin.LOCAL), any(), any(Pageable.class));
     }
 
     @Test
@@ -253,12 +253,12 @@ class ProductServiceImplTest {
                 org.springframework.data.domain.PageRequest.of(1, 2), 5);
 
         when(productRepository.searchProducts(
-                any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+                any(), any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                2, 2, null, null, null, null, null, null, null, null);
+                2, 2, null, null, null, null, null, null, null, null, null);
 
         // Assert
         assertNotNull(response);
@@ -278,12 +278,12 @@ class ProductServiceImplTest {
         Page<Product> productPage = new PageImpl<>(products);
 
         when(productRepository.searchProducts(
-                any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+                any(), any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                1, 25, null, null, null, null, null, null, "price", "asc");
+                1, 25, null, null, null, null, null, null, "price", "asc", null);
 
         // Assert
         assertNotNull(response);
@@ -296,12 +296,12 @@ class ProductServiceImplTest {
     void getProducts_Error_RepositoryException() {
         // Arrange
         when(productRepository.searchProducts(
-                any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+                any(), any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
                 .thenThrow(new RuntimeException("Database error"));
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                1, 25, null, null, null, null, null, null, null, null);
+                1, 25, null, null, null, null, null, null, null, null, null);
 
         // Assert
         assertNotNull(response);
@@ -467,12 +467,12 @@ class ProductServiceImplTest {
         Page<Product> productPage = new PageImpl<>(products);
 
         when(productRepository.searchProducts(
-                any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+                any(), any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                1, 25, null, null, null, null, null, null, null, null);
+                1, 25, null, null, null, null, null, null, null, null, null);
 
         // Assert
         ProductDto dto = response.getData().getProducts().get(0);
@@ -488,12 +488,12 @@ class ProductServiceImplTest {
         Page<Product> productPage = new PageImpl<>(products);
 
         when(productRepository.searchProducts(
-                any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
+                any(), any(), any(), any(), any(), any(), any(), any(), any(Pageable.class)))
                 .thenReturn(productPage);
 
         // Act
         ApiResponse<ProductListResponseDto> response = productService.getProducts(
-                1, 25, null, null, null, null, null, null, null, null);
+                1, 25, null, null, null, null, null, null, null, null, null);
 
         // Assert
         ProductDto dto = response.getData().getProducts().get(0);

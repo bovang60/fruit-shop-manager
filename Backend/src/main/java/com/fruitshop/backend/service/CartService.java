@@ -7,24 +7,20 @@ import java.util.Map;
 
 public interface CartService {
 
-    // ========== New Cart-based flow ==========
-
-    /** Customer adds a product to cart (creates Cart record with status=0) */
+    /** Customer adds a product to cart (auto-groups by shop) */
     ApiResponse<CartDto> addToCart(AddToCartRequestDto dto);
 
-    /** Get all pending cart items for a customer */
+    /** Get all in-cart items for a customer, grouped by shop */
     ApiResponse<CartDto> getCart(Integer userId);
 
-    /** Customer updates quantity of a pending cart item */
+    /** Customer updates quantity of a cart item */
     ApiResponse<CartDto> updateCartItem(Integer userId, Integer cartItemId, Integer quantity);
 
-    /** Customer removes a pending cart item */
+    /** Customer removes a cart item */
     ApiResponse<String> removeCartItem(Integer userId, Integer cartItemId);
 
-    /** Customer clears all pending cart items */
+    /** Customer clears all carts */
     ApiResponse<String> clearCart(Integer userId);
-
-    // Removed order lifecycle methods (checkout, cancel, confirm, complete, history) to enforce single responsibility
 
     /** Debug endpoint (DEV only) */
     List<Map<String, Object>> getCartDebug(Integer userId);

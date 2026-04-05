@@ -1,7 +1,5 @@
 package com.fruitshop.backend.controller;
 
-import com.fruitshop.backend.dto.OrderRequest;
-import com.fruitshop.backend.dto.OrderResponse;
 import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.CheckoutRequestDto;
 import com.fruitshop.backend.dto.OrderDto;
@@ -23,16 +21,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // ===== USER: Create Order =====
-    @PostMapping
-    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
-            @RequestHeader("userId") Integer userId,
-            @Valid @RequestBody OrderRequest request) {
-        ApiResponse<OrderResponse> response = orderService.createOrder(userId, request);
-        return ResponseEntity.ok(response);
-    }
-
-    // ===== USER: Checkout (legacy) =====
+    // ===== USER: Checkout (Cart → Orders per shop) =====
     @PostMapping("/checkout")
     public ResponseEntity<ApiResponse<List<OrderDto>>> checkout(
             @Valid @RequestBody CheckoutRequestDto dto) {
@@ -67,7 +56,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    // ===== SELLER: Confirm Order (PENDING -> SHIPPING) =====
+    // ===== SELLER: Confirm Order (PENDING → SHIPPING) =====
     @PutMapping("/{orderId}/confirm")
     public ResponseEntity<ApiResponse<String>> confirmOrder(
             @PathVariable("orderId") Integer orderId,
@@ -76,7 +65,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    // ===== SELLER: Update Status (SHIPPING -> DELIVERED) =====
+    // ===== SELLER: Update Status (SHIPPING → DELIVERED, PENDING → REJECTED) =====
     @PutMapping("/{orderId}/status")
     public ResponseEntity<ApiResponse<String>> updateOrderStatus(
             @PathVariable("orderId") Integer orderId,
@@ -86,7 +75,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    // ===== USER: Confirm Received (SHIPPING -> COMPLETED) =====
+    // ===== USER: Confirm Received (SHIPPING → COMPLETED) =====
     @PutMapping("/{orderId}/complete")
     public ResponseEntity<ApiResponse<String>> completeOrder(
             @PathVariable("orderId") Integer orderId,

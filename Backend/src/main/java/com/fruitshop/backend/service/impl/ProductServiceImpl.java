@@ -32,7 +32,8 @@ public class ProductServiceImpl implements ProductService {
             String origin,
             Boolean organic,
             String sortBy,
-            String sortOrder) {
+            String sortOrder,
+            Integer shopId) {
         try {
             // Validate and set defaults
             page = (page == null || page < 1) ? 1 : page;
@@ -55,6 +56,7 @@ public class ProductServiceImpl implements ProductService {
 
             // Search products
             Page<Product> productPage = productRepository.searchProducts(
+                    shopId,
                     search,
                     category,
                     null, // categoryName - not used, filtering by ID
@@ -163,8 +165,8 @@ public class ProductServiceImpl implements ProductService {
                 break;
             case "popularity":
             default:
-                // Sort by combination of soldCount and viewCount
-                sort = Sort.by("soldCount").and(Sort.by("viewCount"));
+                // Sort by total quantity sold in COMPLETED orders
+                sort = Sort.by("completedOrderSoldCount").and(Sort.by("viewCount"));
                 break;
         }
 

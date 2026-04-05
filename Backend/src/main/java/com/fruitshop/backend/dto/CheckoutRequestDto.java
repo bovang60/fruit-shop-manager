@@ -1,8 +1,11 @@
 package com.fruitshop.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class CheckoutRequestDto {
@@ -21,5 +24,7 @@ public class CheckoutRequestDto {
     @NotBlank(message = "Payment method is required")
     private String paymentMethod; // COD, VNPAY, MOMO
 
-    private String note;
+    @NotEmpty(message = "At least one shop is required to checkout")
+    @Valid
+    private List<ShopCheckoutDto> shops;
 }

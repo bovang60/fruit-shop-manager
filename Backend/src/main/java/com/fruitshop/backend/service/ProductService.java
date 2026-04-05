@@ -23,7 +23,8 @@ public interface ProductService {
             String origin,
             Boolean organic,
             String sortBy,
-            String sortOrder);
+            String sortOrder,
+            Integer shopId);
 
     /**
      * Get new arrivals (newest products)

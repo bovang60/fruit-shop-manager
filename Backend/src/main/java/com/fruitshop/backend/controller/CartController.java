@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
@@ -24,7 +23,7 @@ public class CartController {
         return ResponseEntity.ok(response);
     }
 
-    // ===== CUSTOMER: Get Cart (pending items) =====
+    // ===== CUSTOMER: Get Cart (grouped by shop) =====
     @GetMapping
     public ResponseEntity<ApiResponse<CartDto>> getCart(
             @RequestHeader("userId") Integer userId) {
@@ -33,31 +32,29 @@ public class CartController {
     }
 
     // ===== CUSTOMER: Update Cart Item Quantity =====
-    @PutMapping("/items/{cartId}")
+    @PutMapping("/items/{cartItemId}")
     public ResponseEntity<ApiResponse<CartDto>> updateCartItem(
             @RequestHeader(name = "userId") Integer userId,
-            @PathVariable(name = "cartId") Integer cartId,
+            @PathVariable(name = "cartItemId") Integer cartItemId,
             @RequestParam(name = "quantity") Integer quantity) {
-        ApiResponse<CartDto> response = cartService.updateCartItem(userId, cartId, quantity);
+        ApiResponse<CartDto> response = cartService.updateCartItem(userId, cartItemId, quantity);
         return ResponseEntity.ok(response);
     }
 
     // ===== CUSTOMER: Remove Cart Item =====
-    @DeleteMapping("/items/{cartId}")
+    @DeleteMapping("/items/{cartItemId}")
     public ResponseEntity<ApiResponse<String>> removeCartItem(
             @RequestHeader(name = "userId") Integer userId,
-            @PathVariable(name = "cartId") Integer cartId) {
-        ApiResponse<String> response = cartService.removeCartItem(userId, cartId);
+            @PathVariable(name = "cartItemId") Integer cartItemId) {
+        ApiResponse<String> response = cartService.removeCartItem(userId, cartItemId);
         return ResponseEntity.ok(response);
     }
 
-    // ===== CUSTOMER: Clear All Pending Items =====
+    // ===== CUSTOMER: Clear All Carts =====
     @DeleteMapping("/clear")
     public ResponseEntity<ApiResponse<String>> clearCart(
             @RequestHeader("userId") Integer userId) {
         ApiResponse<String> response = cartService.clearCart(userId);
         return ResponseEntity.ok(response);
     }
-
- // Removed order lifecycle methods to enforce single responsibility
 }
