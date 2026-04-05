@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 @Data
 public class FeedbackDto {
     private Integer feedbackId;
+    private Integer orderId;
     private String userName;
     private Integer productId;
     private String productName;
