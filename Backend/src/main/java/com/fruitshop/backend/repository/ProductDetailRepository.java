@@ -27,6 +27,7 @@ public interface ProductDetailRepository extends JpaRepository<Product, Integer>
      * Find related products by same category, excluding the current product
      */
     @Query("SELECT p FROM Product p " +
+            "LEFT JOIN FETCH p.shop " +
             "WHERE p.category.categoryId = :categoryId " +
             "AND p.productId <> :excludeProductId " +
             "AND p.isActive = true " +
