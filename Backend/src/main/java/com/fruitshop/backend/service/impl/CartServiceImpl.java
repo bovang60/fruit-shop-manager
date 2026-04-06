@@ -95,7 +95,7 @@ public class CartServiceImpl implements CartService {
 
             // Validate stock
             if (newQty > product.getStock()) {
-                return ApiResponse.error("Not enough stock. Available: " + product.getStock());
+                return ApiResponse.error("Tạm thời hết hàng. Vui lòng quay lại sau");
             }
 
             existingItem.setQuantity(newQty);
@@ -104,7 +104,7 @@ public class CartServiceImpl implements CartService {
         } else {
             // Validate stock
             if (dto.getQuantity() > product.getStock()) {
-                return ApiResponse.error("Not enough stock. Available: " + product.getStock());
+                return ApiResponse.error("Tạm thời hết hàng. Vui lòng quay lại sau");
             }
 
             CartItem newItem = new CartItem();
@@ -165,7 +165,7 @@ public class CartServiceImpl implements CartService {
             return ApiResponse.error("Product stock is invalid");
         }
         if (quantity > product.getStock()) {
-            return ApiResponse.error("Not enough stock. Available: " + product.getStock());
+            return ApiResponse.error("Tạm thời hết hàng. Vui lòng quay lại sau");
         }
 
         item.setQuantity(quantity);
