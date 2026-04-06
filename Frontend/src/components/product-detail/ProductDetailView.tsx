@@ -117,9 +117,7 @@ export default function ProductDetailView({
                   {product.reviewCount !== null && product.reviewCount !== undefined && (
                     <span className="product-detail-reviews">| {product.reviewCount ?? 0} đánh giá</span>
                   )}
-                  {(product.soldCount !== null && product.soldCount !== undefined && product.soldCount > 0) && (
-                    <span className="product-detail-sold">| Đã bán {product.soldCount}</span>
-                  )}
+                  <span className="product-detail-sold">| Đã bán {product.soldCount ?? 0}</span>
                   <span className="product-detail-shop">
                     Cửa hàng: {product.shopName || "Quản trị viên"}
                   </span>
