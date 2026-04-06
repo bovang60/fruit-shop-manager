@@ -25,10 +25,10 @@ public class Product {
     @JoinColumn(name = "shop_id", nullable = false, foreignKey = @ForeignKey(name = "FK_products_shop"))
     private Shop shop;
 
-    @Column(length = 255)
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String name;
 
-    @Column(length = 255)
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String description;
 
     @Column(precision = 10, scale = 2)

@@ -58,5 +58,21 @@ public class DatabaseMigrationRunner implements CommandLineRunner {
         } catch (Exception e) {
             System.out.println("Failed to update shops.status constraint: " + e.getMessage());
         }
+
+        try {
+            jdbcTemplate.execute("ALTER TABLE products ALTER COLUMN name NVARCHAR(255) NULL");
+            jdbcTemplate.execute("ALTER TABLE products ALTER COLUMN description NVARCHAR(255) NULL");
+            System.out.println("Updated products.name/products.description to NVARCHAR SUCCESS");
+        } catch (Exception e) {
+            System.out.println("Failed to update products text columns to NVARCHAR: " + e.getMessage());
+        }
+
+        try {
+            jdbcTemplate.execute("ALTER TABLE fruits ALTER COLUMN fruit_name NVARCHAR(255) NOT NULL");
+            jdbcTemplate.execute("ALTER TABLE fruits ALTER COLUMN description NVARCHAR(MAX) NULL");
+            System.out.println("Updated fruits.fruit_name/description to NVARCHAR SUCCESS");
+        } catch (Exception e) {
+            System.out.println("Failed to update fruits text columns to NVARCHAR: " + e.getMessage());
+        }
     }
 }

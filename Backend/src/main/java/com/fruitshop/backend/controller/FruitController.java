@@ -9,6 +9,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.fruitshop.backend.service.FileStorageService;
 
 @RestController
 @RequestMapping({"/api/seller/fruits", "/api/fruits"})
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class FruitController {
 
     private final FruitService fruitService;
+    private final FileStorageService fileStorageService;
 
     // Lấy danh sách sản phẩm của Shop mình
     @GetMapping("/shop/{shopId}")
@@ -63,6 +66,34 @@ public class FruitController {
         try {
             Product updatedProduct = fruitService.updateFruit(fruitId, product);
             return ResponseEntity.ok(ApiResponse.success("Cập nhật sản phẩm thành công!", toDto(updatedProduct)));
+        } catch (Exception ex) {
+            return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
+        }
+    }
+
+    // Upload ảnh sản phẩm từ file
+    @PostMapping("/{fruitId}/image")
+    public ResponseEntity<ApiResponse<SellerProductDto>> uploadFruitImage(
+            @PathVariable Integer fruitId,
+            @RequestParam("image") MultipartFile imageFile) {
+        try {
+            if (imageFile.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("No image file provided."));
+            }
+
+            if (!fileStorageService.isValidImageType(imageFile.getContentType())) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid file type. Only images (PNG, JPG, GIF) are allowed."));
+            }
+
+            if (imageFile.getSize() > 5 * 1024 * 1024) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("File size exceeds limit. Maximum 5MB allowed."));
+            }
+
+            Product updatedProduct = fruitService.uploadFruitImage(fruitId, imageFile);
+            return ResponseEntity.ok(ApiResponse.success("Tải ảnh sản phẩm thành công!", toDto(updatedProduct)));
         } catch (Exception ex) {
             return ResponseEntity.ok(ApiResponse.error(ex.getMessage()));
         }

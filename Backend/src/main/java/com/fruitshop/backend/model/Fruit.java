@@ -22,7 +22,7 @@ public class Fruit {
     @JoinColumn(name = "category_id", nullable = false, foreignKey = @ForeignKey(name = "FK_fruits_category"))
     private Category category;
 
-    @Column(name = "fruit_name", nullable = false)
+    @Column(name = "fruit_name", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String fruitName;
 
     @Column(nullable = false, precision = 15, scale = 0)

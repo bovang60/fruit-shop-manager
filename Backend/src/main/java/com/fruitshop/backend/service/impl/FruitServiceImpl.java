@@ -4,11 +4,14 @@ import com.fruitshop.backend.model.Product;
 import com.fruitshop.backend.model.Shop;
 import com.fruitshop.backend.repository.ProductRepository;
 import com.fruitshop.backend.repository.ShopRepository;
+import com.fruitshop.backend.service.FileStorageService;
 import com.fruitshop.backend.service.FruitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -17,6 +20,7 @@ public class FruitServiceImpl implements FruitService {
 
     private final ProductRepository productRepository;
     private final ShopRepository shopRepository;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -47,6 +51,28 @@ public class FruitServiceImpl implements FruitService {
         existingProduct.setIsOrganic(productDetails.getIsOrganic());
 
         return productRepository.save(existingProduct);
+    }
+
+    @Override
+    @Transactional
+    public Product uploadFruitImage(Integer productId, MultipartFile imageFile) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm!"));
+
+        try {
+            String oldImageUrl = existingProduct.getImageUrl();
+            String imageUrl = fileStorageService.storeFile(imageFile, "products", productId);
+            existingProduct.setImageUrl(imageUrl);
+            Product savedProduct = productRepository.save(existingProduct);
+
+            if (oldImageUrl != null && !oldImageUrl.isBlank()) {
+                fileStorageService.deleteFile(oldImageUrl);
+            }
+
+            return savedProduct;
+        } catch (IOException ex) {
+            throw new RuntimeException("Tải ảnh sản phẩm thất bại!");
+        }
     }
 
     @Override
