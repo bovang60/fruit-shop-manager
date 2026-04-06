@@ -12,6 +12,7 @@ export type OrderData = {
     note?: string;
     subTotal?: number;
     shippingFee?: number;
+    discountValue?: number;
     paymentMethod?: string;
     paymentStatus?: string;
     totalAmount: number;
@@ -37,9 +38,11 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
     PENDING: 'Chờ xác nhận',
     CONFIRMED: 'Đã xác nhận',
     SHIPPING: 'Đang giao',
+    DELIVERED: 'Đã giao',
     COMPLETED: 'Hoàn tất',
     CANCELLED: 'Đã hủy',
     REJECTED: 'Đã từ chối',
+
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -61,9 +64,11 @@ const ORDER_FILTERS: Array<{ value: string; label: string }> = [
     { value: 'PENDING', label: 'Chờ xác nhận' },
     { value: 'CONFIRMED', label: 'Đã xác nhận' },
     { value: 'SHIPPING', label: 'Đang giao' },
+    { value: 'DELIVERED', label: 'Đã giao' },
     { value: 'COMPLETED', label: 'Hoàn tất' },
     { value: 'CANCELLED', label: 'Đã hủy' },
     { value: 'REJECTED', label: 'Đã từ chối' },
+
 ];
 
 const getOrderStatusLabel = (status: string) => ORDER_STATUS_LABELS[status] || status;
@@ -183,6 +188,10 @@ const OrderManagerView: React.FC<Props> = ({
                         <div className="seller-detail-item">
                             <span className="seller-detail-label">Phí ship</span>
                             <span className="seller-detail-value">{formatCurrency(selectedOrder.shippingFee)}</span>
+                        </div>
+                        <div className="seller-detail-item">
+                            <span className="seller-detail-label">Giảm giá voucher</span>
+                            <span className="seller-detail-value">-{formatCurrency(selectedOrder.discountValue)}</span>
                         </div>
                         <div className="seller-detail-item">
                             <span className="seller-detail-label">Tổng tiền</span>

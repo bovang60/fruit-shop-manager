@@ -1,3 +1,5 @@
+@import "../seller/SellerPageShared.css";
+
 /* =============================================
    SELLER DASHBOARD - Class-based CSS
    Design System:
@@ -13,6 +15,50 @@
   min-height: 100vh;
   background-color: #f6f8f5;
   color: #121811;
+}
+
+.seller-dashboard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1300;
+}
+
+.seller-dashboard-modal {
+  width: min(920px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(145, 158, 171, 0.24);
+  box-shadow: 0 24px 48px rgba(16, 24, 40, 0.2);
+  padding: 1.5rem;
+}
+
+.seller-dashboard-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.seller-dashboard-modal-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #1c252e;
+}
+
+.seller-dashboard-modal-header p {
+  margin: 0.35rem 0 0;
+  color: #637381;
+  font-size: 0.875rem;
 }
 
 .sd-main {

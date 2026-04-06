@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { usePopup } from "../common/popup";
 import {
     getOrderDisplayMessage,
@@ -14,11 +15,13 @@ import OrderManagerView from "./OrderManagerView";
 const OrderManager = ({ shopId }: { shopId: number }) => {
     const storedShopId = Number(localStorage.getItem("shopId") || 0);
     const effectiveShopId = shopId || storedShopId;
+    const [searchParams, setSearchParams] = useSearchParams();
     const [orders, setOrders] = useState<SellerOrderDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<OrderFilterStatus>("ALL");
     const [selectedOrder, setSelectedOrder] = useState<SellerOrderDto | null>(null);
     const [isDetailLoading, setIsDetailLoading] = useState(false);
+    const [autoOpenedOrderId, setAutoOpenedOrderId] = useState<number | null>(null);
     const { showConfirm, showError, showNotice } = usePopup();
 
     // Tải danh sách đơn hàng của Shop
@@ -73,7 +76,29 @@ const OrderManager = ({ shopId }: { shopId: number }) => {
 
     const handleCloseDetail = () => {
         setSelectedOrder(null);
+        setAutoOpenedOrderId(null);
+        if (searchParams.has("orderId")) {
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.delete("orderId");
+            setSearchParams(nextParams, { replace: true });
+        }
     };
+
+    useEffect(() => {
+        const orderIdParam = searchParams.get("orderId");
+        const orderId = Number(orderIdParam);
+
+        if (!effectiveShopId || !orderIdParam || Number.isNaN(orderId) || orderId <= 0) {
+            return;
+        }
+
+        if (autoOpenedOrderId === orderId) {
+            return;
+        }
+
+        setAutoOpenedOrderId(orderId);
+        handleViewDetail(orderId);
+    }, [effectiveShopId, searchParams, autoOpenedOrderId]);
 
     // Cập nhật trạng thái đơn hàng (CONFIRMED, SHIPPING, v.v.)
     const handleUpdateStatus = async (orderId: number, nextStatus: string) => {

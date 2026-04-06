@@ -3,6 +3,63 @@
 .seller-fruit-table td input {
     width: 100%;
 }
+.seller-fruit-table td select,
+.seller-fruit-table td textarea {
+    width: 100%;
+}
+.seller-fruit-table td textarea {
+    min-height: 64px;
+    resize: vertical;
+}
+
+.seller-fruit-image-preview {
+    margin-top: 0.5rem;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(145, 158, 171, 0.24);
+}
+
+.seller-fruit-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 24, 40, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1400;
+    padding: 1rem;
+}
+
+.seller-fruit-modal {
+    width: min(840px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid rgba(145, 158, 171, 0.24);
+    box-shadow: 0 24px 48px rgba(16, 24, 40, 0.24);
+    padding: 1.25rem;
+}
+
+.seller-fruit-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.seller-fruit-modal-header h3 {
+    margin: 0;
+}
+
+.seller-fruit-modal-header p {
+    margin: 0.25rem 0 0;
+    color: #637381;
+    font-size: 0.875rem;
+}
 
 .product-card.discontinued {
     opacity: 0.6;

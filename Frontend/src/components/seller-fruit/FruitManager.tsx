@@ -9,10 +9,16 @@ import {
   updateSellerFruitStatus,
   type SellerProductDto,
 } from "../../services/sellerFruitService";
+import {
+  getCategoryFilterList,
+  type CategoryFilterItemDto,
+} from "../../services/categoryService";
 import FruitManagerView from "./FruitManagerView";
 
 type EditFormState = {
   name: string;
+  description: string;
+  categoryId: string;
   price: string;
   stock: string;
   imageUrl: string;
@@ -40,16 +46,33 @@ const parsePrice = (priceValue: string): number | null => {
   return price;
 };
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+const validateImageFile = (file: File | null): string | null => {
+  if (!file) return null;
+  if (!file.type.startsWith("image/")) {
+    return "Vui lòng chọn file ảnh hợp lệ (PNG/JPG/GIF/WEBP)";
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    return "Kích thước ảnh không được vượt quá 5MB";
+  }
+  return null;
+};
+
 const FruitManager = ({ shopId }: { shopId: number }) => {
   const [fruits, setFruits] = useState<SellerProductDto[]>([]);
+  const [categories, setCategories] = useState<CategoryFilterItemDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingFruitId, setEditingFruitId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<EditFormState>({
     name: "",
+    description: "",
+    categoryId: "",
     price: "",
     stock: "",
     imageUrl: "",
   });
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const { showConfirm, showError, showNotice } = usePopup();
 
   const loadFruits = async () => {
@@ -80,20 +103,48 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
     }
   }, [shopId]);
 
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const result = await getCategoryFilterList();
+        if (result.resultCd === 0 && result.data) {
+          setCategories(result.data);
+        } else {
+          showError(result.message || "Không thể tải danh mục", "Lỗi");
+        }
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+        showError("Không thể tải danh mục sản phẩm.", "Lỗi");
+      }
+    };
+
+    void loadCategories();
+  }, []);
+
   const startEdit = (fruit: SellerProductDto) => {
     setEditingFruitId(fruit.productId);
     setEditForm({
       name: fruit.name ?? "",
+      description: fruit.description ?? "",
+      categoryId: fruit.categoryId ? String(fruit.categoryId) : "",
       price: fruit.price !== undefined ? String(fruit.price) : "",
       stock: fruit.stock !== undefined ? String(fruit.stock) : "",
       imageUrl: fruit.imageUrl ?? "",
     });
-
+    setEditImageFile(null);
   };
 
   const cancelEdit = () => {
     setEditingFruitId(null);
-    setEditForm({ name: "", price: "", stock: "", imageUrl: "" });
+    setEditForm({
+      name: "",
+      description: "",
+      categoryId: "",
+      price: "",
+      stock: "",
+      imageUrl: "",
+    });
+    setEditImageFile(null);
   };
 
   const updateEditField = (field: keyof EditFormState, value: string) => {
@@ -102,6 +153,8 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
 
   const handleSaveEdit = async (fruitId: number) => {
     const name = normalizeProductName(editForm.name);
+    const description = editForm.description.trim();
+    const categoryId = Number(editForm.categoryId);
     const priceValue = editForm.price.trim();
     const stockValue = editForm.stock.trim();
     const price = parsePrice(priceValue);
@@ -149,10 +202,28 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
       );
       return;
     }
+    if (!editForm.categoryId || Number.isNaN(categoryId) || categoryId <= 0) {
+      showError("Vui lòng chọn danh mục sản phẩm", "Lỗi");
+      return;
+    }
 
     try {
+      const imageValidationMessage = validateImageFile(editImageFile);
+      if (imageValidationMessage) {
+        showError(imageValidationMessage, "Lỗi");
+        return;
+      }
+      if (editImageFile) {
+        showNotice(
+          "Hệ thống hiện chưa hỗ trợ upload ảnh sản phẩm từ file. Các thay đổi khác vẫn được lưu.",
+          "Thông báo",
+        );
+      }
+
       const result = await updateSellerFruit(fruitId, {
         name,
+        description: description || undefined,
+        categoryId,
         price,
         stock,
         imageUrl: editForm.imageUrl?.trim() || undefined,
@@ -177,11 +248,15 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
 
   const handleCreateFruit = async (data: {
     name: string;
+    description: string;
+    categoryId: string;
     price: string;
     stock: string;
-    imageUrl?: string;
+    imageFile?: File | null;
   }): Promise<boolean> => {
     const name = normalizeProductName(data.name);
+    const description = data.description.trim();
+    const categoryId = Number(data.categoryId);
     const priceValue = data.price.trim();
     const stockValue = data.stock.trim();
     const price = parsePrice(priceValue);
@@ -228,13 +303,31 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
       );
       return false;
     }
+    if (!data.categoryId || Number.isNaN(categoryId) || categoryId <= 0) {
+      showError("Vui lòng chọn danh mục sản phẩm", "Lỗi");
+      return false;
+    }
 
     try {
+      const imageValidationMessage = validateImageFile(data.imageFile || null);
+      if (imageValidationMessage) {
+        showError(imageValidationMessage, "Lỗi");
+        return false;
+      }
+      if (data.imageFile) {
+        showNotice(
+          "Hệ thống hiện chưa hỗ trợ upload ảnh sản phẩm từ file. Sản phẩm sẽ được tạo không kèm ảnh.",
+          "Thông báo",
+        );
+      }
+
       const result = await createSellerFruit(shopId, {
         name,
+        description: description || undefined,
+        categoryId,
         price,
         stock,
-        imageUrl: data.imageUrl?.trim() || undefined,
+        imageUrl: undefined,
       });
       if (result.resultCd === 0) {
         showNotice("Tạo sản phẩm thành công", "Thành công");
@@ -337,12 +430,14 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
     <FruitManagerView
       fruits={fruits}
       isLoading={isLoading}
+      categories={categories}
       editingFruitId={editingFruitId}
       editForm={editForm}
       onCreate={handleCreateFruit}
       onStartEdit={startEdit}
       onCancelEdit={cancelEdit}
       onEditFieldChange={updateEditField}
+      onEditImageFileChange={setEditImageFile}
       onSaveEdit={handleSaveEdit}
       onSoftDelete={handleSoftDelete}
       onReactivate={handleReactivate}

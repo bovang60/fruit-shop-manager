@@ -18,6 +18,8 @@ export interface SellerOrderApiModel {
   orderId: number;
   receiverName: string;
   subTotal: number | string;
+  shippingFee?: number | string;
+  discountValue?: number | string;
   status: OrderStatus;
   createdAt: string;
 }
@@ -111,7 +113,12 @@ export async function getSellerDashboardData(
       .map((order) => ({
         orderId: order.orderId,
         receiverName: order.receiverName,
-        subTotal: toNumber(order.subTotal),
+        subTotal: Math.max(
+          0,
+          toNumber(order.subTotal) +
+            toNumber(order.shippingFee) -
+            toNumber(order.discountValue),
+        ),
         status: order.status,
       }));
 

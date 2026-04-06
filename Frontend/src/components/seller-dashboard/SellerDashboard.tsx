@@ -8,6 +8,11 @@ import {
   getSellerDashboardData,
   getSellerDashboardMessage,
 } from "../../services/sellerDashboardService";
+import {
+  getOrderDisplayMessage,
+  getSellerOrderById,
+  type SellerOrderDto,
+} from "../../services/sellerOrderService";
 
 const SellerDashboard = ({ shopId }: { shopId: number }) => {
   const [stats, setStats] = useState<DashboardStats>({
@@ -18,6 +23,8 @@ const SellerDashboard = ({ shopId }: { shopId: number }) => {
   });
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<SellerOrderDto | null>(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const { showError } = usePopup();
 
   useEffect(() => {
@@ -51,11 +58,37 @@ const SellerDashboard = ({ shopId }: { shopId: number }) => {
     }
   }, [shopId]);
 
+  const handleViewDetail = async (orderId: number) => {
+    setIsDetailLoading(true);
+    try {
+      const response = await getSellerOrderById(orderId);
+      if (response.resultCd === 0 && response.data) {
+        setSelectedOrder(response.data);
+      } else {
+        showError(
+          getOrderDisplayMessage(
+            response.message || "Không thể tải chi tiết đơn hàng",
+          ),
+          "Lỗi",
+        );
+      }
+    } catch (error) {
+      console.error("Load order detail failed", error);
+      showError("Không thể tải chi tiết đơn hàng lúc này.", "Lỗi");
+    } finally {
+      setIsDetailLoading(false);
+    }
+  };
+
   return (
     <SellerDashboardView
       stats={stats}
       recentOrders={recentOrders}
       isLoading={isLoading}
+      selectedOrder={selectedOrder}
+      isDetailLoading={isDetailLoading}
+      onViewDetail={handleViewDetail}
+      onCloseDetail={() => setSelectedOrder(null)}
     />
   );
 };
