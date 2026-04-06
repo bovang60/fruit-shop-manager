@@ -22,6 +22,8 @@ public class ProductDto {
     private Integer discount;
     private Integer shopId;
     private String shopName;
+    private Integer soldCount;
+    private Integer viewCount;
     private List<String> tags;
     private Boolean isFavorite;
 }
