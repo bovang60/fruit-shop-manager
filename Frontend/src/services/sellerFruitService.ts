@@ -145,33 +145,21 @@ export async function uploadSellerFruitImage(
   try {
     const formData = new FormData();
     formData.append("image", imageFile);
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-    const token = localStorage.getItem("token");
-    const uploadEndpoints = [
-      `/api/seller/fruits/${fruitId}/image`,
-      `/api/fruits/${fruitId}/image`,
-    ];
 
-    for (const endpoint of uploadEndpoints) {
-      const response = await fetch(`${baseUrl}${endpoint}`, {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/seller/fruits/${fruitId}/image`,
+      {
         method: "POST",
         body: formData,
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
+      },
+    );
 
-      if (response.status === 404) {
-        continue;
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data: ApiResponse<SellerProductDto> = await response.json();
-      return data;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    throw new Error("HTTP error! status: 404");
+    const data: ApiResponse<SellerProductDto> = await response.json();
+    return data;
   } catch (error) {
     console.error("Error uploading seller fruit image:", error);
     return {
