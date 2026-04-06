@@ -245,6 +245,8 @@ public class ProductServiceImpl implements ProductService {
         dto.setShopId(product.getShop() != null ? product.getShop().getShopId() : null);
         dto.setShopName(product.getShop() != null ? product.getShop().getShopName() : null);
         dto.setTags(generateTags(product));
+        dto.setSoldCount(product.getCompletedOrderSoldCount() != null ? product.getCompletedOrderSoldCount() : 0);
+        dto.setViewCount(product.getViewCount());
         dto.setIsFavorite(false); // TODO: Implement favorite logic when user authentication is ready
         return dto;
     }
@@ -258,7 +260,7 @@ public class ProductServiceImpl implements ProductService {
         dto.setShopName(product.getShop() != null ? product.getShop().getShopName() : null);
         dto.setTags(generateTags(product));
         dto.setRating(product.getRating());
-        dto.setSoldCount(product.getSoldCount());
+        dto.setSoldCount(product.getCompletedOrderSoldCount() != null ? product.getCompletedOrderSoldCount() : 0);
         dto.setViewCount(product.getViewCount());
         dto.setCreatedAt(product.getCreatedAt());
         return dto;
@@ -284,12 +286,12 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // Check if product is trending (high sold count)
-        if (product.getSoldCount() != null && product.getSoldCount() > 100) {
+        if (product.getCompletedOrderSoldCount() != null && product.getCompletedOrderSoldCount() > 100) {
             tags.add("HOT");
         }
 
         // Check if product is very popular
-        if (product.getSoldCount() != null && product.getSoldCount() > 500 &&
+        if (product.getCompletedOrderSoldCount() != null && product.getCompletedOrderSoldCount() > 500 &&
                 product.getViewCount() != null && product.getViewCount() > 1000) {
             tags.add("TRENDING");
         }
