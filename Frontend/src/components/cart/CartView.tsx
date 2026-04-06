@@ -8,6 +8,8 @@ export interface CartViewProps {
   cart: CartDto | null
   loading: boolean
   updatingItemId: number | null
+  selectedShopIds: number[]
+  onToggleShop: (shopId: number) => void
   onUpdateQuantity: (cartItemId: number, currentQuantity: number, change: number) => void
   onRemoveItem: (cartItemId: number) => void
   onClearCart: () => void
@@ -20,6 +22,8 @@ export default function CartView({
   cart,
   loading,
   updatingItemId,
+  selectedShopIds,
+  onToggleShop,
   onUpdateQuantity,
   onRemoveItem,
   onClearCart,
@@ -31,7 +35,11 @@ export default function CartView({
     return `₫${amount.toLocaleString('vi-VN')}`
   }
 
-  const hasItems = (cart?.items?.length ?? 0) > 0
+  const hasItems = (cart?.shopCarts?.flatMap(sc => sc.items)?.length ?? 0) > 0
+
+  const selectedCarts = cart?.shopCarts?.filter(sc => selectedShopIds.includes(sc.shopId)) || []
+  const displayTotalItems = selectedCarts.reduce((sum, sc) => sum + sc.items.reduce((s,i) => s + i.quantity, 0), 0)
+  const displayTotalPrice = selectedCarts.reduce((sum, sc) => sum + sc.shopSubtotal, 0)
 
   return (
     <div className="cart-root">
@@ -79,7 +87,20 @@ export default function CartView({
                 </div>
 
                 <div className="cart-items-list">
-                  {cart?.items?.map((item) => (
+                  {cart?.shopCarts?.map((shopCart) => (
+                    <div key={`shop-${shopCart.shopId}`} className="cart-shop-group" style={{ marginBottom: '24px' }}>
+                      <div className="cart-shop-header" style={{ marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #eaeaea' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={selectedShopIds.includes(shopCart.shopId)} 
+                            onChange={() => onToggleShop(shopCart.shopId)} 
+                            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                          />
+                          <span role="img" aria-label="shop">🏪</span> {shopCart.shopName}
+                        </h3>
+                      </div>
+                      {shopCart.items.map((item) => (
                     <div
                       key={item.cartItemId}
                       className={`cart-item-card ${updatingItemId === item.cartItemId ? 'cart-item-updating' : ''}`}
@@ -137,6 +158,8 @@ export default function CartView({
                       </button>
                     </div>
                   ))}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -145,9 +168,9 @@ export default function CartView({
                   <h2 className="cart-summary-title">Tóm tắt đơn hàng</h2>
 
                   <div className="cart-summary-row">
-                    <span className="cart-summary-label">Tạm tính ({cart?.totalItems} sản phẩm)</span>
+                    <span className="cart-summary-label">Tạm tính ({displayTotalItems} sản phẩm)</span>
                     <span className="cart-summary-value">
-                      {formatCurrency(cart?.totalPrice || 0)}
+                      {formatCurrency(displayTotalPrice)}
                     </span>
                   </div>
 
@@ -156,7 +179,7 @@ export default function CartView({
                   <div className="cart-summary-row cart-summary-total">
                     <span className="cart-summary-label">Tổng cộng</span>
                     <span className="cart-summary-value-total">
-                      {formatCurrency(cart?.totalPrice || 0)}
+                      {formatCurrency(displayTotalPrice)}
                     </span>
                   </div>
 

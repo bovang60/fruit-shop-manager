@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { usePopup } from '../common/popup';
 import { getShippingMethods, type ShippingMethodDto } from '../../services/shippingMethodService';
 import { createOrder } from '../../services/orderService';
 import { getCart, type CartDto } from '../../services/cartService';
+import { getSellerVouchersByShop, type SellerVoucherDto } from '../../services/sellerVoucherService';
 import { getUserFromStorage } from '../../services/authService';
 import CheckoutView from './CheckoutView';
 
@@ -18,8 +19,12 @@ export default function Checkout() {
 
   // Shipping
   const [shippingMethods, setShippingMethods] = useState<ShippingMethodDto[]>([]);
-  const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
+  const [selectedMethods, setSelectedMethods] = useState<Record<number, number>>({});
   const [cart, setCart] = useState<CartDto | null>(null);
+
+  // Vouchers
+  const [vouchersByShop, setVouchersByShop] = useState<Record<number, SellerVoucherDto[]>>({});
+  const [selectedVouchers, setSelectedVouchers] = useState<Record<number, number | undefined>>({});
 
   // UI state
   const [loading, setLoading] = useState<boolean>(true);
@@ -32,6 +37,9 @@ export default function Checkout() {
 
   const user = getUserFromStorage();
   const userId = user?.userId;
+
+  const location = useLocation();
+  const locationSelectedShopIds = (location.state as any)?.selectedShopIds as number[] || [];
 
   useEffect(() => {
     if (!userId) {
@@ -51,26 +59,43 @@ export default function Checkout() {
         if (shippingResponse.resultCd === 0 && shippingResponse.data) {
           const availableMethods = shippingResponse.data ?? [];
           setShippingMethods(availableMethods);
-
-          setSelectedMethodId((currentValue) => {
-            if (
-              currentValue &&
-              availableMethods.some(
-                (method) => method?.methodId === currentValue && method?.isAvailable
-              )
-            ) {
-              return currentValue;
-            }
-
-            return availableMethods.find((method) => method?.isAvailable)?.methodId ?? null;
-          });
         } else {
           setShippingMethods([]);
           showError(shippingResponse.message || 'Không thể tải phương thức vận chuyển');
         }
 
         if (cartResponse.resultCd === 0 && cartResponse.data) {
-          setCart(cartResponse.data);
+          let data = cartResponse.data;
+          if (locationSelectedShopIds.length > 0) {
+            data.shopCarts = data.shopCarts.filter(sc => locationSelectedShopIds.includes(sc.shopId));
+            data.totalPrice = data.shopCarts.reduce((sum, sc) => sum + sc.shopSubtotal, 0);
+            data.totalItems = data.shopCarts.reduce((sum, sc) => sum + sc.items.reduce((s,i) => s+i.quantity,0), 0);
+          }
+          setCart(data);
+
+          // Initialize shipping methods mapping
+          const defaultMethodId = (shippingResponse.data ?? []).find((m: ShippingMethodDto) => m.isAvailable)?.methodId ?? 0;
+          if (defaultMethodId !== 0) {
+             const initialMethods: Record<number, number> = {};
+             data.shopCarts.forEach((sc: any) => {
+               initialMethods[sc.shopId] = defaultMethodId;
+             });
+             setSelectedMethods(initialMethods);
+          }
+
+          // Fetch vouchers
+          const voucherMap: Record<number, SellerVoucherDto[]> = {};
+          const vPromises = data.shopCarts.map(async (sc: any) => {
+            const vRes = await getSellerVouchersByShop(sc.shopId);
+            if (vRes.resultCd === 0 && vRes.data) {
+              voucherMap[sc.shopId] = vRes.data;
+            } else {
+              voucherMap[sc.shopId] = [];
+            }
+          });
+          await Promise.all(vPromises);
+          setVouchersByShop(voucherMap);
+
         } else {
           setCart(null);
           showError(cartResponse.message || 'Không thể tải thông tin giỏ hàng');
@@ -129,12 +154,22 @@ export default function Checkout() {
     if (phoneError) setPhoneError('');
   };
 
-  const cartItems = cart?.items || [];
+  const handleSelectMethod = (shopId: number, methodId: number) => {
+    setSelectedMethods(prev => ({ ...prev, [shopId]: methodId }));
+  };
+
+  const handleSelectVoucher = (shopId: number, voucherId?: number) => {
+    setSelectedVouchers(prev => ({ ...prev, [shopId]: voucherId }));
+  };
+
+  const cartItems = cart?.shopCarts?.flatMap(sc => sc.items) || [];
+  const allShopsHaveShipping = cart?.shopCarts?.every(sc => selectedMethods[sc.shopId] !== undefined) ?? false;
+
   const isFormValid =
     fullName.trim() !== '' &&
     address.trim() !== '' &&
     phone.trim() !== '' &&
-    selectedMethodId !== null &&
+    allShopsHaveShipping &&
     cartItems.length > 0;
 
   const handleSubmit = async () => {
@@ -171,8 +206,8 @@ export default function Checkout() {
       showError('Số điện thoại không hợp lệ. Phải có 10 chữ số và bắt đầu bằng 0');
       return;
     }
-    if (!selectedMethodId) {
-      showError('Vui lòng chọn phương thức vận chuyển');
+    if (!allShopsHaveShipping) {
+      showError('Vui lòng chọn đầy đủ phương thức vận chuyển cho từng Shop');
       return;
     }
     if (cartItems.length === 0) {
@@ -188,12 +223,16 @@ export default function Checkout() {
     setSubmitting(true);
     try {
       const response = await createOrder(userId, {
-        customerName: fullName.trim(),
-        address: address.trim(),
-        phone: phone.trim(),
-        note: '',
+        receiverName: fullName.trim(),
+        shippingAddress: address.trim(),
+        receiverPhone: phone.trim(),
         paymentMethod: 'COD',
-        shippingMethodId: selectedMethodId,
+        shops: Object.entries(selectedMethods).map(([shopIdStr, methodId]) => ({
+            shopId: parseInt(shopIdStr, 10),
+            shippingMethodId: methodId,
+            voucherId: selectedVouchers[parseInt(shopIdStr, 10)],
+            note: ''
+        }))
       });
 
       if (response.resultCd === 0) {
@@ -216,16 +255,19 @@ export default function Checkout() {
       address={address}
       phone={phone}
       shippingMethods={shippingMethods}
-      selectedMethodId={selectedMethodId}
+      selectedMethods={selectedMethods}
       cart={cart}
       cartItems={cartItems}
+      vouchersByShop={vouchersByShop}
+      selectedVouchers={selectedVouchers}
       loading={loading}
       submitting={submitting}
       isFormValid={isFormValid}
       onFullNameChange={onFullNameChange}
       onAddressChange={onAddressChange}
       onPhoneChange={onPhoneChange}
-      onSelectMethod={setSelectedMethodId}
+      onSelectMethod={handleSelectMethod}
+      onSelectVoucher={handleSelectVoucher}
       onSubmit={handleSubmit}
       nameError={nameError}
       addressError={addressError}

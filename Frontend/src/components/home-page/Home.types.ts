@@ -41,6 +41,7 @@ export interface FilterState {
   organic?: boolean
   sortBy: string
   sortOrder: string
+  shopId?: number
 }
 
 /**

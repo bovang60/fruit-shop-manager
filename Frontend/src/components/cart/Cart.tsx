@@ -16,6 +16,7 @@ export default function Cart() {
   const [cart, setCart] = useState<CartDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [updatingItemId, setUpdatingItemId] = useState<number | null>(null)
+  const [selectedShopIds, setSelectedShopIds] = useState<number[]>([])
 
   const user = getUserFromStorage()
   const userId = user?.userId || 0
@@ -71,11 +72,10 @@ export default function Cart() {
 
     if (nextItems.length === 0) {
       setCart({
-        cartId: cart?.cartId ?? 0,
         userId,
         totalItems: 0,
         totalPrice: 0,
-        items: [],
+        shopCarts: [],
       })
       return
     }
@@ -95,7 +95,7 @@ export default function Cart() {
     currentQuantity: number,
     change: number
   ) => {
-    const cartItems = cart?.items || []
+    const cartItems = cart?.shopCarts?.flatMap(sc => sc.items) || []
     const newQuantity = currentQuantity + change
     if (newQuantity < 1 || updatingItemId !== null || loading || cartItems.length === 0) {
       return
@@ -118,7 +118,7 @@ export default function Cart() {
 
   const handleRemoveItem = (cartItemId: number) => {
     showConfirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?', async () => {
-      const cartItems = cart?.items || []
+      const cartItems = cart?.shopCarts?.flatMap(sc => sc.items) || []
       if (cartItems.length === 0 || updatingItemId !== null || loading) {
         return
       }
@@ -160,13 +160,29 @@ export default function Cart() {
     })
   }
 
+  const handleToggleShop = (shopId: number) => {
+    setSelectedShopIds(prev => 
+      prev.includes(shopId) ? prev.filter(id => id !== shopId) : [...prev, shopId]
+    )
+  }
+
   const handleCheckout = () => {
-    if (!cart?.items || cart.items.length === 0) {
-      showError('Giỏ hàng của bạn đang trống')
+    const cartsToCheckout = selectedShopIds.length > 0 
+      ? cart?.shopCarts?.filter(sc => selectedShopIds.includes(sc.shopId)) || []
+      : cart?.shopCarts || []
+      
+    const cartItems = cartsToCheckout.flatMap(sc => sc.items)
+
+    if (cartItems.length === 0) {
+      showError('Bạn chưa chọn sản phẩm nào để thanh toán')
       return
     }
 
-    navigate('/checkout')
+    const finalShopIds = selectedShopIds.length > 0 
+      ? selectedShopIds 
+      : cart?.shopCarts?.map(sc => sc.shopId) || []
+
+    navigate('/checkout', { state: { selectedShopIds: finalShopIds } })
   }
 
   const handleContinueShopping = () => {
@@ -182,6 +198,8 @@ export default function Cart() {
       cart={cart}
       loading={loading}
       updatingItemId={updatingItemId}
+      selectedShopIds={selectedShopIds}
+      onToggleShop={handleToggleShop}
       onUpdateQuantity={handleUpdateQuantity}
       onRemoveItem={handleRemoveItem}
       onClearCart={handleClearCart}

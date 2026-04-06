@@ -39,7 +39,7 @@ export async function addToCart(
     return await callApiWithMethod<AddToCartRequest, ApiResponse<CartDto>>(
       'POST',
       '/api/cart/add',
-      { productId, quantity, userId}
+      { productId, quantity, userId }
     );
   } catch (error) {
     console.error('Error adding to cart:', error);

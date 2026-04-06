@@ -3,6 +3,7 @@ import Footer from '../common/footer/Footer';
 import LoadingModal from '../common/loading/LoadingModal';
 import type { ShippingMethodDto } from '../../services/shippingMethodService';
 import type { CartDto, CartItemDto } from '../../services/cartService';
+import type { SellerVoucherDto } from '../../services/sellerVoucherService';
 import './Checkout.css';
 
 export interface CheckoutViewProps {
@@ -10,7 +11,9 @@ export interface CheckoutViewProps {
   address: string;
   phone: string;
   shippingMethods: ShippingMethodDto[];
-  selectedMethodId: number | null;
+  selectedMethods: Record<number, number>;
+  vouchersByShop: Record<number, SellerVoucherDto[]>;
+  selectedVouchers: Record<number, number | undefined>;
   cart: CartDto | null;
   cartItems: CartItemDto[];
   loading: boolean;
@@ -19,7 +22,8 @@ export interface CheckoutViewProps {
   onFullNameChange: (value: string) => void;
   onAddressChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
-  onSelectMethod: (methodId: number) => void;
+  onSelectMethod: (shopId: number, methodId: number) => void;
+  onSelectVoucher: (shopId: number, voucherId?: number) => void;
   onSubmit: () => void;
   nameError?: string;
   addressError?: string;
@@ -34,7 +38,9 @@ export default function CheckoutView({
   address,
   phone,
   shippingMethods,
-  selectedMethodId,
+  selectedMethods,
+  vouchersByShop,
+  selectedVouchers,
   cart,
   cartItems,
   loading,
@@ -44,6 +50,7 @@ export default function CheckoutView({
   onAddressChange,
   onPhoneChange,
   onSelectMethod,
+  onSelectVoucher,
   onSubmit,
   nameError,
   addressError,
@@ -61,9 +68,27 @@ export default function CheckoutView({
   const totalPrice = cart?.totalPrice ?? 0;
   const hasItems = (cartItems?.length ?? 0) > 0;
 
-  const selectedMethod = shippingMethods?.find(m => m.methodId === selectedMethodId);
-  const shippingFee = selectedMethod?.fixedFee ?? 0;
-  const finalTotal = totalPrice + shippingFee;
+  const shippingFee = cart?.shopCarts?.reduce((total, sc) => {
+    const selectedMethodId = selectedMethods[sc.shopId];
+    const method = shippingMethods?.find(m => m.methodId === selectedMethodId);
+    return total + (method?.fixedFee ?? 0);
+  }, 0) ?? 0;
+
+  const totalDiscount = cart?.shopCarts?.reduce((total, sc) => {
+    const selectedVoucherId = selectedVouchers[sc.shopId];
+    if (!selectedVoucherId) return total;
+    const voucher = vouchersByShop[sc.shopId]?.find(v => v.voucherId === selectedVoucherId);
+    if (!voucher) return total;
+
+    // Simulate backend discount calculation logic
+    let discount = 0;
+    if (sc.shopSubtotal >= voucher.minOrderValue) {
+      discount = voucher.discountValue; // Note: We only have FIXED discountType in schema mapped by model, so assume FIXED value or if they add PERCENT, need type. Here we just use the raw value as FIXED.
+    }
+    return total + Math.min(discount, sc.shopSubtotal);
+  }, 0) ?? 0;
+
+  const finalTotal = totalPrice - totalDiscount + shippingFee;
 
   return (
     <div className="checkout-root">
@@ -137,96 +162,121 @@ export default function CheckoutView({
                 </div>
               </div>
 
-              {/* Shipping Methods */}
-              <div className="checkout-shipping-section">
-                <h2 className="checkout-section-title">Phương thức vận chuyển</h2>
-
-                {shippingMethods?.length === 0 ? (
-                  <p className="checkout-no-shipping">Không có phương thức vận chuyển nào</p>
-                ) : (
-                  <div className="checkout-shipping-list">
-                    {shippingMethods?.map((method) => (
-                      <div
-                        key={method.methodId}
-                        className={`checkout-shipping-card ${
-                          selectedMethodId === method.methodId
-                            ? 'checkout-shipping-card--selected'
-                            : ''
-                        } ${!method.isAvailable ? 'checkout-shipping-card--disabled' : ''}`}
-                        onClick={() => {
-                          if (method.isAvailable && !submitting) {
-                            onSelectMethod(method.methodId);
-                          }
-                        }}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (
-                            (e.key === 'Enter' || e.key === ' ') &&
-                            method.isAvailable &&
-                            !submitting
-                          ) {
-                            e.preventDefault();
-                            onSelectMethod(method.methodId);
-                          }
-                        }}
-                      >
-                        <div className="checkout-shipping-radio">
-                          <div
-                            className={`checkout-radio-outer ${
-                              selectedMethodId === method.methodId
-                                ? 'checkout-radio-outer--active'
-                                : ''
-                            }`}
-                          >
-                            {selectedMethodId === method.methodId && (
-                              <div className="checkout-radio-inner"></div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="checkout-shipping-info">
-                          <span className="checkout-shipping-name">{method.methodName}</span>
-                          <span className="checkout-shipping-desc">{method.description}</span>
-                        </div>
-
-                        <div className="checkout-shipping-fee">
-                          {formatCurrency(method.fixedFee)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Shipping Methods removed from global space */}
 
               <div className="checkout-form-section">
                 <h2 className="checkout-section-title">Sản phẩm đặt hàng</h2>
                 <p className="checkout-shipping-desc">Tổng số sản phẩm: {totalItems}</p>
                 <div className="checkout-shipping-list">
-                  {cartItems?.map((item) => (
-                    <div
-                      key={item?.cartItemId ?? `${item?.productId ?? 'item'}-${item?.quantity ?? 0}`}
-                      className="checkout-shipping-card"
-                    >
-                      <div className="checkout-shipping-info">
-                        <span className="checkout-shipping-name">
-                          {item?.productName || 'Sản phẩm chưa đặt tên'}
-                        </span>
-                        <span className="checkout-shipping-desc">
-                          Mã SP: {item?.productId ?? 'N/A'} | Số lượng: {item?.quantity ?? 0}
-                        </span>
+                  {cart?.shopCarts?.map(shopCart => (
+                    <div key={`checkout-shop-${shopCart.shopId}`} className="checkout-shop-group" style={{ marginBottom: '20px' }}>
+                      <div style={{ fontWeight: '600', marginBottom: '12px', color: '#333' }}>🏪 {shopCart.shopName}</div>
+                      {shopCart.items.map((item) => (
+                        <div
+                          key={item?.cartItemId ?? `${item?.productId ?? 'item'}-${item?.quantity ?? 0}`}
+                          className="checkout-shipping-card"
+                          style={{ marginBottom: '8px' }}
+                        >
+                          <div className="checkout-shipping-info">
+                            <span className="checkout-shipping-name">
+                              {item?.productName || 'Sản phẩm chưa đặt tên'}
+                            </span>
+                            <span className="checkout-shipping-desc">
+                              Mã SP: {item?.productId ?? 'N/A'} | Số lượng: {item?.quantity ?? 0}
+                            </span>
+                          </div>
+                      
+                          <div className="checkout-shipping-fee">
+                            {formatCurrency(item?.subtotal ?? 0)}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* Thêm chọn vận chuyển cho Shop này */}
+                      <div className="checkout-shop-shipping" style={{ marginTop: '16px', padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                        <div style={{ fontWeight: '600', fontSize: '1rem', marginBottom: '12px', color: '#555' }}>Đơn vị giao hàng:</div>
+                        <div className="checkout-shipping-list">
+                          {shippingMethods?.map((method) => {
+                            const methodSelectedId = selectedMethods[shopCart.shopId];
+                            return (
+                              <div
+                                key={`sc-${shopCart.shopId}-method-${method.methodId}`}
+                                className={`checkout-shipping-card ${
+                                  methodSelectedId === method.methodId
+                                    ? 'checkout-shipping-card--selected'
+                                    : ''
+                                } ${!method.isAvailable ? 'checkout-shipping-card--disabled' : ''}`}
+                                onClick={() => {
+                                  if (method.isAvailable && !submitting) {
+                                    onSelectMethod(shopCart.shopId, method.methodId);
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                              >
+                                <div className="checkout-shipping-radio">
+                                  <div
+                                    className={`checkout-radio-outer ${
+                                      methodSelectedId === method.methodId
+                                        ? 'checkout-radio-outer--active'
+                                        : ''
+                                    }`}
+                                  >
+                                    {methodSelectedId === method.methodId && (
+                                      <div className="checkout-radio-inner"></div>
+                                    )}
+                                  </div>
+                                </div>
+        
+                                <div className="checkout-shipping-info">
+                                  <span className="checkout-shipping-name">{method.methodName}</span>
+                                  <span className="checkout-shipping-desc">{method.description}</span>
+                                </div>
+        
+                                <div className="checkout-shipping-fee">
+                                  {formatCurrency(method.fixedFee)}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
 
-                      <div className="checkout-shipping-fee">
-                        {formatCurrency(item?.subtotal ?? 0)}
+                      {/* Thêm chọn Voucher cho Shop này */}
+                      <div className="checkout-shop-shipping" style={{ marginTop: '16px', padding: '16px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ fontWeight: '600', fontSize: '1rem', color: '#555' }}>Mã giảm giá của gian hàng:</div>
+                        <div className="checkout-voucher-select">
+                          <select 
+                             className="checkout-input" 
+                             style={{ minWidth: '200px', cursor: 'pointer', borderColor: '#4CAF50', padding: '8px', borderRadius: '4px' }}
+                             value={selectedVouchers[shopCart.shopId] || ''}
+                             onChange={(e) => {
+                               const val = e.target.value;
+                               onSelectVoucher(shopCart.shopId, val ? parseInt(val, 10) : undefined);
+                             }}
+                             disabled={submitting}
+                          >
+                             <option value="">-- Không áp dụng --</option>
+                             {vouchersByShop[shopCart.shopId]?.map(v => {
+                               const isEligible = shopCart.shopSubtotal >= v.minOrderValue;
+                               return (
+                                 <option key={v.voucherId} value={v.voucherId} disabled={!isEligible}>
+                                   {v.code} - Giảm {formatCurrency(v.discountValue)} {isEligible ? '' : `(Đơn tối thiểu ${formatCurrency(v.minOrderValue)})`}
+                                 </option>
+                               );
+                             })}
+                          </select>
+                        </div>
                       </div>
+
                     </div>
                   ))}
                 </div>
                 <div className="checkout-submit-section" style={{ textAlign: 'right' }}>
                   <p className="checkout-shipping-desc" style={{ marginBottom: '4px' }}>Tạm tính: {formatCurrency(totalPrice)}</p>
+                  <p className="checkout-shipping-desc" style={{ marginBottom: '4px', color: '#e53935' }}>Giảm giá Voucher: -{formatCurrency(totalDiscount)}</p>
                   <p className="checkout-shipping-desc" style={{ marginBottom: '12px' }}>Phí vận chuyển: {formatCurrency(shippingFee)}</p>
-                  <p className="checkout-section-title">Tổng cộng: {formatCurrency(finalTotal)}</p>
+                  <p className="checkout-section-title">Tổng cộng: {formatCurrency(finalTotal >= 0 ? finalTotal : 0)}</p>
                 </div>
               </div>
 

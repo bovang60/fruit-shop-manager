@@ -41,7 +41,8 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
     DELIVERED: 'Đã giao',
     COMPLETED: 'Hoàn tất',
     CANCELLED: 'Đã hủy',
-    REJECTED: 'Từ chối',
+    REJECTED: 'Đã từ chối',
+
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
@@ -66,7 +67,8 @@ const ORDER_FILTERS: Array<{ value: string; label: string }> = [
     { value: 'DELIVERED', label: 'Đã giao' },
     { value: 'COMPLETED', label: 'Hoàn tất' },
     { value: 'CANCELLED', label: 'Đã hủy' },
-    { value: 'REJECTED', label: 'Từ chối' },
+    { value: 'REJECTED', label: 'Đã từ chối' },
+
 ];
 
 const getOrderStatusLabel = (status: string) => ORDER_STATUS_LABELS[status] || status;
@@ -275,9 +277,9 @@ const OrderManagerView: React.FC<Props> = ({
                                                 <button
                                                     type="button"
                                                     className="seller-ghost-btn seller-danger-btn"
-                                                    onClick={() => onUpdateStatus(order.orderId, 'CANCELLED')}
+                                                    onClick={() => onUpdateStatus(order.orderId, 'REJECTED')}
                                                 >
-                                                    Hủy đơn
+                                                    Từ chối
                                                 </button>
                                             )}
                                         </div>

@@ -207,6 +207,23 @@ export default function OrderDetailView({
                     <span className="od-info-value">{order.fullName || 'N/A'}</span>
                   </div>
                   <div className="od-info-item">
+                    <span className="od-info-label">Cửa hàng</span>
+                    <span className="od-info-value">
+                      {order.shopName || 'Quản trị viên'}
+                      {order.shopId && (
+                        <button 
+                          className="od-btn-small" 
+                          style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', background: 'var(--brand-green)', color: 'white', border: 'none', cursor: 'pointer' }}
+                          onClick={() => {
+                            window.location.href = `/home?shopId=${order.shopId}`;
+                          }}
+                        >
+                          Xem Shop
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                  <div className="od-info-item">
                     <span className="od-info-label">Địa chỉ</span>
                     <span className="od-info-value">{order.address || 'N/A'}</span>
                   </div>
@@ -266,6 +283,14 @@ export default function OrderDetailView({
                   <div className="od-summary-row">
                     <span className="od-summary-label">Phí vận chuyển</span>
                     <span className="od-summary-value">{formatCurrency(order.shippingFee)}</span>
+                  </div>
+                )}
+                {order.discountValue != null && order.discountValue > 0 && (
+                  <div className="od-summary-row">
+                    <span className="od-summary-label">Giảm giá Voucher</span>
+                    <span className="od-summary-value" style={{ color: '#e53935' }}>
+                      -{formatCurrency(order.discountValue)}
+                    </span>
                   </div>
                 )}
                 <div className="od-summary-row od-summary-total">

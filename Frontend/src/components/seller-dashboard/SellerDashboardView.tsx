@@ -80,7 +80,7 @@ const SellerDashboardView: React.FC<Props> = ({
                 <section className="seller-summary-grid">
                     <article className="seller-summary-card">
                         <span className="seller-summary-card-label">Tổng doanh thu</span>
-                        <span className="seller-summary-card-value">{stats.totalRevenue.toLocaleString('vi-VN')}đ</span>
+                        <span className="seller-summary-card-value">{(stats.totalRevenue).toLocaleString('vi-VN')}đ</span>
                         <span className="seller-summary-card-note">Doanh thu tích lũy của cửa hàng</span>
                     </article>
                     <article className="seller-summary-card">
