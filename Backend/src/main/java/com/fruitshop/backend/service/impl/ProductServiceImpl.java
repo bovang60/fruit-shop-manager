@@ -148,6 +148,56 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Override
+    public ApiResponse<ProductListResponseDto> getProductsByCategory(
+            Integer categoryId,
+            Integer page,
+            Integer pageSize,
+            String sortBy,
+            String sortOrder) {
+        try {
+            if (categoryId == null) {
+                return ApiResponse.error("categoryId is required");
+            }
+
+            page = (page == null || page < 1) ? 1 : page;
+            pageSize = (pageSize == null || pageSize < 1) ? 25 : pageSize;
+            sortBy = (sortBy == null || sortBy.isEmpty()) ? "popularity" : sortBy;
+            sortOrder = (sortOrder == null || sortOrder.isEmpty()) ? "desc" : sortOrder;
+
+            Pageable pageable = createPageable(page - 1, pageSize, sortBy, sortOrder);
+
+            Page<Product> productPage = productRepository.findByCategoryId(categoryId, pageable);
+
+            List<ProductDto> productDtos = productPage.getContent().stream()
+                    .map(this::convertToProductDto)
+                    .collect(Collectors.toList());
+
+            PaginationDto paginationDto = new PaginationDto(
+                    page,
+                    pageSize,
+                    productPage.getTotalElements(),
+                    productPage.getTotalPages(),
+                    productPage.hasNext(),
+                    productPage.hasPrevious());
+
+            Map<String, Object> appliedFilters = new HashMap<>();
+            appliedFilters.put("categoryId", categoryId);
+            appliedFilters.put("sortBy", sortBy);
+            appliedFilters.put("sortOrder", sortOrder);
+
+            ProductListResponseDto responseData = new ProductListResponseDto(
+                    productDtos,
+                    paginationDto,
+                    appliedFilters);
+
+            return ApiResponse.success("Success", responseData);
+
+        } catch (Exception e) {
+            return ApiResponse.error("Failed to fetch products by category: " + e.getMessage());
+        }
+    }
+
     // Helper methods
 
     private Pageable createPageable(int page, int size, String sortBy, String sortOrder) {

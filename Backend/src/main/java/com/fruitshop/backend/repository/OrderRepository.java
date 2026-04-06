@@ -90,6 +90,11 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         @Transactional
         @Query("UPDATE Order o SET o.status = 'CANCELLED' WHERE o.shop.shopId = :shopId AND o.status = 'PENDING'")
         int cancelPendingOrdersByShopId(@Param("shopId") Integer shopId);
+
+        @Modifying
+        @Transactional
+        @Query("UPDATE Order o SET o.status = 'CANCELLED' WHERE o.user.userId = :userId AND o.status = 'PENDING'")
+        int cancelPendingOrdersByUserId(@Param("userId") Integer userId);
         @Query("SELECT o FROM Order o WHERE o.shop.shopId = :shopId AND o.status = 'PENDING' AND (:since IS NULL OR o.createdAt > :since) ORDER BY o.createdAt DESC")
         List<Order> findNewPendingOrdersByShop(
                 @Param("shopId") Integer shopId,

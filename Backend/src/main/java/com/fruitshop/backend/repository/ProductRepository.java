@@ -77,4 +77,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Transactional
     @Query("UPDATE Product p SET p.isActive = true WHERE p.shop.shopId = :shopId")
     void activateAllByShopId(@Param("shopId") Integer shopId);
+
+    // Get active products by category ID with pagination
+    @Query("SELECT p FROM Product p WHERE p.category.categoryId = :categoryId AND p.isActive = true")
+    Page<Product> findByCategoryId(@Param("categoryId") Integer categoryId, Pageable pageable);
 }

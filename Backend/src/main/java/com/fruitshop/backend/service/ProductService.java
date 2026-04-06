@@ -35,4 +35,14 @@ public interface ProductService {
      * Get trending products (popular products by sold count and view count)
      */
     ApiResponse<List<ProductSummaryDto>> getTrendingProducts(Integer limit);
+
+    /**
+     * Get products by category ID with pagination
+     */
+    ApiResponse<ProductListResponseDto> getProductsByCategory(
+            Integer categoryId,
+            Integer page,
+            Integer pageSize,
+            String sortBy,
+            String sortOrder);
 }

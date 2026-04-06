@@ -64,6 +64,8 @@ public class SliderServiceImpl implements SliderService {
         }
     }
 
+    private static final int MAX_ACTIVE_SLIDERS = 5;
+
     @Override
     @Transactional
     public ApiResponse<SliderDto> createSlider(SliderDto sliderDto) {
@@ -75,14 +77,24 @@ public class SliderServiceImpl implements SliderService {
                 return ApiResponse.error("Slider image URL is required");
             }
 
+            boolean requestedStatus = sliderDto.getStatus() != null ? sliderDto.getStatus() : true;
+            String message = "Slider created successfully";
+
+            // Nếu muốn thêm slider ACTIVE nhưng đã đủ 5 → tự động set INACTIVE và cảnh báo
+            if (requestedStatus && sliderRepository.countByStatusTrue() >= MAX_ACTIVE_SLIDERS) {
+                requestedStatus = false;
+                message = "Tạo slider thành công nhưng được đặt thành ẨN: không thể hiển thị quá " + MAX_ACTIVE_SLIDERS + " slider cùng lúc";
+                log.warn("Max active sliders reached ({}). New slider will be set to INACTIVE.", MAX_ACTIVE_SLIDERS);
+            }
+
             Slider slider = new Slider();
             slider.setTitle(sliderDto.getTitle());
             slider.setImageUrl(sliderDto.getImageUrl());
             slider.setDescription(sliderDto.getDescription());
-            slider.setStatus(sliderDto.getStatus() != null ? sliderDto.getStatus() : true);
-            
+            slider.setStatus(requestedStatus);
+
             Slider savedSlider = sliderRepository.save(slider);
-            return ApiResponse.success("Slider created successfully", convertToDto(savedSlider));
+            return ApiResponse.success(message, convertToDto(savedSlider));
         } catch (Exception e) {
             log.error("Failed to create slider: {}", e.getMessage());
             return ApiResponse.error("Failed to create slider: " + e.getMessage());
@@ -138,10 +150,17 @@ public class SliderServiceImpl implements SliderService {
         try {
             Slider slider = sliderRepository.findById(sliderId)
                     .orElseThrow(() -> new RuntimeException("Slider not found with ID: " + sliderId));
-            
-            slider.setStatus(!slider.getStatus());
+
+            boolean currentStatus = slider.getStatus();
+
+            // Nếu đang muốn ACTIVE hóa slider mà đã đủ 5 active → từ chối
+            if (!currentStatus && sliderRepository.countByStatusTrue() >= MAX_ACTIVE_SLIDERS) {
+                return ApiResponse.error("Không thể hiển thị quá " + MAX_ACTIVE_SLIDERS + " slider cùng lúc");
+            }
+
+            slider.setStatus(!currentStatus);
             sliderRepository.save(slider);
-            
+
             String statusMsg = slider.getStatus() ? "activated" : "deactivated";
             return ApiResponse.success("Slider " + statusMsg + " successfully", null);
         } catch (Exception e) {

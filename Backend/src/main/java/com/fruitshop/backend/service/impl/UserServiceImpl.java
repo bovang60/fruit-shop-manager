@@ -98,6 +98,11 @@ public class UserServiceImpl implements UserService {
         user.setStatus(status);
         User savedUser = userRepository.save(user);
 
+        // Cancel pending orders of the user as a buyer when inactivated
+        if (status == User.UserStatus.INACTIVE) {
+            orderRepository.cancelPendingOrdersByUserId(savedUser.getUserId());
+        }
+
         if (savedUser.getRole() == User.Role.SELLER) {
             shopRepository.findByOwner_UserId(savedUser.getUserId()).ifPresent(shop -> {
                 if (status == User.UserStatus.INACTIVE) {

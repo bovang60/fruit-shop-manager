@@ -12,4 +12,5 @@ import java.util.List;
 public interface SliderRepository extends JpaRepository<Slider, Integer> {
     List<Slider> findByStatusTrueOrderByCreatedAtDesc();
     Page<Slider> findByStatus(Boolean status, Pageable pageable);
+    long countByStatusTrue();
 }
