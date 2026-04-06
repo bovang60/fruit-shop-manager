@@ -3,6 +3,8 @@ package com.fruitshop.backend.controller;
 import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.SellerOrderDto;
 import com.fruitshop.backend.model.Order;
+import com.fruitshop.backend.model.OrderVoucher;
+import com.fruitshop.backend.repository.OrderVoucherRepository;
 import com.fruitshop.backend.service.OrderService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class SellerOrderController {
 
     private final OrderService orderService;
+    private final OrderVoucherRepository orderVoucherRepository;
 
     // Use Case: Manage Orders - Lấy danh sách đơn hàng của Shop
     @GetMapping("/shop/{shopId}")
@@ -71,6 +74,7 @@ public class SellerOrderController {
                 .note(order.getNote())
                 .subTotal(order.getSubTotal())
                 .shippingFee(order.getShippingFee() == null ? BigDecimal.ZERO : order.getShippingFee())
+                .discountValue(resolveDiscountValue(order.getOrderId()))
                 .paymentMethod(order.getTransaction() != null && order.getTransaction().getPaymentMethod() != null
                         ? order.getTransaction().getPaymentMethod().name()
                         : null)
@@ -80,5 +84,15 @@ public class SellerOrderController {
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .build();
+    }
+
+    private BigDecimal resolveDiscountValue(Integer orderId) {
+        List<OrderVoucher> orderVouchers = orderVoucherRepository.findByOrder_OrderId(orderId);
+        if (orderVouchers == null || orderVouchers.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal discount = orderVouchers.get(0).getAppliedValue();
+        return discount == null ? BigDecimal.ZERO : discount;
     }
 }

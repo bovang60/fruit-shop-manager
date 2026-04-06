@@ -173,6 +173,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     private FeedbackDto toDto(Feedback fb) {
         FeedbackDto dto = new FeedbackDto();
         dto.setFeedbackId(fb.getFeedbackId());
+        dto.setOrderId(fb.getOrder() != null ? fb.getOrder().getOrderId() : null);
         dto.setUserName(fb.getUser() != null ? fb.getUser().getFullName() : "Anonymous");
         dto.setProductId(fb.getProduct() != null ? fb.getProduct().getProductId() : null);
         dto.setProductName(fb.getProduct() != null ? fb.getProduct().getName() : "Unknown Product");
