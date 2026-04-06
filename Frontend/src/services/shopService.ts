@@ -68,6 +68,16 @@ export interface RegisterShopRequest {
     shippingMethodIds: number[];
 }
 
+export interface UpdateSellerShopRequest {
+    shopName: string;
+    description?: string;
+    address: string;
+    shopType?: string;
+    businessName?: string;
+    businessAddress?: string;
+    pickupAddress?: string;
+}
+
 // ============= API Functions =============
 
 /**
@@ -262,6 +272,39 @@ export async function registerShop(payload: RegisterShopRequest): Promise<ApiRes
     } catch (error) {
         console.error('Lỗi khi đăng ký cửa hàng:', error);
         return { resultCd: 1, message: 'Lỗi kết nối khi đăng ký cửa hàng', data: null };
+    }
+}
+
+export async function updateSellerShop(shopId: number, payload: UpdateSellerShopRequest): Promise<ApiResponse<ShopDto>> {
+    const token = getAuthToken();
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(token ? authHeader(token) : {}),
+    };
+
+    try {
+        const requestBody = JSON.stringify(payload);
+
+        const putResponse = await fetch(`${baseUrl}/api/shops/${shopId}`, {
+            method: "PUT",
+            headers,
+            body: requestBody,
+        });
+
+        if (putResponse.status !== 405) {
+            return await putResponse.json();
+        }
+
+        const patchResponse = await fetch(`${baseUrl}/api/shops/${shopId}`, {
+            method: "PATCH",
+            headers,
+            body: requestBody,
+        });
+        return await patchResponse.json();
+    } catch (error) {
+        console.error("Lỗi khi cập nhật cửa hàng:", error);
+        return { resultCd: 1, message: "Lỗi kết nối khi cập nhật cửa hàng", data: null };
     }
 }
 
