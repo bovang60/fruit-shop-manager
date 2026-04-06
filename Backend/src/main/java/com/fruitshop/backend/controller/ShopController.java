@@ -3,6 +3,7 @@ package com.fruitshop.backend.controller;
 import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.ShopDto;
 import com.fruitshop.backend.dto.ShopRejectDto;
+import com.fruitshop.backend.dto.UpdateSellerShopDto;
 import com.fruitshop.backend.model.Shop;
 import com.fruitshop.backend.service.ShopService;
 import jakarta.validation.Valid;
@@ -31,6 +32,20 @@ public class ShopController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ShopDto>> getShop(@PathVariable(name = "id") Integer id) {
         return ResponseEntity.ok(shopService.getShopById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ShopDto>> updateShop(
+            @PathVariable(name = "id") Integer id,
+            @Valid @RequestBody UpdateSellerShopDto updateDto) {
+        return ResponseEntity.ok(shopService.updateSellerShop(id, updateDto));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<ShopDto>> patchShop(
+            @PathVariable(name = "id") Integer id,
+            @Valid @RequestBody UpdateSellerShopDto updateDto) {
+        return ResponseEntity.ok(shopService.updateSellerShop(id, updateDto));
     }
 
     @PutMapping("/{id}/approve")
