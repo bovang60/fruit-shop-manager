@@ -3,6 +3,7 @@ package com.fruitshop.backend.service.impl;
 import com.fruitshop.backend.dto.ApiResponse;
 import com.fruitshop.backend.dto.ShopDto;
 import com.fruitshop.backend.dto.ShopRejectDto;
+import com.fruitshop.backend.dto.UpdateSellerShopDto;
 import com.fruitshop.backend.model.Shop;
 import com.fruitshop.backend.model.User;
 import com.fruitshop.backend.model.Fruit;
@@ -124,6 +125,37 @@ public class ShopServiceImpl implements ShopService {
         }
 
         return ApiResponse.success("Gửi đơn đăng ký mở cửa hàng thành công", convertToDto(savedShop));
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<ShopDto> updateSellerShop(Integer id, UpdateSellerShopDto updateDto) {
+        Shop shop = shopRepository.findById(id).orElse(null);
+        if (shop == null) {
+            return ApiResponse.error("Không tìm thấy cửa hàng");
+        }
+
+        String nextShopName = updateDto.getShopName() != null ? updateDto.getShopName().trim() : "";
+        if (nextShopName.isEmpty()) {
+            return ApiResponse.error("Tên cửa hàng không được để trống");
+        }
+
+        if (!nextShopName.equalsIgnoreCase(shop.getShopName())
+                && shopRepository.existsByShopName(nextShopName)) {
+            return ApiResponse.error("Tên cửa hàng đã tồn tại, vui lòng chọn tên khác");
+        }
+
+        shop.setShopName(nextShopName);
+        shop.setDescription(updateDto.getDescription());
+        shop.setAddress(updateDto.getAddress() != null ? updateDto.getAddress().trim() : null);
+        shop.setShopType(updateDto.getShopType());
+        shop.setBusinessName(updateDto.getBusinessName());
+        shop.setBusinessAddress(updateDto.getBusinessAddress());
+        shop.setPickupAddress(updateDto.getPickupAddress());
+        // taxCode is intentionally immutable for seller updates.
+
+        Shop savedShop = shopRepository.save(shop);
+        return ApiResponse.success("Cập nhật thông tin cửa hàng thành công", convertToDto(savedShop));
     }
 
     @Override
