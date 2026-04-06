@@ -59,6 +59,10 @@ const SellerLayoutView: React.FC<Props> = ({ children }) => {
                                 <span className="material-symbols-outlined">monitoring</span>
                                 <span className="nav-label">Báo cáo bán hàng</span>
                             </NavLink>
+                            <NavLink to="/seller/shop" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                                <span className="material-symbols-outlined">store</span>
+                                <span className="nav-label">Quản lý cửa hàng</span>
+                            </NavLink>
                         </nav>
                     </div>
                     <div>
