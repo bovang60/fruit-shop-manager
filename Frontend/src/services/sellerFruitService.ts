@@ -34,6 +34,7 @@ export interface CreateSellerProductRequest {
   stock?: number;
   imageUrl?: string;
   categoryId?: number;
+  category?: { categoryId: number };
   discount?: number;
   originalPrice?: number;
   unit?: string;
@@ -49,6 +50,7 @@ export interface UpdateSellerProductRequest {
   stock?: number;
   imageUrl?: string;
   categoryId?: number;
+  category?: { categoryId: number };
   discount?: number;
   originalPrice?: number;
   unit?: string;
@@ -131,6 +133,38 @@ export async function updateSellerFruit(
     return {
       resultCd: 1,
       message: "Không thể cập nhật trái cây",
+      data: null,
+    };
+  }
+}
+
+export async function uploadSellerFruitImage(
+  fruitId: number,
+  imageFile: File,
+): Promise<ApiResponse<SellerProductDto>> {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/seller/fruits/${fruitId}/image`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ApiResponse<SellerProductDto> = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error uploading seller fruit image:", error);
+    return {
+      resultCd: 1,
+      message: "Không thể tải ảnh sản phẩm lên",
       data: null,
     };
   }

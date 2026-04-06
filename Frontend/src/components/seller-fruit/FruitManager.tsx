@@ -5,6 +5,7 @@ import {
   createSellerFruit,
   getSellerFruitDisplayMessage,
   getSellerFruitsByShop,
+  uploadSellerFruitImage,
   updateSellerFruit,
   updateSellerFruitStatus,
   type SellerProductDto,
@@ -213,22 +214,34 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
         showError(imageValidationMessage, "Lỗi");
         return;
       }
-      if (editImageFile) {
-        showNotice(
-          "Hệ thống hiện chưa hỗ trợ upload ảnh sản phẩm từ file. Các thay đổi khác vẫn được lưu.",
-          "Thông báo",
-        );
-      }
 
-      const result = await updateSellerFruit(fruitId, {
+      const updatePayload: Parameters<typeof updateSellerFruit>[1] = {
         name,
         description: description || undefined,
-        categoryId,
+        category: { categoryId },
         price,
         stock,
-        imageUrl: editForm.imageUrl?.trim() || undefined,
-      });
+      };
+
+      if (!editImageFile) {
+        updatePayload.imageUrl = editForm.imageUrl?.trim() || undefined;
+      }
+
+      const result = await updateSellerFruit(fruitId, updatePayload);
       if (result.resultCd === 0) {
+        if (editImageFile) {
+          const uploadResult = await uploadSellerFruitImage(fruitId, editImageFile);
+          if (uploadResult.resultCd !== 0) {
+            showError(
+              getSellerFruitDisplayMessage(
+                uploadResult.message || "Không thể tải ảnh sản phẩm lên",
+              ),
+              "Lỗi",
+            );
+            return;
+          }
+        }
+
         showNotice("Cập nhật sản phẩm thành công", "Thành công");
         cancelEdit();
         await loadFruits();
@@ -314,22 +327,32 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
         showError(imageValidationMessage, "Lỗi");
         return false;
       }
-      if (data.imageFile) {
-        showNotice(
-          "Hệ thống hiện chưa hỗ trợ upload ảnh sản phẩm từ file. Sản phẩm sẽ được tạo không kèm ảnh.",
-          "Thông báo",
-        );
-      }
 
       const result = await createSellerFruit(shopId, {
         name,
         description: description || undefined,
-        categoryId,
+        category: { categoryId },
         price,
         stock,
         imageUrl: undefined,
       });
       if (result.resultCd === 0) {
+        if (data.imageFile && result.data?.productId) {
+          const uploadResult = await uploadSellerFruitImage(
+            result.data.productId,
+            data.imageFile,
+          );
+          if (uploadResult.resultCd !== 0) {
+            showError(
+              getSellerFruitDisplayMessage(
+                uploadResult.message || "Không thể tải ảnh sản phẩm lên",
+              ),
+              "Lỗi",
+            );
+            return false;
+          }
+        }
+
         showNotice("Tạo sản phẩm thành công", "Thành công");
         await loadFruits();
         return true;

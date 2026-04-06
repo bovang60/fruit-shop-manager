@@ -73,6 +73,7 @@ const FruitManagerView: React.FC<Props> = ({
         imageFile: null as File | null,
     });
     const [newImagePreview, setNewImagePreview] = React.useState('');
+    const [editImagePreview, setEditImagePreview] = React.useState('');
 
     const totalPages = Math.max(1, Math.ceil(fruits.length / ITEMS_PER_PAGE));
     const paginatedFruits = fruits.slice(
@@ -91,8 +92,18 @@ const FruitManagerView: React.FC<Props> = ({
             if (newImagePreview.startsWith('blob:')) {
                 URL.revokeObjectURL(newImagePreview);
             }
+            if (editImagePreview.startsWith('blob:')) {
+                URL.revokeObjectURL(editImagePreview);
+            }
         };
-    }, [newImagePreview]);
+    }, [newImagePreview, editImagePreview]);
+
+    React.useEffect(() => {
+        if (!editingFruitId && editImagePreview.startsWith('blob:')) {
+            URL.revokeObjectURL(editImagePreview);
+            setEditImagePreview('');
+        }
+    }, [editingFruitId, editImagePreview]);
 
     const getCategoryName = (categoryId?: number) => {
         if (!categoryId) return 'Chưa phân loại';
@@ -422,16 +433,28 @@ const FruitManagerView: React.FC<Props> = ({
                                 />
                             </div>
                             <div className="seller-field seller-field-full">
-                                <label>Ảnh từ máy (tùy chọn)</label>
+                                <label>Ảnh từ thư viện/thiết bị (tùy chọn)</label>
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(event) => onEditImageFileChange(event.target.files?.[0] || null)}
+                                    onChange={(event) => {
+                                        const file = event.target.files?.[0] || null;
+                                        onEditImageFileChange(file);
+
+                                        if (editImagePreview.startsWith('blob:')) {
+                                            URL.revokeObjectURL(editImagePreview);
+                                        }
+                                        if (!file) {
+                                            setEditImagePreview('');
+                                            return;
+                                        }
+                                        setEditImagePreview(URL.createObjectURL(file));
+                                    }}
                                 />
-                                {editingFruit?.imageUrl && (
+                                {(editImagePreview || editingFruit?.imageUrl) && (
                                     <img
-                                        src={editingFruit.imageUrl}
-                                        alt={editingFruit.name}
+                                        src={editImagePreview || editingFruit?.imageUrl}
+                                        alt={editingFruit?.name || 'Ảnh sản phẩm'}
                                         className="seller-fruit-image-preview"
                                     />
                                 )}
