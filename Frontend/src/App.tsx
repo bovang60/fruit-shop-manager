@@ -29,6 +29,7 @@ import FruitManager from "./components/seller-fruit/FruitManager";
 import OrderManager from "./components/seller-order/OrderManager";
 import Voucher from "./components/seller-voucher/Voucher";
 import Report from "./components/seller-report/Report";
+import SellerProductDetail from "./components/seller-product-detail/SellerProductDetail";
 import { getUserFromStorage } from "./services/authService";
 
 function SellerRouteContent() {
@@ -40,6 +41,7 @@ function SellerRouteContent() {
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="dashboard" element={<SellerDashboard shopId={shopId} />} />
       <Route path="fruits" element={<FruitManager shopId={shopId} />} />
+      <Route path="products/:productId" element={<SellerProductDetail />} />
       <Route path="orders" element={<OrderManager shopId={shopId} />} />
       <Route path="vouchers" element={<Voucher shopId={shopId} />} />
       <Route path="reports" element={<Report shopId={shopId} />} />

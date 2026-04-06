@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePopup } from "../common/popup";
 import {
   deleteSellerFruit,
@@ -61,6 +62,7 @@ const validateImageFile = (file: File | null): string | null => {
 };
 
 const FruitManager = ({ shopId }: { shopId: number }) => {
+  const navigate = useNavigate();
   const [fruits, setFruits] = useState<SellerProductDto[]>([]);
   const [categories, setCategories] = useState<CategoryFilterItemDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -462,6 +464,7 @@ const FruitManager = ({ shopId }: { shopId: number }) => {
       onEditFieldChange={updateEditField}
       onEditImageFileChange={setEditImageFile}
       onSaveEdit={handleSaveEdit}
+      onViewDetail={(fruitId) => navigate(`/seller/products/${fruitId}`)}
       onSoftDelete={handleSoftDelete}
       onReactivate={handleReactivate}
       onDelete={handleDelete}

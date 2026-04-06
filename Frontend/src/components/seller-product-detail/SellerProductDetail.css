@@ -1,0 +1,151 @@
+@import "../seller/SellerPageShared.css";
+
+.seller-product-detail-page {
+  gap: 1rem;
+}
+
+.seller-product-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.seller-product-detail-header h1 {
+  margin: 0;
+}
+
+.seller-product-detail-header p {
+  margin: 0.35rem 0 0;
+  color: #637381;
+}
+
+.seller-product-detail-card {
+  padding: 1.25rem;
+}
+
+.seller-product-main {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.25rem;
+}
+
+.seller-product-image-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f4f6f8;
+  border: 1px solid rgba(145, 158, 171, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seller-product-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.seller-product-image-placeholder {
+  font-size: 3.5rem;
+}
+
+.seller-product-info h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1c252e;
+}
+
+.seller-product-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.8rem;
+  margin-top: 0.75rem;
+  color: #637381;
+  font-size: 0.875rem;
+}
+
+.seller-product-price {
+  margin-top: 0.9rem;
+  color: #067647;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.seller-product-description {
+  margin-top: 0.9rem;
+  color: #1c252e;
+  line-height: 1.6;
+}
+
+.seller-product-stats {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: #1c252e;
+}
+
+.seller-product-detail-error {
+  color: #b42318;
+  margin: 0;
+}
+
+.seller-feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.seller-feedback-item {
+  border: 1px solid rgba(145, 158, 171, 0.24);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+}
+
+.seller-feedback-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.seller-feedback-user {
+  font-weight: 700;
+  color: #1c252e;
+}
+
+.seller-feedback-stars {
+  color: #b54708;
+}
+
+.seller-feedback-date {
+  color: #637381;
+  font-size: 0.8125rem;
+  margin-left: auto;
+}
+
+.seller-feedback-comment {
+  margin-top: 0.45rem;
+  color: #1c252e;
+}
+
+@media (max-width: 1024px) {
+  .seller-product-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .seller-product-detail-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .seller-product-stats {
+    grid-template-columns: 1fr;
+  }
+}

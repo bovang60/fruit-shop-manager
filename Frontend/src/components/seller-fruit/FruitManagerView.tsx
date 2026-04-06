@@ -37,6 +37,7 @@ export type Props = {
     ) => void;
     onEditImageFileChange: (file: File | null) => void;
     onSaveEdit: (id: number) => void;
+    onViewDetail: (id: number) => void;
     onSoftDelete: (id: number) => void;
     onReactivate: (id: number) => void;
     onDelete: (id: number) => void;
@@ -57,6 +58,7 @@ const FruitManagerView: React.FC<Props> = ({
     onEditFieldChange,
     onEditImageFileChange,
     onSaveEdit,
+    onViewDetail,
     onSoftDelete,
     onReactivate,
     onDelete,
@@ -341,6 +343,9 @@ const FruitManagerView: React.FC<Props> = ({
                                         </td>
                                         <td>
                                             <div className="seller-inline-actions">
+                                                <button type="button" className="seller-secondary-btn" onClick={() => onViewDetail(fruit.productId)}>
+                                                    Xem chi tiết
+                                                </button>
                                                 <button type="button" className="seller-secondary-btn" onClick={() => onStartEdit(fruit)}>
                                                     Chỉnh sửa
                                                 </button>
