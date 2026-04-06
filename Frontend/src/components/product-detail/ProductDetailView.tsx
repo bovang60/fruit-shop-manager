@@ -17,6 +17,8 @@ export type ProductDetailViewProps = {
   onQuantityChange: (qty: number) => void;
   onAddToCart: () => void;
   addingToCart: boolean;
+  onToggleWishlist: () => void;
+  togglingWishlist: boolean;
 };
 
 export default function ProductDetailView({
@@ -28,7 +30,9 @@ export default function ProductDetailView({
   quantity,
   onQuantityChange,
   onAddToCart,
-  addingToCart
+  addingToCart,
+  onToggleWishlist,
+  togglingWishlist
 }: ProductDetailViewProps) {
   const navigate = useNavigate();
 
@@ -77,13 +81,13 @@ export default function ProductDetailView({
   return (
     <div className="product-detail-root">
       <Header />
-      
+
       <main className="product-detail-main">
         {error ? (
           <div className="error-state" style={{ textAlign: 'center', padding: '4rem' }}>
             <h2>{error}</h2>
-            <button 
-              className="add-to-cart-btn-large" 
+            <button
+              className="add-to-cart-btn-large"
               style={{ padding: '0 2rem', marginTop: '1rem', width: 'auto', display: 'inline-block' }}
               onClick={() => navigate('/home')}
             >
@@ -99,15 +103,32 @@ export default function ProductDetailView({
                   {product.imageUrl ? (
                     <img src={product.imageUrl} alt={product.name ?? "Product Image"} />
                   ) : (
-                     <div className="product-detail-image-placeholder">🍊</div>
+                    <div className="product-detail-image-placeholder">🍊</div>
                   )}
                 </div>
               </div>
 
               {/* Right Column: Info */}
               <div className="product-detail-right">
-                <h1 className="product-detail-name">{product.name ?? "Sản phẩm không có tên"}</h1>
-                
+                <div className="product-detail-header">
+                  <h1 className="product-detail-name">{product.name ?? "Sản phẩm không có tên"}</h1>
+                  <button 
+                    className={`product-detail-favorite-btn ${product.isFavorite ? 'active' : ''}`}
+                    onClick={onToggleWishlist}
+                    disabled={togglingWishlist}
+                    aria-label={product.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: product.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                  </button>
+                </div>
+
+                <div className="product-detail-tags">
+                  {product.tags?.map(tag => (
+                    <span key={tag} className={`product-tag-badge tag-${tag.toLowerCase()}`}>{tag}</span>
+                  ))}
+                  {product.isOrganic && <span className="product-tag-badge tag-organic">ORGANIC</span>}
+                </div>
+
                 <div className="product-detail-meta">
                   {(product.rating !== null && product.rating !== undefined) && (
                     <span className="product-detail-rating">
@@ -118,47 +139,62 @@ export default function ProductDetailView({
                     <span className="product-detail-reviews">| {product.reviewCount ?? 0} đánh giá</span>
                   )}
                   <span className="product-detail-sold">| Đã bán {product.soldCount ?? 0}</span>
-                  <span className="product-detail-shop">
-                    Cửa hàng: {product.shopName || "Quản trị viên"}
-                  </span>
-                  {product.shopId && (
-                    <button 
-                      className="view-shop-btn-small" 
-                      style={{ fontSize: '12px', padding: '3px 12px', borderRadius: '4px', background: 'transparent', color: '#2b8a3e', border: '1px solid #2b8a3e', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = '#2b8a3e'; e.currentTarget.style.color = 'white'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2b8a3e'; }}
-                      onClick={() => navigate(`/shop/${product.shopId}`)}
-                    >
-                      Xem Shop
-                    </button>
+                  <span className="product-detail-views">| {product.viewCount ?? 0} lượt xem</span>
+                </div>
+
+                <div className="product-detail-shop-info">
+                   <div className="product-detail-shop">
+                    <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>storefront</span>
+                    <span>Cửa hàng: {product.shopName || "Quản trị viên"}</span>
+                  </div>
+                  <button
+                    className="view-shop-btn-small"
+                    onClick={() => navigate(`/shop/${product.shopId}`)}
+                  >
+                    Xem Shop
+                  </button>
+                </div>
+
+                <div className="product-detail-price-wrap">
+                  <div className="price-main">
+                    <span className="product-detail-price">{formatPrice(product.price)}</span>
+                    <span className="product-detail-unit">/ {product.unit}</span>
+                  </div>
+                  {product.originalPrice && product.originalPrice > product.price && (
+                    <div className="price-sub">
+                      <span className="product-detail-original-price">{formatPrice(product.originalPrice)}</span>
+                      <span className="product-detail-discount">-{product.discount}%</span>
+                    </div>
                   )}
-                  <span className="product-detail-category">Danh mục: {product.categoryName || "Chưa phân loại"}</span>
                 </div>
 
-                <div className="product-detail-price">
-                  {formatPrice(product.price)}
-                </div>
-
-                <div className="product-detail-desc">
-                  {product.description || "Chưa có mô tả cho sản phẩm này."}
+                <div className="product-detail-desc-section">
+                  <h3 className="section-label">Mô tả sản phẩm</h3>
+                  <div className="product-detail-desc">
+                    {product.description || "Chưa có mô tả cho sản phẩm này."}
+                  </div>
+                  <div className="product-detail-origin">
+                    <span className="label">Xuất xứ:</span>
+                    <span className="value">{product.origin === 'LOCAL' ? 'Trong nước' : 'Nhập khẩu'}</span>
+                  </div>
                 </div>
 
                 <div className="product-detail-actions-wrap">
                   <div className="product-detail-stock">
                     Còn {currentStock} sản phẩm
                   </div>
-                  
+
                   <div className="product-detail-actions">
                     <div className="quantity-selector">
-                      <button 
-                        className="qty-btn" 
+                      <button
+                        className="qty-btn"
                         onClick={handleDecrease}
                         disabled={quantity <= 1 || addingToCart}
                       >
                         -
                       </button>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         value={quantity.toString()}
                         onChange={handleManualQtyChange}
                         className="qty-input"
@@ -166,8 +202,8 @@ export default function ProductDetailView({
                         max={currentStock}
                         disabled={addingToCart}
                       />
-                      <button 
-                        className="qty-btn" 
+                      <button
+                        className="qty-btn"
                         onClick={handleIncrease}
                         disabled={quantity >= currentStock || addingToCart}
                       >
@@ -175,7 +211,7 @@ export default function ProductDetailView({
                       </button>
                     </div>
 
-                    <button 
+                    <button
                       className="add-to-cart-btn-large"
                       onClick={onAddToCart}
                       disabled={addingToCart || currentStock === 0}
@@ -216,16 +252,16 @@ export default function ProductDetailView({
                 <h2 className="related-title">Sản phẩm tương tự</h2>
                 <div className="related-scroll-wrap">
                   {relatedProducts.map(rp => (
-                    <div 
-                      key={rp.productId} 
+                    <div
+                      key={rp.productId}
                       className="related-card"
                       onClick={() => {
                         navigate(`/product/${rp.productId}`);
                         window.scrollTo(0, 0);
                       }}
                     >
-                      <div 
-                        className="related-image" 
+                      <div
+                        className="related-image"
                         style={{ backgroundImage: rp.imageUrl ? `url('${rp.imageUrl}')` : 'none' }}
                       />
                       <div className="related-info">
@@ -241,8 +277,8 @@ export default function ProductDetailView({
         ) : !loading ? (
           <div className="error-state" style={{ textAlign: 'center', padding: '4rem' }}>
             <h2>Không tìm thấy sản phẩm</h2>
-            <button 
-              className="add-to-cart-btn-large" 
+            <button
+              className="add-to-cart-btn-large"
               style={{ padding: '0 2rem', marginTop: '1rem', width: 'auto', display: 'inline-block' }}
               onClick={() => navigate('/home')}
             >

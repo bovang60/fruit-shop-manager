@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ProductDetailView from './ProductDetailView.tsx';
-import { 
-  getProductDetail, 
-  getRelatedProducts 
+import {
+  getProductDetail,
+  getRelatedProducts
 } from '../../services/productService';
 import { addToCart } from '../../services/cartService';
 import { getUserFromStorage } from '../../services/authService';
-import type { 
-  ProductDetailDto, 
+import type {
+  ProductDetailDto,
   ProductSummaryDto
 } from '../../services/productService';
 import { getFeedbackByProduct, type FeedbackDto } from '../../services/feedbackService';
+import { addToWishlist, removeFromWishlist } from '../../services/wishlistService';
 import { usePopup } from '../common/popup';
 
 export default function ProductDetail() {
@@ -24,9 +25,11 @@ export default function ProductDetail() {
   const [feedbacks, setFeedbacks] = useState<FeedbackDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  
+
+
   const [quantity, setQuantity] = useState<number>(1);
   const [addingToCart, setAddingToCart] = useState<boolean>(false);
+  const [togglingWishlist, setTogglingWishlist] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadData() {
@@ -49,15 +52,18 @@ export default function ProductDetail() {
       setQuantity(1);   // Reset qty
 
       try {
+        const user = getUserFromStorage();
+        const userId = user?.userId || 0;
+
         const [detailRes, relatedRes, feedbackRes] = await Promise.all([
-          getProductDetail(id),
+          getProductDetail(id, userId || undefined),
           getRelatedProducts(id, 8),
           getFeedbackByProduct(id)
         ]);
 
         if (detailRes.resultCd === 0 && detailRes.data) {
           setProduct(detailRes.data);
-          
+
           if (relatedRes.resultCd === 0 && relatedRes.data) {
             setRelatedProducts(relatedRes.data);
           } else {
@@ -84,7 +90,7 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    
+
     const user = getUserFromStorage();
     const userId = user?.userId || 0;
     if (!userId) {
@@ -92,7 +98,7 @@ export default function ProductDetail() {
       navigate('/login');
       return;
     }
-    
+
     setAddingToCart(true);
     try {
       const response = await addToCart(userId, product.productId, quantity);
@@ -108,8 +114,42 @@ export default function ProductDetail() {
     }
   };
 
+  const handleToggleWishlist = async () => {
+    if (!product) return;
+
+    const user = getUserFromStorage();
+    const userId = user?.userId || 0;
+    if (!userId) {
+      popup.showWarning("Vui lòng đăng nhập để thực hiện tính năng này", "Yêu cầu đăng nhập");
+      return;
+    }
+
+    const isNowFavorite = product.isFavorite;
+    setTogglingWishlist(true);
+    try {
+      let res;
+      if (isNowFavorite) {
+        res = await removeFromWishlist(userId, product.productId);
+      } else {
+        res = await addToWishlist(userId, product.productId);
+      }
+
+      if (res.resultCd === 0) {
+        setProduct({ ...product, isFavorite: !isNowFavorite });
+        // popup.showNotice(isNowFavorite ? "Đã xóa khỏi yêu thích" : "Đã thêm vào yêu thích", "Thành công");
+
+      } else {
+        popup.showError(res.message || "Không thể cập nhật danh sách yêu thích", "Lỗi");
+      }
+    } catch (err) {
+      popup.showError("Đã xảy ra lỗi khi cập nhật danh sách yêu thích", "Lỗi");
+    } finally {
+      setTogglingWishlist(false);
+    }
+  };
+
   return (
-    <ProductDetailView 
+    <ProductDetailView
       product={product}
       relatedProducts={relatedProducts}
       feedbacks={feedbacks}
@@ -119,6 +159,8 @@ export default function ProductDetail() {
       onQuantityChange={setQuantity}
       onAddToCart={handleAddToCart}
       addingToCart={addingToCart}
+      onToggleWishlist={handleToggleWishlist}
+      togglingWishlist={togglingWishlist}
     />
   );
 }

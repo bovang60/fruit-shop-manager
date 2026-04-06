@@ -58,6 +58,7 @@ export default function Home() {
       id: apiP.productId || apiP.id,
       name: apiP.name,
       price: (apiP.price || 0).toLocaleString('vi-VN') + '₫',
+      shopName: apiP.shopName,
       img: apiP.imageUrl || apiP.img || 'https://via.placeholder.com/400',
       desc: apiP.description || apiP.desc,
       tag: computedTag,
