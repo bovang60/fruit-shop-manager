@@ -97,7 +97,15 @@ export default function CartView({
                             onChange={() => onToggleShop(shopCart.shopId)} 
                             style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                           />
-                          <span role="img" aria-label="shop">🏪</span> {shopCart.shopName}
+                          <span role="img" aria-label="shop">🏪</span> 
+                          <span 
+                            style={{ cursor: 'pointer', transition: 'color 0.2s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--brand-green)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#2c3e50'}
+                            onClick={() => window.location.href = `/shop/${shopCart.shopId}`}
+                          >
+                            {shopCart.shopName}
+                          </span>
                         </h3>
                       </div>
                       {shopCart.items.map((item) => (

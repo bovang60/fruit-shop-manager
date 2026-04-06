@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { SortConfig } from "./CategoryManagement";
 import { AdminFrame, ADMIN_NAV_ITEMS } from "../common/admin-frame";
 import "./CategoryManagement.css";
@@ -73,6 +73,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
   onToggleStatus,
   loading = false,
 }) => {
+  const navigate = useNavigate();
   const [newName, setNewName] = useState("");
   const [newStatus, setNewStatus] = useState<"Active" | "Inactive">("Active");
   const [newDescription, setNewDescription] = useState("");
@@ -247,6 +248,13 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                             ? "visibility"
                             : "visibility_off"}
                         </span>
+                      </button>
+                      <button
+                        className="icon-btn-action"
+                        title="Xem sản phẩm"
+                        onClick={() => navigate(`/category-management/${cat.id}/products`)}
+                      >
+                        <span className="material-symbols-outlined">inventory_2</span>
                       </button>
                       <div className="action-divider-vertical"></div>
                       <button
@@ -621,11 +629,11 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
       isSidebarCollapsed={isSidebarCollapsed}
       onToggleSidebar={onToggleSidebar}
       modalContent={
-        viewMode === "CREATE"
-          ? renderCreateView()
-          : viewMode === "EDIT"
-            ? renderEditView()
-            : null
+        viewMode === "CREATE" ? (
+          renderCreateView()
+        ) : viewMode === "EDIT" ? (
+          renderEditView()
+        ) : null
       }
     >
       {renderListView()}

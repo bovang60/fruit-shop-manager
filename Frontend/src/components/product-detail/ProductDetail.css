@@ -83,6 +83,10 @@
   color: #868e96;
 }
 
+.product-detail-sold {
+  color: #868e96;
+}
+
 .product-detail-shop, .product-detail-category {
   display: inline-block;
   background-color: #e9ecef;

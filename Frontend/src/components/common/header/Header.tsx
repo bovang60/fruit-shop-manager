@@ -75,6 +75,7 @@ export default function Header({
   const handleNavigateToCart = () => {
     navigate("/cart");
   };
+  const handleNavigateToWishlist = () => navigate("/wishlist");
   // Poll for PENDING orders every 30 seconds when user is a seller with a shopId
   useEffect(() => {
     if (!isSeller || !shopId) return;
@@ -188,6 +189,7 @@ export default function Header({
       onLogout={handleLogout}
       onNavigateToSellerRegistration={handleNavigateToSellerRegistration}
       onNavigateToCart={handleNavigateToCart}
+      onNavigateToWishlist={handleNavigateToWishlist}
       onNavigateToAdminDashboard={handleNavigateToAdminDashboard}
       hideProfile={hideProfile}
       onNavigateToSellerPortal={handleNavigateToSellerPortal}

@@ -111,8 +111,9 @@ export interface ProductDetailDto {
   rating: number;
   reviewCount: number;
   categoryName: string;
-  shopId: number;
   shopName: string;
+  shopId?: number;
+  soldCount?: number;
 }
 
 // ============= API Functions =============
@@ -132,8 +133,7 @@ export interface ProductDetailDto {
  *   search: 'táo',
  *   category: 'seasonal',
  *   sortBy: 'price',
- *   sortOrder: 'asc',
- *   shopId: 123
+ *   sortOrder: 'asc'
  * })
  */
 export async function getProducts(

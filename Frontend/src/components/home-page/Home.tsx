@@ -9,6 +9,8 @@ import {
 } from '../../services/productService'
 import { getCategoryFilterList } from '../../services/categoryService'
 import { addToCart } from '../../services/cartService'
+import { getUserWishlist, addToWishlist, removeFromWishlist } from '../../services/wishlistService'
+import { getActiveSliders, type SliderDto } from '../../services/sliderService'
 import type {
   Product,
   FilterState,
@@ -28,18 +30,37 @@ export default function Home() {
   const { showNotice, showError } = usePopup()
   const [searchParams] = useSearchParams()
   const shopIdParam = searchParams.get('shopId')
-  
+
   // State management
   const [products, setProducts] = useState<Product[]>([])
   const [newArrivals, setNewArrivals] = useState<Product[]>([])
   const [trending, setTrending] = useState<Product[]>([])
   const [categories, setCategories] = useState<HomeCategory[]>([])
+  const [sliders, setSliders] = useState<SliderDto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [addingToCartId, setAddingToCartId] = useState<number | null>(null)
+  const [wishlistIds, setWishlistIds] = useState<number[]>([])
 
   const user = getUserFromStorage()
   const userId = user?.userId || 0
+
+  useEffect(() => {
+    if (userId) {
+      loadWishlist()
+    }
+  }, [userId])
+
+  const loadWishlist = async () => {
+    try {
+      const resp = await getUserWishlist(userId)
+      if (resp.resultCd === 0 && resp.data) {
+        setWishlistIds(resp.data.map((item: any) => item.productId))
+      }
+    } catch (err) {
+      console.error('Error loading wishlist', err)
+    }
+  }
 
   // Pagination state
   const [page, setPage] = useState(1)
@@ -75,6 +96,7 @@ export default function Home() {
     loadNewArrivals()
     loadTrending()
     loadCategories()
+    loadSliders()
   }, [])
 
   /**
@@ -114,6 +136,20 @@ export default function Home() {
       setProducts([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  /**
+   * Load active sliders for hero section
+   */
+  const loadSliders = async () => {
+    try {
+      const response = await getActiveSliders()
+      if (response.resultCd === 0 && response.data) {
+        setSliders(response.data)
+      }
+    } catch (err) {
+      console.error('Error loading sliders:', err)
     }
   }
 
@@ -220,6 +256,23 @@ export default function Home() {
   }
 
   /**
+   * Handle wishlist toggle
+   */
+  const handleToggleWishlist = async (productId: number, isFavorite: boolean) => {
+    if (!userId) {
+      showError('Vui lòng đăng nhập để thực hiện thao tác này')
+      return
+    }
+    if (isFavorite) {
+      setWishlistIds(prev => prev.filter(id => id !== productId))
+      await removeFromWishlist(userId, productId).catch(() => setWishlistIds(prev => [...prev, productId]))
+    } else {
+      setWishlistIds(prev => [...prev, productId])
+      await addToWishlist(userId, productId).catch(() => setWishlistIds(prev => prev.filter(id => id !== productId)))
+    }
+  }
+
+  /**
    * Handle category filter change - applies immediately
    */
   const handleCategoryChange = (category: string) => {
@@ -260,7 +313,9 @@ export default function Home() {
   }
 
   // Memoized displayed products (already filtered by API, no need to filter again)
-  const displayedProducts = useMemo(() => products, [products])
+  const displayedProducts = useMemo(() =>
+    products.map(p => ({ ...p, isFavorite: wishlistIds.includes(p.id) })),
+    [products, wishlistIds])
 
   return (
     <HomeView
@@ -272,10 +327,12 @@ export default function Home() {
       newArrivals={newArrivals}
       trending={trending}
       categories={categories}
+      sliders={sliders}
       page={page}
       totalPages={totalPages}
       onPageChange={handlePageChange}
       onAddToCart={handleAddToCart}
+      onToggleWishlist={handleToggleWishlist}
       addingToCartId={addingToCartId}
       loading={loading}
       error={error}

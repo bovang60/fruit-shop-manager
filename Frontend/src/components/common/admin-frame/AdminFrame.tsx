@@ -35,6 +35,12 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     icon: "category",
     title: "Danh mục trái cây",
   },
+  {
+    to: "/slider-management",
+    label: "Quản lý Slider",
+    icon: "view_carousel",
+    title: "Quản lý Slider & Banner",
+  },
 ];
 
 interface AdminFrameProps {
