@@ -42,6 +42,13 @@ export default function ProductDetailView({
     return `₫${price.toLocaleString('vi-VN')}`;
   };
 
+  const getDisplayUnit = (prod: ProductDetailDto | null) => {
+    if (!prod) return 'kg';
+    if (prod.categoryId === 7) return '1 giỏ';
+    if (prod.categoryId === 8) return '1 gói';
+    return prod.unit || 'kg';
+  };
+
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     try {
@@ -158,7 +165,7 @@ export default function ProductDetailView({
                 <div className="product-detail-price-wrap">
                   <div className="price-main">
                     <span className="product-detail-price">{formatPrice(product.price)}</span>
-                    <span className="product-detail-unit">/ {product.unit}</span>
+                    <span className="product-detail-unit">/ {getDisplayUnit(product)}</span>
                   </div>
                   {product.originalPrice && product.originalPrice > product.price && (
                     <div className="price-sub">
