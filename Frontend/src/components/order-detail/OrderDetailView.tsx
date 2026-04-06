@@ -215,7 +215,7 @@ export default function OrderDetailView({
                           className="od-btn-small" 
                           style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', background: 'var(--brand-green)', color: 'white', border: 'none', cursor: 'pointer' }}
                           onClick={() => {
-                            window.location.href = `/home?shopId=${order.shopId}`;
+                            window.location.href = `/shop/${order.shopId}`;
                           }}
                         >
                           Xem Shop

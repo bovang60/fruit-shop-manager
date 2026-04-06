@@ -11,12 +11,20 @@ export interface CartItemDto {
   imageUrl: string;
 }
 
+export interface ShopCartDto {
+  shopId: number;
+  shopName: string;
+  shopSubtotal: number;
+  items: CartItemDto[];
+}
+
 export interface CartDto {
   cartId: number;
   userId: number;
   totalItems: number;
   totalPrice: number;
   items: CartItemDto[];
+  shopCarts?: ShopCartDto[];
 }
 
 export interface AddToCartRequest {

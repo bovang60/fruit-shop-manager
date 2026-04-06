@@ -112,6 +112,7 @@ export interface ProductDetailDto {
   reviewCount: number;
   categoryName: string;
   shopName: string;
+  shopId?: number; // Added since the backend returns it
 }
 
 // ============= API Functions =============
@@ -158,6 +159,7 @@ export async function getProducts(
       queryParts.push(`organic=${params.organic}`);
     if (params.sortBy) queryParts.push(`sortBy=${params.sortBy}`);
     if (params.sortOrder) queryParts.push(`sortOrder=${params.sortOrder}`);
+    if (params.shopId !== undefined) queryParts.push(`shopId=${params.shopId}`);
 
     const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
     const url = `/api/products${queryString}`;

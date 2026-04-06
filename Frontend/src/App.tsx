@@ -21,6 +21,7 @@ import Cart from "./components/cart/Cart";
 import Checkout from "./components/checkout/Checkout";
 import OrderHistory from "./components/order-history/OrderHistory";
 import OrderDetail from "./components/order-detail/OrderDetail";
+import ShopDetail from "./components/shop-detail/ShopDetail";
 import SellerDashboard from "./components/seller-dashboard/SellerDashboard";
 import ProductDetail from "./components/product-detail/ProductDetail";
 import SellerLayout from "./components/seller/SellerLayout";
@@ -152,10 +153,12 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
+          <Route path="/shop/:shopId" element={<ShopDetail />} />
           <Route path="/seller-dashboard" element={<Navigate to="/seller/dashboard" replace />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
           <Route path="/products" element={<ProductList />} />
           <Route path="/wishlist" element={<Wishlist />} />
+
           <Route
             path="/seller/*"
             element={
@@ -165,10 +168,6 @@ function App() {
                 </SellerLayout>
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/seller-dashboard"
-            element={<Navigate to="/seller/dashboard" replace />}
           />
         </Routes>
       </PopupProvider>

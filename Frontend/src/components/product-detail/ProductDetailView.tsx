@@ -123,7 +123,7 @@ export default function ProductDetailView({
                       <button 
                         className="view-shop-btn-small" 
                         style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', background: 'var(--brand-green)', color: 'white', border: 'none', cursor: 'pointer' }}
-                        onClick={() => navigate(`/home?shopId=${product.shopId}`)}
+                        onClick={() => navigate(`/shop/${product.shopId}`)}
                       >
                         Xem Shop
                       </button>
