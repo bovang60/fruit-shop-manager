@@ -83,7 +83,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         dto.setRating(product.getRating());
         dto.setReviewCount(product.getReviewCount());
         dto.setDiscount(product.getDiscount());
-        dto.setSoldCount(product.getSoldCount());
+        dto.setSoldCount(product.getCompletedOrderSoldCount() != null ? product.getCompletedOrderSoldCount() : 0);
         dto.setViewCount(product.getViewCount());
         dto.setIsActive(product.getIsActive());
         dto.setCreatedAt(product.getCreatedAt());
