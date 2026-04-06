@@ -166,12 +166,12 @@ export default function HomeView({
                       key={idx}
                       className={`slider-dot ${idx === currentSlide ? "active" : ""}`}
                       onClick={() => setCurrentSlide(idx)}
-                      style={{ 
-                        width: idx === currentSlide ? '32px' : '10px', 
-                        height: '10px', 
-                        borderRadius: '5px', 
-                        border: 'none', 
-                        background: idx === currentSlide ? '#33f20d' : 'rgba(255, 255, 255, 0.7)', 
+                      style={{
+                        width: idx === currentSlide ? '32px' : '10px',
+                        height: '10px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        background: idx === currentSlide ? '#33f20d' : 'rgba(255, 255, 255, 0.7)',
                         cursor: 'pointer',
                         transition: 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
@@ -314,12 +314,12 @@ export default function HomeView({
                       <div className="product-image-placeholder">🍊</div>
                     )}
                     {p.tag && <div className="product-tag">{p.tag}</div>}
-                    <button 
-                       className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
-                       onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
-                       aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                    <button
+                      className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
+                      aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
                     >
-                       <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                      <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
                     </button>
                   </div>
                   <div className="product-info">
@@ -330,7 +330,7 @@ export default function HomeView({
                           <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>storefront</span>
                           {p.shopName || "Cửa hàng trái cây"}
                         </div>
-                        {p.desc && <p className="product-desc">{p.desc}</p>}
+                        {/* {p.desc && <p className="product-desc">{p.desc}</p>} */}
                       </div>
                       <p className="product-price-modern">{p.price}</p>
                     </div>

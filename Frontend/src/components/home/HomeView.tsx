@@ -230,7 +230,7 @@ export default function HomeView({
                           <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>storefront</span>
                           {p.shopName || "Cửa hàng trái cây"}
                         </div>
-                        <p className="product-desc">Giao Trong Ngày</p>
+                        {/* <p className="product-desc">Giao Trong Ngày</p> */}
                       </div>
                       <p className="product-price-modern">{p.price}</p>
                     </div>
@@ -312,7 +312,7 @@ export default function HomeView({
                           <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>storefront</span>
                           {p.shopName || "Cửa hàng trái cây"}
                         </div>
-                        <p className="product-desc">Ăn liền · 2 trái</p>
+                        {/* <p className="product-desc">Ăn liền · 2 trái</p> */}
                       </div>
                       <p className="product-price-modern">{p.price}</p>
                     </div>
