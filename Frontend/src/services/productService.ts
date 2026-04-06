@@ -112,7 +112,8 @@ export interface ProductDetailDto {
   reviewCount: number;
   categoryName: string;
   shopName: string;
-  shopId?: number; // Added since the backend returns it
+  shopId?: number;
+  soldCount?: number;
 }
 
 // ============= API Functions =============

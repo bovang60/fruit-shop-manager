@@ -117,18 +117,23 @@ export default function ProductDetailView({
                   {product.reviewCount !== null && product.reviewCount !== undefined && (
                     <span className="product-detail-reviews">| {product.reviewCount ?? 0} đánh giá</span>
                   )}
+                  {(product.soldCount !== null && product.soldCount !== undefined && product.soldCount > 0) && (
+                    <span className="product-detail-sold">| Đã bán {product.soldCount}</span>
+                  )}
                   <span className="product-detail-shop">
                     Cửa hàng: {product.shopName || "Quản trị viên"}
-                    {product.shopId && (
-                      <button 
-                        className="view-shop-btn-small" 
-                        style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 8px', borderRadius: '4px', background: 'var(--brand-green)', color: 'white', border: 'none', cursor: 'pointer' }}
-                        onClick={() => navigate(`/shop/${product.shopId}`)}
-                      >
-                        Xem Shop
-                      </button>
-                    )}
                   </span>
+                  {product.shopId && (
+                    <button 
+                      className="view-shop-btn-small" 
+                      style={{ fontSize: '12px', padding: '3px 12px', borderRadius: '4px', background: 'transparent', color: '#2b8a3e', border: '1px solid #2b8a3e', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#2b8a3e'; e.currentTarget.style.color = 'white'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2b8a3e'; }}
+                      onClick={() => navigate(`/shop/${product.shopId}`)}
+                    >
+                      Xem Shop
+                    </button>
+                  )}
                   <span className="product-detail-category">Danh mục: {product.categoryName || "Chưa phân loại"}</span>
                 </div>
 
