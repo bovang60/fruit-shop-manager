@@ -221,6 +221,10 @@ const SellerDashboardView: React.FC<Props> = ({
                                 <span className="seller-detail-value">{formatCurrency(selectedOrder.shippingFee)}</span>
                             </div>
                             <div className="seller-detail-item">
+                                <span className="seller-detail-label">Giảm giá voucher</span>
+                                <span className="seller-detail-value">-{formatCurrency(selectedOrder.discountValue)}</span>
+                            </div>
+                            <div className="seller-detail-item">
                                 <span className="seller-detail-label">Tổng tiền</span>
                                 <span className="seller-detail-value">{formatCurrency(selectedOrder.totalAmount)}</span>
                             </div>

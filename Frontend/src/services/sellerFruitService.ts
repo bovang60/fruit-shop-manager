@@ -34,6 +34,7 @@ export interface CreateSellerProductRequest {
   stock?: number;
   imageUrl?: string;
   categoryId?: number;
+  category?: { categoryId: number };
   discount?: number;
   originalPrice?: number;
   unit?: string;
@@ -49,6 +50,7 @@ export interface UpdateSellerProductRequest {
   stock?: number;
   imageUrl?: string;
   categoryId?: number;
+  category?: { categoryId: number };
   discount?: number;
   originalPrice?: number;
   unit?: string;
@@ -131,6 +133,50 @@ export async function updateSellerFruit(
     return {
       resultCd: 1,
       message: "Không thể cập nhật trái cây",
+      data: null,
+    };
+  }
+}
+
+export async function uploadSellerFruitImage(
+  fruitId: number,
+  imageFile: File,
+): Promise<ApiResponse<SellerProductDto>> {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+    const token = localStorage.getItem("token");
+    const uploadEndpoints = [
+      `/api/seller/fruits/${fruitId}/image`,
+      `/api/fruits/${fruitId}/image`,
+    ];
+
+    for (const endpoint of uploadEndpoints) {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        method: "POST",
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (response.status === 404) {
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: ApiResponse<SellerProductDto> = await response.json();
+      return data;
+    }
+
+    throw new Error("HTTP error! status: 404");
+  } catch (error) {
+    console.error("Error uploading seller fruit image:", error);
+    return {
+      resultCd: 1,
+      message: "Không thể tải ảnh sản phẩm lên",
       data: null,
     };
   }
