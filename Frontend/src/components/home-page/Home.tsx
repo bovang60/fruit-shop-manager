@@ -10,6 +10,7 @@ import {
 import { getCategoryFilterList } from '../../services/categoryService'
 import { addToCart } from '../../services/cartService'
 import { getUserWishlist, addToWishlist, removeFromWishlist } from '../../services/wishlistService'
+import { getActiveSliders, type SliderDto } from '../../services/sliderService'
 import type {
   Product,
   FilterState,
@@ -29,12 +30,13 @@ export default function Home() {
   const { showNotice, showError } = usePopup()
   const [searchParams] = useSearchParams()
   const shopIdParam = searchParams.get('shopId')
-  
+
   // State management
   const [products, setProducts] = useState<Product[]>([])
   const [newArrivals, setNewArrivals] = useState<Product[]>([])
   const [trending, setTrending] = useState<Product[]>([])
   const [categories, setCategories] = useState<HomeCategory[]>([])
+  const [sliders, setSliders] = useState<SliderDto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [addingToCartId, setAddingToCartId] = useState<number | null>(null)
@@ -94,6 +96,7 @@ export default function Home() {
     loadNewArrivals()
     loadTrending()
     loadCategories()
+    loadSliders()
   }, [])
 
   /**
@@ -133,6 +136,20 @@ export default function Home() {
       setProducts([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  /**
+   * Load active sliders for hero section
+   */
+  const loadSliders = async () => {
+    try {
+      const response = await getActiveSliders()
+      if (response.resultCd === 0 && response.data) {
+        setSliders(response.data)
+      }
+    } catch (err) {
+      console.error('Error loading sliders:', err)
     }
   }
 
@@ -296,9 +313,9 @@ export default function Home() {
   }
 
   // Memoized displayed products (already filtered by API, no need to filter again)
-  const displayedProducts = useMemo(() => 
-    products.map(p => ({ ...p, isFavorite: wishlistIds.includes(p.id) })), 
-  [products, wishlistIds])
+  const displayedProducts = useMemo(() =>
+    products.map(p => ({ ...p, isFavorite: wishlistIds.includes(p.id) })),
+    [products, wishlistIds])
 
   return (
     <HomeView
@@ -310,6 +327,7 @@ export default function Home() {
       newArrivals={newArrivals}
       trending={trending}
       categories={categories}
+      sliders={sliders}
       page={page}
       totalPages={totalPages}
       onPageChange={handlePageChange}

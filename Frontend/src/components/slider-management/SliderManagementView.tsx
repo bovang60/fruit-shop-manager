@@ -188,8 +188,8 @@ export default function SliderManagementView({
                   <div className="slider-card-actions">
                     <button
                       className="slider-action-btn toggle"
-                      title={slider.status ? 'Ẩn slider' : 'Hiện slider'}
-                      onClick={() => onToggleStatus(slider.sliderId!)}
+                      title={slider.status ? 'Ẩn slider' : 'Hiển thị slider'}
+                      onClick={() => onToggleStatus(slider.sliderId)}
                     >
                       <span className="material-symbols-outlined">
                         {slider.status ? 'visibility_off' : 'visibility'}
@@ -198,7 +198,7 @@ export default function SliderManagementView({
                     <button className="slider-action-btn edit" title="Chỉnh sửa" onClick={() => onEdit(slider)}>
                       <span className="material-symbols-outlined">edit</span>
                     </button>
-                    <button className="slider-action-btn delete" title="Xóa" onClick={() => onDelete(slider.sliderId!, slider.title)}>
+                    <button className="slider-action-btn delete" title="Xóa" onClick={() => onDelete(slider.sliderId, slider.title)}>
                       <span className="material-symbols-outlined">delete</span>
                     </button>
                   </div>

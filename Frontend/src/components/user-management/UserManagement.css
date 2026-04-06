@@ -231,3 +231,15 @@
   background-color: #008f5d;
   box-shadow: 0 4px 12px rgba(0, 167, 111, 0.2);
 }
+
+/* Order history spinner */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Wider modal for user detail with order history */
+.admin-modal-content {
+  max-width: 720px;
+  width: 95vw;
+}

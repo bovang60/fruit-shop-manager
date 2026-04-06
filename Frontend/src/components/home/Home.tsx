@@ -9,6 +9,7 @@ import {
 } from '../../services/productService';
 import { getCategoryFilterList } from '../../services/categoryService';
 import { addToCart } from '../../services/cartService';
+import { getActiveSliders, type SliderDto } from '../../services/sliderService';
 import { getUserWishlist, addToWishlist, removeFromWishlist } from '../../services/wishlistService.ts';
 import type {
   Product,
@@ -29,6 +30,7 @@ export default function Home() {
   const [trending, setTrending] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [categories, setCategories] = useState<HomeCategory[]>([]);
+  const [sliders, setSliders] = useState<SliderDto[]>([]);
   const [wishlistIds, setWishlistIds] = useState<number[]>([]);
   const [addingToCartId, setAddingToCartId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,6 +74,7 @@ export default function Home() {
         loadTrending(),
         loadNewArrivals(),
         loadCategories(),
+        loadSliders(),
         userId ? loadWishlist() : Promise.resolve()
       ]);
       setLoading(false);
@@ -124,6 +127,15 @@ export default function Home() {
       const response = await getCategoryFilterList();
       if (response.resultCd === 0 && response.data) {
         setCategories(response.data.map(c => ({ id: String(c.categoryId), name: c.categoryName })));
+      }
+    } catch (err) {}
+  };
+
+  const loadSliders = async () => {
+    try {
+      const response = await getActiveSliders();
+      if (response.resultCd === 0 && response.data) {
+        setSliders(response.data);
       }
     } catch (err) {}
   };
@@ -191,6 +203,7 @@ export default function Home() {
         onTrendingNext={() => setTrendingIndex(i => Math.min(i + 5, Math.max(0, trending.length - 5)))}
         onTrendingPrev={() => setTrendingIndex(i => Math.max(0, i - 5))}
         categories={categories}
+        sliders={sliders}
         onAddToCart={handleAddToCart}
         onToggleWishlist={handleToggleWishlist}
         addingToCartId={addingToCartId}

@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { AdminFrame, ADMIN_NAV_ITEMS } from "../common/admin-frame";
+import type { OrderDto } from "../../services/userService";
 import "./UserManagement.css";
 
 export type UserRole = "ADMIN" | "CUSTOMER" | "SELLER";
@@ -50,6 +52,8 @@ export type Props = {
   onSaveUser: (data: any) => void;
   sortConfig: SortConfig;
   onSort: (key: keyof UserData) => void;
+  userOrders: OrderDto[];
+  ordersLoading: boolean;
 };
 
 export default function UserManagementView({
@@ -78,7 +82,10 @@ export default function UserManagementView({
   onSaveUser,
   sortConfig,
   onSort,
+  userOrders,
+  ordersLoading,
 }: Props) {
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const renderSortIcon = (key: keyof UserData) => {
     if (sortConfig.key !== key)
       return (
@@ -432,135 +439,208 @@ export default function UserManagementView({
     </>
   );
 
+  const getOrderStatusLabel = (status: string) => {
+    const map: Record<string, { label: string; color: string; bg: string }> = {
+      PENDING:   { label: "Chờ xử lý",  color: "#b45309", bg: "#fef3c7" },
+      SHIPPING:  { label: "Đang giao",  color: "#1d4ed8", bg: "#dbeafe" },
+      DELIVERED: { label: "Đã giao",    color: "#065f46", bg: "#d1fae5" },
+      COMPLETED: { label: "Hoàn thành", color: "#065f46", bg: "#d1fae5" },
+      CANCELLED: { label: "Đã huỷ",    color: "#991b1b", bg: "#fee2e2" },
+      REJECTED:  { label: "Từ chối",   color: "#7c3aed", bg: "#ede9fe" },
+    };
+    return map[status] ?? { label: status, color: "#374151", bg: "#f3f4f6" };
+  };
+
+  const fmtVND = (n: number) =>
+    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
+
   const renderDetailView = (user: UserData) => (
     <div className="admin-modal-overlay" onClick={onBackToList}>
-      <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="admin-modal-content"
+        style={{ maxWidth: "720px", width: "95vw" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="admin-modal-header">
           <h2>Chi tiết người dùng</h2>
-          <button
-            className="admin-modal-close-btn"
-            onClick={onBackToList}
-            title="Đóng"
-          >
+          <button className="admin-modal-close-btn" onClick={onBackToList} title="Đóng">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div
-          className="admin-modal-body"
-          style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-        >
-          <div
-            className="user-identity-card"
-            style={{
-              marginBottom: 0,
-              padding: "1rem",
-              gap: "1.5rem",
-              boxShadow: "none",
-            }}
-          >
+        <div className="admin-modal-body" style={{ display: "flex", flexDirection: "column", gap: "1.5rem", maxHeight: "75vh", overflowY: "auto" }}>
+
+          {/* ── User Identity ── */}
+          <div className="user-identity-card" style={{ marginBottom: 0, padding: "1rem", gap: "1.5rem", boxShadow: "none" }}>
             <div
               className="user-avatar-large"
-              style={{
-                backgroundImage: `url(${user.avatar})`,
-                width: "80px",
-                height: "80px",
-                borderRadius: "16px",
-              }}
-            ></div>
+              style={{ backgroundImage: `url(${user.avatar})`, width: "80px", height: "80px", borderRadius: "16px" }}
+            />
             <div className="user-identity-info">
               <div className="identity-title-row">
                 <h2 className="user-name-title">{user.fullname}</h2>
-                <span
-                  className={`status-chip status-${user.status.toLowerCase()}`}
-                >
+                <span className={`status-chip status-${user.status.toLowerCase()}`}>
                   {user.status === "ACTIVE" ? "Hoạt động" : "Khóa"}
                 </span>
               </div>
               <div className="user-role-meta">
                 <span className="material-symbols-outlined">verified_user</span>
                 <span>
-                  {user.role === "ADMIN"
-                    ? "Quản trị"
-                    : user.role === "SELLER"
-                      ? "Người bán"
-                      : "Khách hàng"}
+                  {user.role === "ADMIN" ? "Quản trị" : user.role === "SELLER" ? "Người bán" : "Khách hàng"}
                 </span>
               </div>
             </div>
           </div>
 
-          <div
-            className="detail-section-card"
-            style={{ marginBottom: 0, padding: "1rem", boxShadow: "none" }}
-          >
-            <div
-              className="section-header-row"
-              style={{
-                marginBottom: "1.25rem",
-                borderBottom: "1px solid #f4f6f8",
-                paddingBottom: "0.75rem",
-              }}
-            >
-              <h3
-                className="section-title-label"
-                style={{ margin: 0, fontSize: "0.875rem", color: "#637381" }}
-              >
-                Thông tin người dùng
-              </h3>
+          {/* ── Contact Info ── */}
+          <div className="detail-section-card" style={{ marginBottom: 0, padding: "1rem", boxShadow: "none" }}>
+            <div className="section-header-row" style={{ marginBottom: "1.25rem", borderBottom: "1px solid #f4f6f8", paddingBottom: "0.75rem" }}>
+              <h3 className="section-title-label" style={{ margin: 0, fontSize: "0.875rem", color: "#637381" }}>Thông tin người dùng</h3>
             </div>
             <div className="section-content-body grid-info">
+              <div className="info-group"><label>Tên đăng nhập</label><p>{user.username}</p></div>
+              <div className="info-group"><label>Họ và tên</label><p>{user.fullname}</p></div>
+              <div className="info-group"><label>Địa chỉ Email</label><p>{user.email}</p></div>
+              <div className="info-group"><label>Số điện thoại</label><p>{user.phone}</p></div>
               <div className="info-group">
-                <label>Tên đăng nhập</label>
-                <p>{user.username}</p>
+                <label>Vai trò</label>
+                <p>{user.role === "ADMIN" ? "Quản trị" : user.role === "SELLER" ? "Người bán" : "Khách hàng"}</p>
               </div>
               <div className="info-group">
-                <label>Họ và tên</label>
-                <p>{user.fullname}</p>
-              </div>
-              <div className="info-group">
-                <label>Địa chỉ Email</label>
-                <p>{user.email}</p>
-              </div>
-              <div className="info-group">
-                <label>Số điện thoại</label>
-                <p>{user.phone}</p>
-              </div>
-              <div className="info-group">
-                <label>Vai trò tài khoản</label>
-                <p>
-                  {user.role === "ADMIN"
-                    ? "Quản trị"
-                    : user.role === "SELLER"
-                      ? "Người bán"
-                      : "Khách hàng"}
-                </p>
-              </div>
-              <div className="info-group">
-                <label>Trạng thái tài khoản</label>
+                <label>Trạng thái</label>
                 <p>{user.status === "ACTIVE" ? "Hoạt động" : "Khóa"}</p>
               </div>
             </div>
           </div>
+
+          {/* ── Order History ── */}
+          <div style={{ padding: "0 1rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f4f6f8" }}>
+              <span className="material-symbols-outlined" style={{ color: "#637381", fontSize: "1.1rem" }}>receipt_long</span>
+              <h3 style={{ margin: 0, fontSize: "0.875rem", color: "#637381", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Lịch sử đơn hàng
+              </h3>
+              {!ordersLoading && (
+                <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "#9ca3af", fontWeight: 600 }}>
+                  {userOrders.length} đơn
+                </span>
+              )}
+            </div>
+
+            {ordersLoading ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "2rem", justifyContent: "center", color: "#9ca3af" }}>
+                <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite", fontSize: "1.25rem" }}>progress_activity</span>
+                Đang tải lịch sử đơn hàng...
+              </div>
+            ) : userOrders.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "#9ca3af" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "2.5rem", display: "block", marginBottom: "0.5rem" }}>inbox</span>
+                <p style={{ margin: 0, fontSize: "0.875rem" }}>Người dùng chưa có đơn hàng nào</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                {userOrders.map((order) => {
+                  const statusStyle = getOrderStatusLabel(order.status);
+                  const isExpanded = expandedOrderId === order.orderId;
+                  return (
+                    <div key={order.orderId} style={{ border: "1px solid #e5e7eb", borderRadius: "0.75rem", overflow: "hidden", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                      {/* Order Header Row */}
+                      <div
+                        onClick={() => setExpandedOrderId(isExpanded ? null : order.orderId)}
+                        style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem 1rem", cursor: "pointer", userSelect: "none" }}
+                      >
+                        <span className="material-symbols-outlined" style={{ color: "#9ca3af", fontSize: "1rem", transition: "transform 0.2s", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)" }}>chevron_right</span>
+
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                            <span style={{ fontWeight: 700, fontSize: "0.875rem", color: "#111827" }}>#{order.orderId}</span>
+                            <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>— {order.shopName}</span>
+                            <span style={{
+                              marginLeft: "auto",
+                              fontSize: "0.7rem", fontWeight: 700, padding: "2px 8px",
+                              borderRadius: "999px",
+                              color: statusStyle.color,
+                              background: statusStyle.bg,
+                            }}>{statusStyle.label}</span>
+                          </div>
+                          <div style={{ display: "flex", gap: "1.5rem", marginTop: "0.3rem", fontSize: "0.75rem", color: "#6b7280" }}>
+                            <span>{new Date(order.createdAt).toLocaleDateString("vi-VN")}</span>
+                            <span style={{ fontWeight: 700, color: "#111827" }}>{fmtVND(order.totalAmount)}</span>
+                            <span>{order.paymentMethod} · {order.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expandable Items */}
+                      {isExpanded && (
+                        <div style={{ borderTop: "1px solid #f3f4f6", background: "#fafafa", padding: "0.75rem 1rem" }}>
+                          {/* Items */}
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                            {order.items.map((item) => (
+                              <div key={item.orderItemId} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                                {item.imageUrl ? (
+                                  <img src={item.imageUrl} alt={item.productName} style={{ width: "36px", height: "36px", borderRadius: "6px", objectFit: "cover", flexShrink: 0 }} />
+                                ) : (
+                                  <div style={{ width: "36px", height: "36px", borderRadius: "6px", background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: "1rem", color: "#9ca3af" }}>deployed_code</span>
+                                  </div>
+                                )}
+                                <div style={{ flex: 1 }}>
+                                  <p style={{ margin: 0, fontWeight: 600, fontSize: "0.8rem", color: "#111827" }}>{item.productName}</p>
+                                  <p style={{ margin: 0, fontSize: "0.72rem", color: "#6b7280" }}>x{item.quantity} · {fmtVND(item.price)}/sp</p>
+                                </div>
+                                <span style={{ fontWeight: 700, fontSize: "0.8rem", color: "#111827", flexShrink: 0 }}>{fmtVND(item.subtotal)}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Financial Summary */}
+                          <div style={{ borderTop: "1px dashed #e5e7eb", paddingTop: "0.6rem", display: "flex", flexDirection: "column", gap: "0.25rem", fontSize: "0.75rem", color: "#6b7280" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <span>Tạm tính</span><span>{fmtVND(order.subTotal)}</span>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <span>Phí giao hàng</span><span>{fmtVND(order.shippingFee)}</span>
+                            </div>
+                            {order.discountValue > 0 && (
+                              <div style={{ display: "flex", justifyContent: "space-between", color: "#10b981" }}>
+                                <span>Giảm giá</span><span>-{fmtVND(order.discountValue)}</span>
+                              </div>
+                            )}
+                            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#111827", borderTop: "1px solid #e5e7eb", paddingTop: "0.25rem", marginTop: "0.1rem" }}>
+                              <span>Tổng cộng</span><span style={{ color: "#2563eb" }}>{fmtVND(order.totalAmount)}</span>
+                            </div>
+                          </div>
+
+                          {/* Address */}
+                          <div style={{ marginTop: "0.6rem", display: "flex", gap: "0.4rem", alignItems: "flex-start", fontSize: "0.72rem", color: "#6b7280" }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: "0.85rem", marginTop: "1px" }}>location_on</span>
+                            <span>{order.receiverName} · {order.receiverPhone} · {order.shippingAddress}</span>
+                          </div>
+
+                          {order.note && (
+                            <div style={{ marginTop: "0.4rem", display: "flex", gap: "0.4rem", alignItems: "flex-start", fontSize: "0.72rem", color: "#6b7280" }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: "0.85rem", marginTop: "1px" }}>notes</span>
+                              <span>{order.note}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="admin-modal-footer">
-          <button className="btn-cancel-action" onClick={onBackToList}>
-            Đóng
-          </button>
+          <button className="btn-cancel-action" onClick={onBackToList}>Đóng</button>
           <button
             className={`btn-status-toggle ${user.status === "ACTIVE" ? "is-deactivate" : "is-activate"}`}
-            onClick={() => {
-              onStatusChange(
-                user.id,
-                user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
-              );
-              onBackToList();
-            }}
+            onClick={() => { onStatusChange(user.id, user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"); onBackToList(); }}
           >
-            {user.status === "ACTIVE"
-              ? "Khóa tài khoản"
-              : "Kích hoạt tài khoản"}
+            {user.status === "ACTIVE" ? "Khóa tài khoản" : "Kích hoạt tài khoản"}
           </button>
         </div>
       </div>

@@ -18,11 +18,11 @@ const API_BASE_URL =
 // ============= Types =============
 
 export interface SliderDto {
-  sliderId?: number;
+  sliderId: number;
   title: string;
   description?: string;
-  imageUrl?: string;
-  status: boolean; // true = hiển thị, false = ẩn
+  imageUrl: string;
+  status: boolean; // true = hiển thị (active), false = ẩn (inactive)
 }
 
 export interface SliderFormData {
@@ -57,7 +57,7 @@ async function sendFormData(
   try {
     const response = await fetch(`${API_BASE_URL}${url}`, {
       method,
-      headers: buildAuthHeader(), // KHÔNG set Content-Type - browser tự gán multipart boundary
+      headers: buildAuthHeader(),
       body: formData,
     });
     return await response.json();
@@ -70,7 +70,19 @@ async function sendFormData(
 // ============= API Functions =============
 
 /**
- * Lấy danh sách tất cả slider (Admin)
+ * 1. Lấy danh sách slider đang hiển thị (Public - dùng ở trang chủ)
+ */
+export async function getActiveSliders(): Promise<ApiResponse<SliderDto[]>> {
+  try {
+    return await get<ApiResponse<SliderDto[]>>('/api/sliders/active');
+  } catch (error) {
+    console.error('Error fetching active sliders:', error);
+    return { resultCd: 1, message: 'Không thể tải slider', data: [] };
+  }
+}
+
+/**
+ * 2. Lấy danh sách tất cả slider (Admin)
  */
 export async function getSliders(): Promise<ApiResponse<SliderDto[]>> {
   try {
@@ -87,19 +99,24 @@ export async function getSliders(): Promise<ApiResponse<SliderDto[]>> {
 }
 
 /**
- * Lấy danh sách slider đang hiển thị (Public - dùng ở trang chủ)
+ * 3. Lấy slider chi tiết theo ID (Admin)
  */
-export async function getActiveSliders(): Promise<ApiResponse<SliderDto[]>> {
+export async function getSliderById(id: number): Promise<ApiResponse<SliderDto>> {
   try {
-    return await get<ApiResponse<SliderDto[]>>('/api/sliders/active');
+    return await callApiWithMethod<never, ApiResponse<SliderDto>>(
+      'GET',
+      `/api/sliders/${id}`,
+      undefined,
+      buildAuthHeader(),
+    );
   } catch (error) {
-    console.error('Error fetching active sliders:', error);
-    return { resultCd: 1, message: 'Không thể tải slider', data: [] };
+    console.error(`Error fetching slider ${id}:`, error);
+    return { resultCd: 1, message: 'Không tìm thấy slider', data: null };
   }
 }
 
 /**
- * Tạo slider mới (Admin) - multipart/form-data
+ * 4. Tạo slider mới (Admin) - multipart/form-data
  */
 export async function createSlider(
   data: SliderFormData,
@@ -114,8 +131,7 @@ export async function createSlider(
 }
 
 /**
- * Cập nhật slider (Admin) - multipart/form-data
- * Nếu không gửi image mới, backend giữ ảnh cũ
+ * 5. Cập nhật slider (Admin) - multipart/form-data
  */
 export async function updateSlider(
   id: number,
@@ -128,7 +144,7 @@ export async function updateSlider(
 }
 
 /**
- * Xóa slider (Admin)
+ * 6. Xóa slider (Admin)
  */
 export async function deleteSlider(
   id: number,
@@ -147,8 +163,7 @@ export async function deleteSlider(
 }
 
 /**
- * Bật/tắt trạng thái hiển thị slider (Admin)
- * Backend tự đảo ngược status hiện tại
+ * 7. Bật/tắt trạng thái hiển thị slider (Admin)
  */
 export async function toggleSliderStatus(
   id: number,
@@ -170,14 +185,17 @@ export async function toggleSliderStatus(
 
 export function getSliderErrorMessage(message: string): string {
   const MESSAGES: Record<string, string> = {
-    // Success messages
+    // Success / Warning messages from spec
     'Slider created successfully': 'Tạo slider thành công',
     'Slider updated successfully': 'Cập nhật slider thành công',
     'Slider deleted successfully': 'Đã xóa slider thành công',
     'Slider activated successfully': 'Slider đã được hiển thị',
     'Slider deactivated successfully': 'Slider đã được ẩn',
-    'Image uploaded successfully': 'Ảnh đã được cập nhật thành công',
-    // Error messages (from API spec)
+    'Tạo slider thành công nhưng được đặt thành ẨN: không thể hiển thị quá 5 slider cùng lúc':
+      'Tạo slider thành công nhưng được đặt thành ẨN: không thể hiển thị quá 5 slider cùng lúc',
+
+    // Error messages from spec
+    'Không thể hiển thị quá 5 slider cùng lúc': 'Không thể hiển thị quá 5 slider cùng lúc (tối đa 5)',
     'Slider title is required': 'Tiêu đề slider không được để trống',
     'Invalid file type. Only PNG, JPG, GIF are allowed.': 'Định dạng file không hợp lệ. Chỉ chấp nhận PNG, JPG, GIF',
     'File size exceeds limit. Maximum 5MB allowed.': 'File quá lớn. Tối đa 5MB',

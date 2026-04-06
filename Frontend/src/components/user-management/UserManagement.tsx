@@ -5,8 +5,10 @@ import {
   getUsers,
   updateUserStatus,
   registerUser,
+  getUserOrderHistory,
   type UserFilter,
   type UserStatus,
+  type OrderDto,
 } from "../../services/userService";
 import { usePopup } from "../common/popup";
 import { LoadingModal } from "../common/loading";
@@ -39,6 +41,10 @@ export default function UserManagement() {
     key: null,
     direction: null,
   });
+
+  // Order History State
+  const [userOrders, setUserOrders] = useState<OrderDto[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -164,14 +170,30 @@ export default function UserManagement() {
     );
   };
 
-  const handleViewDetail = (user: UserData) => {
+  const handleViewDetail = async (user: UserData) => {
     setSelectedUser(user);
     setViewMode("DETAIL");
+    // Fetch order history for this user
+    setOrdersLoading(true);
+    setUserOrders([]);
+    try {
+      const res = await getUserOrderHistory(user.id);
+      if (res.resultCd === 0 && res.data) {
+        setUserOrders(res.data);
+      } else {
+        showError(res.message || "Không thể tải lịch sử đơn hàng");
+      }
+    } catch {
+      showError("Lỗi kết nối khi tải lịch sử đơn hàng");
+    } finally {
+      setOrdersLoading(false);
+    }
   };
 
   const handleBackToList = () => {
     setViewMode("LIST");
     setSelectedUser(null);
+    setUserOrders([]);
   };
 
   const handleAddUser = () => {
@@ -233,6 +255,8 @@ export default function UserManagement() {
         onSaveUser={handleSaveUser}
         sortConfig={sortConfig}
         onSort={handleSort}
+        userOrders={userOrders}
+        ordersLoading={ordersLoading}
       />
       <LoadingModal
         isOpen={loading}

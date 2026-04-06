@@ -91,6 +91,55 @@ export async function registerUser(data: any): Promise<ApiResponse<UserDto>> {
   );
 }
 
+// ============= Order History Types =============
+
+export interface OrderItemDto {
+  orderItemId: number;
+  productId: number;
+  productName: string;
+  imageUrl: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+}
+
+export interface OrderDto {
+  orderId: number;
+  shopId: number;
+  shopName: string;
+  receiverName: string;
+  receiverPhone: string;
+  shippingAddress: string;
+  subTotal: number;
+  discountValue: number;
+  shippingFee: number;
+  totalAmount: number;
+  status: string;
+  paymentMethod: string;
+  paymentStatus: string;
+  note: string;
+  createdAt: string;
+  items: OrderItemDto[];
+}
+
+/**
+ * Get order history for a specific user
+ * GET /api/orders/user/{userId}
+ */
+export async function getUserOrderHistory(
+  userId: number,
+): Promise<ApiResponse<OrderDto[]>> {
+  try {
+    return await callApiWithMethod<never, ApiResponse<OrderDto[]>>(
+      "GET",
+      `/api/orders/user/${userId}`,
+    );
+  } catch (error) {
+    console.error("Error fetching user order history:", error);
+    return { resultCd: 1, message: "Không thể tải lịch sử đơn hàng", data: null };
+  }
+}
+
 // ============= Helper Functions =============
 
 /**

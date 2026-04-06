@@ -84,7 +84,8 @@ const SliderManagement: React.FC = () => {
     try {
       const result = await createSlider(values);
       if (result.resultCd === 0) {
-        showNotice('Tạo slider mới thành công!', 'Thành công');
+        // Hiển thị message từ server (có thể là warning về giới hạn 5 slider)
+        showNotice(getSliderErrorMessage(result.message || 'Tạo slider mới thành công!'), 'Thành công');
         setViewMode('LIST');
         loadSliders();
       } else {
@@ -108,7 +109,7 @@ const SliderManagement: React.FC = () => {
     try {
       const result = await updateSlider(id, values);
       if (result.resultCd === 0) {
-        showNotice('Cập nhật slider thành công!', 'Thành công');
+        showNotice(getSliderErrorMessage(result.message || 'Cập nhật slider thành công!'), 'Thành công');
         setViewMode('LIST');
         loadSliders();
       } else {
@@ -130,7 +131,7 @@ const SliderManagement: React.FC = () => {
         try {
           const result = await deleteSlider(id);
           if (result.resultCd === 0) {
-            showNotice('Đã xóa slider thành công!', 'Thành công');
+            showNotice(getSliderErrorMessage(result.message || 'Đã xóa slider thành công!'), 'Thành công');
             setSliders(prev => prev.filter(s => s.sliderId !== id));
           } else {
             showError(getSliderErrorMessage(result.message || 'Không thể xóa slider'), 'Lỗi');
@@ -147,19 +148,14 @@ const SliderManagement: React.FC = () => {
 
   // ---- Toggle hiển thị/ẩn slider ----
   const handleToggleStatus = async (id: number) => {
-    const current = sliders.find(s => s.sliderId === id);
-    if (!current) return;
-
     setLoading(true);
     try {
       const result = await toggleSliderStatus(id);
       if (result.resultCd === 0) {
-        // Optimistic update: đảo trạng thái ngay trên UI
-        setSliders(prev =>
-          prev.map(s => s.sliderId === id ? { ...s, status: !s.status } : s)
-        );
+        // Load lại danh sách để đảm bảo status chính xác từ server
+        await loadSliders();
         showNotice(
-          `Slider đã chuyển sang ${current.status ? 'Ẩn' : 'Hiển thị'}!`,
+          getSliderErrorMessage(result.message || 'Cập nhật trạng thái slider thành công!'),
           'Thành công'
         );
       } else {

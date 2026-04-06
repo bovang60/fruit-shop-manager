@@ -117,19 +117,21 @@ export default function HeaderView({
         >
           Sản phẩm
         </button>
-        <button
-          className={`tab${currentPath === "/cart" ? " active" : ""}`}
-          onClick={onNavigateToCart}
-        >
-          Đơn hàng
-        </button>
-        {userRole !== "ADMIN" && (
-          <button
-            className={`tab${currentPath === "/register-shop" ? " active" : ""}`}
-            onClick={onNavigateToSellerRegistration}
-          >
-            Đăng ký bán hàng
-          </button>
+        {userRole !== "ADMIN" && userRole !== "SELLER" && (
+          <>
+            <button
+              className={`tab${currentPath === "/cart" ? " active" : ""}`}
+              onClick={onNavigateToCart}
+            >
+              Đơn hàng
+            </button>
+            <button
+              className={`tab${currentPath === "/register-shop" ? " active" : ""}`}
+              onClick={onNavigateToSellerRegistration}
+            >
+              Đăng ký bán hàng
+            </button>
+          </>
         )}
         {userRole === "SELLER" && (
           <button
