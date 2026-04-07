@@ -40,6 +40,7 @@ public class DashboardDto {
     @NoArgsConstructor
     @Builder
     public static class TopSellerDto {
+        private Integer shopId;
         private String shopName;
         private long totalUnitsSold;
         private BigDecimal totalRevenue;

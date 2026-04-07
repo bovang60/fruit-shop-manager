@@ -66,7 +66,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
                         "ORDER BY YEAR(o.createdAt) DESC, MONTH(o.createdAt) DESC")
         List<DashboardDto.MonthlyPerformanceDto> findMonthlyPerformance();
 
-        @Query("SELECT new com.fruitshop.backend.dto.DashboardDto$TopSellerDto(s.shopName, " +
+        @Query("SELECT new com.fruitshop.backend.dto.DashboardDto$TopSellerDto(s.shopId, s.shopName, " +
                         "SUM(oi.quantity), SUM(o.subTotal + o.shippingFee), 'APPROVED') " +
                         "FROM OrderItem oi JOIN oi.order o JOIN o.shop s " +
                         "WHERE o.status = 'COMPLETED' " +
@@ -74,7 +74,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
                         "ORDER BY SUM(oi.quantity) DESC")
         List<DashboardDto.TopSellerDto> findTopSellersByQuantity(Pageable pageable);
 
-        @org.springframework.data.jpa.repository.Query("SELECT new com.fruitshop.backend.dto.DashboardDto$TopSellerDto(s.shopName, "
+        @org.springframework.data.jpa.repository.Query("SELECT new com.fruitshop.backend.dto.DashboardDto$TopSellerDto(s.shopId, s.shopName, "
                         +
                         "SUM(oi.quantity), SUM(o.subTotal + o.shippingFee), 'APPROVED') " +
                         "FROM OrderItem oi JOIN oi.order o JOIN o.shop s " +
