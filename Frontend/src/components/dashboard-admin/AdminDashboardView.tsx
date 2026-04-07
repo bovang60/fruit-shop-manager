@@ -6,9 +6,9 @@ export type Stat = {
     id: string
     label: string
     value: string
-    trend: string
-    trendDir: 'up' | 'down'
-    footer: string
+    trend?: string
+    trendDir?: 'up' | 'down'
+    footer?: string
     icon: string
     color: string
 }
@@ -38,6 +38,7 @@ interface Props {
     isLoading: boolean;
     isSidebarCollapsed: boolean;
     onToggleSidebar: () => void;
+    onSellerClick: (sellerId: number, sellerName: string) => void;
 }
 
 export default function AdminDashboardView({
@@ -46,7 +47,8 @@ export default function AdminDashboardView({
     weeklyOrders,
     isLoading,
     isSidebarCollapsed,
-    onToggleSidebar
+    onToggleSidebar,
+    onSellerClick,
 }: Props) {
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
@@ -187,7 +189,12 @@ export default function AdminDashboardView({
                             </div>
                             <div className="seller-list-modern" style={{ padding: '0 1.5rem 1.5rem' }}>
                                 {sellers.map((seller) => (
-                                    <div key={seller.id} className="seller-item-modern">
+                                    <div 
+                                        key={seller.id} 
+                                        className="seller-item-modern" 
+                                        onClick={() => onSellerClick(seller.id, seller.name)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
                                         <div className="seller-avatar-square" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e6ffed', borderRadius: '12px' }}>
                                             <span className="material-symbols-outlined" style={{ color: '#00a76f', fontSize: '20px' }}>storefront</span>
                                         </div>

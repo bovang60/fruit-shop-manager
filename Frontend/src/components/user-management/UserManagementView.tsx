@@ -2,7 +2,9 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { AdminFrame, ADMIN_NAV_ITEMS } from "../common/admin-frame";
 import type { OrderDto } from "../../services/userService";
+import type { SellerOrderDto as ShopOrderDto } from "../../services/sellerOrderService";
 import "./UserManagement.css";
+
 
 export type UserRole = "ADMIN" | "CUSTOMER" | "SELLER";
 export type UserStatus = "ACTIVE" | "INACTIVE";
@@ -54,6 +56,8 @@ export type Props = {
   onSort: (key: keyof UserData) => void;
   userOrders: OrderDto[];
   ordersLoading: boolean;
+  sellerOrders: ShopOrderDto[];
+  sellerOrdersLoading: boolean;
 };
 
 export default function UserManagementView({
@@ -84,6 +88,8 @@ export default function UserManagementView({
   onSort,
   userOrders,
   ordersLoading,
+  sellerOrders,
+  sellerOrdersLoading,
 }: Props) {
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const renderSortIcon = (key: keyof UserData) => {
@@ -513,126 +519,202 @@ export default function UserManagementView({
             </div>
           </div>
 
-          {/* ── Order History ── */}
-          <div style={{ padding: "0 1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f4f6f8" }}>
-              <span className="material-symbols-outlined" style={{ color: "#637381", fontSize: "1.1rem" }}>receipt_long</span>
-              <h3 style={{ margin: 0, fontSize: "0.875rem", color: "#637381", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                Lịch sử đơn hàng
-              </h3>
-              {!ordersLoading && (
-                <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "#9ca3af", fontWeight: 600 }}>
-                  {userOrders.length} đơn
-                </span>
-              )}
-            </div>
-
-            {ordersLoading ? (
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "2rem", justifyContent: "center", color: "#9ca3af" }}>
-                <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite", fontSize: "1.25rem" }}>progress_activity</span>
-                Đang tải lịch sử đơn hàng...
+          {/* ── Order History (FOR CUSTOMERS ONLY) ── */}
+          {user.role === "CUSTOMER" && (
+            <div style={{ padding: "0 1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f4f6f8" }}>
+                <span className="material-symbols-outlined" style={{ color: "#637381", fontSize: "1.1rem" }}>receipt_long</span>
+                <h3 style={{ margin: 0, fontSize: "0.875rem", color: "#637381", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  LỊCH SỬ MUA HÀNG
+                </h3>
+                {!ordersLoading && (
+                  <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "#9ca3af", fontWeight: 600 }}>
+                    {userOrders.length} đơn
+                  </span>
+                )}
               </div>
-            ) : userOrders.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "#9ca3af" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "2.5rem", display: "block", marginBottom: "0.5rem" }}>inbox</span>
-                <p style={{ margin: 0, fontSize: "0.875rem" }}>Người dùng chưa có đơn hàng nào</p>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {userOrders.map((order) => {
-                  const statusStyle = getOrderStatusLabel(order.status);
-                  const isExpanded = expandedOrderId === order.orderId;
-                  return (
-                    <div key={order.orderId} style={{ border: "1px solid #e5e7eb", borderRadius: "0.75rem", overflow: "hidden", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-                      {/* Order Header Row */}
-                      <div
-                        onClick={() => setExpandedOrderId(isExpanded ? null : order.orderId)}
-                        style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem 1rem", cursor: "pointer", userSelect: "none" }}
-                      >
-                        <span className="material-symbols-outlined" style={{ color: "#9ca3af", fontSize: "1rem", transition: "transform 0.2s", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)" }}>chevron_right</span>
 
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                            <span style={{ fontWeight: 700, fontSize: "0.875rem", color: "#111827" }}>#{order.orderId}</span>
-                            <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>— {order.shopName}</span>
-                            <span style={{
-                              marginLeft: "auto",
-                              fontSize: "0.7rem", fontWeight: 700, padding: "2px 8px",
-                              borderRadius: "999px",
-                              color: statusStyle.color,
-                              background: statusStyle.bg,
-                            }}>{statusStyle.label}</span>
-                          </div>
-                          <div style={{ display: "flex", gap: "1.5rem", marginTop: "0.3rem", fontSize: "0.75rem", color: "#6b7280" }}>
-                            <span>{new Date(order.createdAt).toLocaleDateString("vi-VN")}</span>
-                            <span style={{ fontWeight: 700, color: "#111827" }}>{fmtVND(order.totalAmount)}</span>
-                            <span>{order.paymentMethod} · {order.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán"}</span>
+              {ordersLoading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "2rem", justifyContent: "center", color: "#9ca3af" }}>
+                  <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite", fontSize: "1.25rem" }}>progress_activity</span>
+                  Đang tải lịch sử mua hàng...
+                </div>
+              ) : userOrders.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "#9ca3af" }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: "2.5rem", display: "block", marginBottom: "0.5rem" }}>inbox</span>
+                  <p style={{ margin: 0, fontSize: "0.875rem" }}>Người dùng chưa có đơn hàng nào</p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  {userOrders.map((order) => {
+                    const statusStyle = getOrderStatusLabel(order.status);
+                    const isExpanded = expandedOrderId === order.orderId;
+                    return (
+                      <div key={order.orderId} style={{ border: "1px solid #e5e7eb", borderRadius: "0.75rem", overflow: "hidden", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                        {/* Order Header Row */}
+                        <div
+                          onClick={() => setExpandedOrderId(isExpanded ? null : order.orderId)}
+                          style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem 1rem", cursor: "pointer", userSelect: "none" }}
+                        >
+                          <span className="material-symbols-outlined" style={{ color: "#9ca3af", fontSize: "1rem", transition: "transform 0.2s", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)" }}>chevron_right</span>
+
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                              <span style={{ fontWeight: 700, fontSize: "0.875rem", color: "#111827" }}>#{order.orderId}</span>
+                              <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>— {order.shopName}</span>
+                              <span style={{
+                                marginLeft: "auto",
+                                fontSize: "0.7rem", fontWeight: 700, padding: "2px 8px",
+                                borderRadius: "999px",
+                                color: statusStyle.color,
+                                background: statusStyle.bg,
+                              }}>{statusStyle.label}</span>
+                            </div>
+                            <div style={{ display: "flex", gap: "1.5rem", marginTop: "0.3rem", fontSize: "0.75rem", color: "#6b7280" }}>
+                              <span>{new Date(order.createdAt).toLocaleDateString("vi-VN")}</span>
+                              <span style={{ fontWeight: 700, color: "#111827" }}>{fmtVND(order.totalAmount)}</span>
+                              <span>{order.paymentMethod} · {order.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán"}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Expandable Items */}
-                      {isExpanded && (
-                        <div style={{ borderTop: "1px solid #f3f4f6", background: "#fafafa", padding: "0.75rem 1rem" }}>
-                          {/* Items */}
-                          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.75rem" }}>
-                            {order.items.map((item) => (
-                              <div key={item.orderItemId} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                                {item.imageUrl ? (
-                                  <img src={item.imageUrl} alt={item.productName} style={{ width: "36px", height: "36px", borderRadius: "6px", objectFit: "cover", flexShrink: 0 }} />
-                                ) : (
-                                  <div style={{ width: "36px", height: "36px", borderRadius: "6px", background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                    <span className="material-symbols-outlined" style={{ fontSize: "1rem", color: "#9ca3af" }}>deployed_code</span>
+                        {/* Expandable Items */}
+                        {isExpanded && (
+                          <div style={{ borderTop: "1px solid #f3f4f6", background: "#fafafa", padding: "0.75rem 1rem" }}>
+                            {/* Items */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                              {order.items.map((item) => (
+                                <div key={item.orderItemId} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                                  {item.imageUrl ? (
+                                    <img src={item.imageUrl} alt={item.productName} style={{ width: "36px", height: "36px", borderRadius: "6px", objectFit: "cover", flexShrink: 0 }} />
+                                  ) : (
+                                    <div style={{ width: "36px", height: "36px", borderRadius: "6px", background: "#e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: "1rem", color: "#9ca3af" }}>deployed_code</span>
+                                    </div>
+                                  )}
+                                  <div style={{ flex: 1 }}>
+                                    <p style={{ margin: 0, fontWeight: 600, fontSize: "0.8rem", color: "#111827" }}>{item.productName}</p>
+                                    <p style={{ margin: 0, fontSize: "0.72rem", color: "#6b7280" }}>x{item.quantity} · {fmtVND(item.price)}/sp</p>
                                   </div>
-                                )}
-                                <div style={{ flex: 1 }}>
-                                  <p style={{ margin: 0, fontWeight: 600, fontSize: "0.8rem", color: "#111827" }}>{item.productName}</p>
-                                  <p style={{ margin: 0, fontSize: "0.72rem", color: "#6b7280" }}>x{item.quantity} · {fmtVND(item.price)}/sp</p>
+                                  <span style={{ fontWeight: 700, fontSize: "0.8rem", color: "#111827", flexShrink: 0 }}>{fmtVND(item.subtotal)}</span>
                                 </div>
-                                <span style={{ fontWeight: 700, fontSize: "0.8rem", color: "#111827", flexShrink: 0 }}>{fmtVND(item.subtotal)}</span>
-                              </div>
-                            ))}
-                          </div>
+                              ))}
+                            </div>
 
-                          {/* Financial Summary */}
-                          <div style={{ borderTop: "1px dashed #e5e7eb", paddingTop: "0.6rem", display: "flex", flexDirection: "column", gap: "0.25rem", fontSize: "0.75rem", color: "#6b7280" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                              <span>Tạm tính</span><span>{fmtVND(order.subTotal)}</span>
+                            {/* Financial Summary */}
+                            <div style={{ borderTop: "1px dashed #e5e7eb", paddingTop: "0.6rem", display: "flex", flexDirection: "column", gap: "0.25rem", fontSize: "0.75rem", color: "#6b7280" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <span>Tạm tính</span><span>{fmtVND(order.subTotal)}</span>
+                              </div>
+                              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <span>Phí giao hàng</span><span>{fmtVND(order.shippingFee)}</span>
+                              </div>
+                              {order.discountValue > 0 && (
+                                <div style={{ display: "flex", justifyContent: "space-between", color: "#10b981" }}>
+                                  <span>Giảm giá</span><span>-{fmtVND(order.discountValue)}</span>
+                                </div>
+                              )}
+                              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#111827", borderTop: "1px solid #e5e7eb", paddingTop: "0.25rem", marginTop: "0.1rem" }}>
+                                <span>Tổng cộng</span><span style={{ color: "#2563eb" }}>{fmtVND(order.totalAmount)}</span>
+                              </div>
                             </div>
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                              <span>Phí giao hàng</span><span>{fmtVND(order.shippingFee)}</span>
+
+                            {/* Address */}
+                            <div style={{ marginTop: "0.6rem", display: "flex", gap: "0.4rem", alignItems: "flex-start", fontSize: "0.72rem", color: "#6b7280" }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: "0.85rem", marginTop: "1px" }}>location_on</span>
+                              <span>{order.receiverName} · {order.receiverPhone} · {order.shippingAddress}</span>
                             </div>
-                            {order.discountValue > 0 && (
-                              <div style={{ display: "flex", justifyContent: "space-between", color: "#10b981" }}>
-                                <span>Giảm giá</span><span>-{fmtVND(order.discountValue)}</span>
+
+                            {order.note && (
+                              <div style={{ marginTop: "0.4rem", display: "flex", gap: "0.4rem", alignItems: "flex-start", fontSize: "0.72rem", color: "#6b7280" }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: "0.85rem", marginTop: "1px" }}>notes</span>
+                                <span>{order.note}</span>
                               </div>
                             )}
-                            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#111827", borderTop: "1px solid #e5e7eb", paddingTop: "0.25rem", marginTop: "0.1rem" }}>
-                              <span>Tổng cộng</span><span style={{ color: "#2563eb" }}>{fmtVND(order.totalAmount)}</span>
-                            </div>
                           </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
-                          {/* Address */}
-                          <div style={{ marginTop: "0.6rem", display: "flex", gap: "0.4rem", alignItems: "flex-start", fontSize: "0.72rem", color: "#6b7280" }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: "0.85rem", marginTop: "1px" }}>location_on</span>
-                            <span>{order.receiverName} · {order.receiverPhone} · {order.shippingAddress}</span>
-                          </div>
 
-                          {order.note && (
-                            <div style={{ marginTop: "0.4rem", display: "flex", gap: "0.4rem", alignItems: "flex-start", fontSize: "0.72rem", color: "#6b7280" }}>
-                              <span className="material-symbols-outlined" style={{ fontSize: "0.85rem", marginTop: "1px" }}>notes</span>
-                              <span>{order.note}</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+          {/* ── Shop Orders (FOR SELLERS ONLY) ── */}
+          {user.role === "SELLER" && (
+            <div style={{ padding: "0 1rem 1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f4f6f8" }}>
+                <span className="material-symbols-outlined" style={{ color: "#00a76f", fontSize: "1.2rem" }}>storefront</span>
+                <h3 style={{ margin: 0, fontSize: "0.875rem", color: "#00a76f", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Đơn hàng của Shop
+                </h3>
+                {!sellerOrdersLoading && (
+                  <span style={{ marginLeft: "auto", fontSize: "0.75rem", color: "#9ca3af", fontWeight: 600 }}>
+                    {sellerOrders.length} đơn
+                  </span>
+                )}
               </div>
-            )}
-          </div>
+
+              {sellerOrdersLoading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "2rem", justifyContent: "center", color: "#9ca3af" }}>
+                  <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite", fontSize: "1.25rem" }}>progress_activity</span>
+                  Đang tải danh sách đơn hàng...
+                </div>
+              ) : sellerOrders.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "2rem 1rem", color: "#9ca3af" }}>
+                  <p style={{ margin: 0, fontSize: "0.875rem" }}>Cửa hàng này chưa nhận được đơn hàng nào.</p>
+                </div>
+              ) : (
+                <div className="modal-table-wrapper" style={{ border: "1px solid #f1f5f9", borderRadius: "12px", overflow: "hidden" }}>
+                  <table className="modal-orders-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+                    <thead style={{ background: "#f8fafc" }}>
+                      <tr>
+                        <th style={{ padding: "0.75rem", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Mã đơn</th>
+                        <th style={{ padding: "0.75rem", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Khách hàng</th>
+                        <th style={{ padding: "0.75rem", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Ngày đặt</th>
+                        <th style={{ padding: "0.75rem", textAlign: "right", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Tổng tiền</th>
+                        <th style={{ padding: "0.75rem", textAlign: "center", fontSize: "0.7rem", fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>Trạng thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sellerOrders.map((order) => (
+                        <tr key={order.orderId} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <td style={{ padding: "0.75rem", fontWeight: 700, color: "#00a76f" }}>#{order.orderId}</td>
+                          <td style={{ padding: "0.75rem" }}>
+                            <div style={{ display: "flex", flexDirection: "column" }}>
+                              <span style={{ fontWeight: 600, color: "#1e293b" }}>{order.receiverName}</span>
+                              <span style={{ fontSize: "0.75rem", color: "#64748b" }}>{order.receiverPhone}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: "0.75rem" }}>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
+                          <td style={{ padding: "0.75rem", textAlign: "right", fontWeight: 700 }}>
+                            {fmtVND(order.totalAmount)}
+                          </td>
+                          <td style={{ padding: "0.75rem", textAlign: "center" }}>
+                            <span style={{ 
+                              display: "inline-flex", 
+                              padding: "2px 8px", 
+                              borderRadius: "6px", 
+                              fontSize: "0.65rem", 
+                              fontWeight: 700,
+                              background: getOrderStatusLabel(order.status).bg,
+                              color: getOrderStatusLabel(order.status).color
+                            }}>
+                              {getOrderStatusLabel(order.status).label}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
 
         <div className="admin-modal-footer">
           <button className="btn-cancel-action" onClick={onBackToList}>Đóng</button>
