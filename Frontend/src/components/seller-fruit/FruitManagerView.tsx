@@ -331,7 +331,7 @@ const FruitManagerView: React.FC<Props> = ({
                                             {fruit.description || 'N/A'}
                                         </td>
                                         <td>
-                                            {`${fruit.price.toLocaleString('vi-VN')}đ`}
+                                            {`${fruit.price.toLocaleString('vi-VN')}đ/kg`}
                                         </td>
                                         <td>
                                             {fruit.stock}
