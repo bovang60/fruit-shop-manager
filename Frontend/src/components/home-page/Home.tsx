@@ -350,7 +350,6 @@ export default function Home() {
       onOriginChange={handleOriginChange}
       onOrganicChange={handleOrganicChange}
       onSortChange={handleSortChange}
-      userRole={user?.role}
     />
   )
 }

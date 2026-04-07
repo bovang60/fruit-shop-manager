@@ -12,8 +12,6 @@ import {
 } from "../../services/userService";
 import { usePopup } from "../common/popup";
 import { LoadingModal } from "../common/loading";
-import { checkShopStatus } from "../../services/shopService";
-import { getSellerOrdersByShop, type SellerOrderDto as ShopOrderDto } from "../../services/sellerOrderService";
 
 export default function UserManagement() {
   const { showSuccess, showError, showConfirm } = usePopup();
@@ -47,10 +45,6 @@ export default function UserManagement() {
   // Order History State
   const [userOrders, setUserOrders] = useState<OrderDto[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  
-  // Seller Shop Orders State
-  const [sellerOrders, setSellerOrders] = useState<ShopOrderDto[]>([]);
-  const [sellerOrdersLoading, setSellerOrdersLoading] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -179,41 +173,20 @@ export default function UserManagement() {
   const handleViewDetail = async (user: UserData) => {
     setSelectedUser(user);
     setViewMode("DETAIL");
-    
-    // 1. Fetch purchase history (ONLY for customers)
-    if (user.role === "CUSTOMER") {
-      setOrdersLoading(true);
-      setUserOrders([]);
-      try {
-        const res = await getUserOrderHistory(user.id);
-        if (res.resultCd === 0 && res.data) {
-          setUserOrders(res.data);
-        }
-      } catch {
-        showError("Lỗi kết nối khi tải lịch sử đơn hàng");
-      } finally {
-        setOrdersLoading(false);
+    // Fetch order history for this user
+    setOrdersLoading(true);
+    setUserOrders([]);
+    try {
+      const res = await getUserOrderHistory(user.id);
+      if (res.resultCd === 0 && res.data) {
+        setUserOrders(res.data);
+      } else {
+        showError(res.message || "Không thể tải lịch sử đơn hàng");
       }
-    }
-
-    // 2. Fetch shop orders (only for sellers)
-    if (user.role === "SELLER") {
-      setSellerOrdersLoading(true);
-      setSellerOrders([]);
-      try {
-        const shopRes = await checkShopStatus(user.id);
-        if (shopRes.resultCd === 0 && shopRes.data) {
-          const shopId = shopRes.data.shopId;
-          const orderRes = await getSellerOrdersByShop(shopId);
-          if (orderRes.resultCd === 0 && orderRes.data) {
-            setSellerOrders(orderRes.data);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching seller orders in management:", err);
-      } finally {
-        setSellerOrdersLoading(false);
-      }
+    } catch {
+      showError("Lỗi kết nối khi tải lịch sử đơn hàng");
+    } finally {
+      setOrdersLoading(false);
     }
   };
 
@@ -284,8 +257,6 @@ export default function UserManagement() {
         onSort={handleSort}
         userOrders={userOrders}
         ordersLoading={ordersLoading}
-        sellerOrders={sellerOrders}
-        sellerOrdersLoading={sellerOrdersLoading}
       />
       <LoadingModal
         isOpen={loading}

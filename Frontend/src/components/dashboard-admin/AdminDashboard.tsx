@@ -7,8 +7,6 @@ import {
 } from "../../services/adminService";
 import { usePopup } from "../common/popup";
 import { LoadingModal } from "../common/loading";
-import { getSellerOrdersByShop, type SellerOrderDto } from "../../services/sellerOrderService";
-import SellerOrdersModal from "./SellerOrdersModal";
 
 export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -19,12 +17,6 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stat[]>([]);
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [weeklyOrders, setWeeklyOrders] = useState<any[]>([]);
-
-  // States for Shop Orders Modal
-  const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
-  const [selectedShopName, setSelectedShopName] = useState("");
-  const [shopOrders, setShopOrders] = useState<SellerOrderDto[]>([]);
-  const [isOrdersLoading, setIsOrdersLoading] = useState(false);
 
   const { showError } = usePopup();
 
@@ -49,6 +41,9 @@ export default function AdminDashboard() {
             id: "total-revenue",
             label: "Tổng doanh thu",
             value: formatCurrency(data.totalRevenue),
+            trend: "+0%",
+            trendDir: "up",
+            footer: "Doanh thu hệ thống",
             icon: "payments",
             color: "#00a76f",
           },
@@ -56,6 +51,9 @@ export default function AdminDashboard() {
             id: "active-users",
             label: "Người dùng hoạt động",
             value: formatNumber(data.activeUsers),
+            trend: "+0%",
+            trendDir: "up",
+            footer: "Người dùng tích cực",
             icon: "person",
             color: "#00b8d9",
           },
@@ -63,6 +61,9 @@ export default function AdminDashboard() {
             id: "total-orders",
             label: "Tổng đơn hàng",
             value: formatNumber(data.totalOrders),
+            trend: "+0%",
+            trendDir: "up",
+            footer: "Tổng đơn hàng",
             icon: "shopping_cart",
             color: "#ffab00",
           },
@@ -70,6 +71,9 @@ export default function AdminDashboard() {
             id: "pending-approvals",
             label: "Cửa hàng chờ duyệt",
             value: formatNumber(data.pendingShopApprovals),
+            trend: "Cần xử lý",
+            trendDir: "down",
+            footer: "Yêu cầu chờ duyệt",
             icon: "verified",
             color: "#ff5630",
           },
@@ -77,9 +81,9 @@ export default function AdminDashboard() {
         setStats(transformedStats);
 
         // 2. Transform Sellers
-        const transformedSellers: Seller[] = (data.topSellers || []).map(
-          (s: any) => ({
-            id: s.shopId, // Using actual shopId from backend
+        const transformedSellers: Seller[] = data.topSellers.map(
+          (s: any, idx: number) => ({
+            id: idx + 1,
             name: s.shopName,
             rating: 5.0,
             orders: formatNumber(s.totalUnitsSold) + " đơn vị",
@@ -138,27 +142,6 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleSellerClick = async (shopId: number, shopName: string) => {
-    setSelectedShopName(shopName);
-    setIsOrdersModalOpen(true);
-    setIsOrdersLoading(true);
-
-    try {
-      const response = await getSellerOrdersByShop(shopId);
-      if (response.resultCd === 0 && response.data) {
-        setShopOrders(response.data);
-      } else {
-        showError(response.message || `Không thể tải đơn hàng của ${shopName}`);
-        setShopOrders([]);
-      }
-    } catch (error) {
-      console.error("Error fetching shop orders:", error);
-      showError("Lỗi kết nối khi tải danh sách đơn hàng");
-    } finally {
-      setIsOrdersLoading(false);
-    }
-  };
-
   return (
     <>
       <AdminDashboardView
@@ -168,17 +151,7 @@ export default function AdminDashboard() {
         isLoading={isLoading}
         isSidebarCollapsed={isSidebarCollapsed}
         onToggleSidebar={handleToggleSidebar}
-        onSellerClick={handleSellerClick}
       />
-      
-      <SellerOrdersModal
-        isOpen={isOrdersModalOpen}
-        onClose={() => setIsOrdersModalOpen(false)}
-        orders={shopOrders}
-        shopName={selectedShopName}
-        isLoading={isOrdersLoading}
-      />
-
       <LoadingModal
         isOpen={isLoading}
         message="Đang tải dữ liệu dashboard..."

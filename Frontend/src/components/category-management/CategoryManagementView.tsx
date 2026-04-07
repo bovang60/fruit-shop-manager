@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { SortConfig } from "./CategoryManagement";
 import { AdminFrame, ADMIN_NAV_ITEMS } from "../common/admin-frame";
 import "./CategoryManagement.css";
@@ -46,7 +46,6 @@ interface CategoryManagementViewProps {
   onPageChange: (page: number) => void;
   onDelete: (id: number, name: string) => void;
   onToggleStatus: (id: number) => void;
-  onViewProducts: (id: number, name: string) => void;
   loading?: boolean;
 }
 
@@ -72,9 +71,9 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
   onPageChange,
   onDelete,
   onToggleStatus,
-  onViewProducts,
   loading = false,
 }) => {
+  const navigate = useNavigate();
   const [newName, setNewName] = useState("");
   const [newStatus, setNewStatus] = useState<"Active" | "Inactive">("Active");
   const [newDescription, setNewDescription] = useState("");
@@ -253,7 +252,7 @@ const CategoryManagementView: React.FC<CategoryManagementViewProps> = ({
                       <button
                         className="icon-btn-action"
                         title="Xem sản phẩm"
-                        onClick={() => onViewProducts(cat.id, cat.name)}
+                        onClick={() => navigate(`/category-management/${cat.id}/products`)}
                       >
                         <span className="material-symbols-outlined">inventory_2</span>
                       </button>

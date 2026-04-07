@@ -60,18 +60,6 @@ export interface UpdateCategoryPayload {
   status?: CategoryStatus;
 }
 
-export interface ProductCategoryListResponse {
-  products: any[]; 
-  pagination: {
-    currentPage: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
-
 // ============= API Functions =============
 
 /**
@@ -235,31 +223,6 @@ export async function toggleCategoryStatus(
     return {
       resultCd: 1,
       message: "Lỗi kết nối khi đổi trạng thái danh mục",
-      data: null,
-    };
-  }
-}
-
-/**
- * Get products by category ID
- */
-export async function getProductsByCategoryId(
-  categoryId: number,
-  page: number = 1,
-  pageSize: number = 25,
-  sortBy: string = "popularity",
-  sortOrder: string = "desc",
-): Promise<ApiResponse<ProductCategoryListResponse>> {
-  try {
-    const url = `/api/products/category/${categoryId}?page=${page}&pageSize=${pageSize}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
-    return await callApi<undefined, ApiResponse<ProductCategoryListResponse>>(
-      url,
-    );
-  } catch (error) {
-    console.error("Error fetching products by category:", error);
-    return {
-      resultCd: 1,
-      message: "Lỗi kết nối khi lấy danh sách sản phẩm theo danh mục",
       data: null,
     };
   }

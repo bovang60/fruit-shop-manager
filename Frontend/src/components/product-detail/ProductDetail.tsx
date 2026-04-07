@@ -19,7 +19,6 @@ export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const popup = usePopup();
-  const user = getUserFromStorage();
 
   const [product, setProduct] = useState<ProductDetailDto | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<ProductSummaryDto[]>([]);
@@ -162,7 +161,6 @@ export default function ProductDetail() {
       addingToCart={addingToCart}
       onToggleWishlist={handleToggleWishlist}
       togglingWishlist={togglingWishlist}
-      userRole={user?.role}
     />
   );
 }

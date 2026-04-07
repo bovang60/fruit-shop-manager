@@ -211,7 +211,6 @@ export default function Home() {
         error={""}
         onNavigateToProducts={() => navigate('/products')}
         onNavigateToHome={() => navigate('/home')}
-        userRole={user?.role}
       />
       <LoadingModal
         isOpen={loading}

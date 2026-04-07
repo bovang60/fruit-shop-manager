@@ -13,7 +13,6 @@ import ShopManagement from "./components/shop-management/ShopManagement";
 import UserManagement from "./components/user-management/UserManagement";
 import SliderManagement from "./components/slider-management/SliderManagement";
 import Profile from "./components/profile/Profile";
-import AdminProfile from "./components/admin-profile/AdminProfile";
 import ShopRegistration from "./components/shop-registration/ShopRegistration";
 import { PopupProvider } from "./components/common/popup";
 import ProtectedRoute from "./components/common/protected-route/ProtectedRoute";
@@ -95,14 +94,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/admin-profile"
             element={
               <ProtectedRoute requiredRole="ADMIN">
-                <AdminProfile />
+                <AdminProfilePage />
               </ProtectedRoute>
             }
-          />
+          /> */}
 
           {/* Admin Routes - Required ADMIN role */}
           <Route

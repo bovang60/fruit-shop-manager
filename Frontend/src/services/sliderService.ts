@@ -99,7 +99,7 @@ export async function getSliders(): Promise<ApiResponse<SliderDto[]>> {
 }
 
 /**
- * Lấy danh sách slider đang hiển thị (Public - dùng ở trang chủ)
+ * 3. Lấy slider chi tiết theo ID (Admin)
  */
 export async function getSliderById(id: number): Promise<ApiResponse<SliderDto>> {
   try {

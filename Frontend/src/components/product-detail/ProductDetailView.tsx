@@ -19,7 +19,6 @@ export type ProductDetailViewProps = {
   addingToCart: boolean;
   onToggleWishlist: () => void;
   togglingWishlist: boolean;
-  userRole?: string;
 };
 
 export default function ProductDetailView({
@@ -33,8 +32,7 @@ export default function ProductDetailView({
   onAddToCart,
   addingToCart,
   onToggleWishlist,
-  togglingWishlist,
-  userRole = ""
+  togglingWishlist
 }: ProductDetailViewProps) {
   const navigate = useNavigate();
 
@@ -121,16 +119,14 @@ export default function ProductDetailView({
               <div className="product-detail-right">
                 <div className="product-detail-header">
                   <h1 className="product-detail-name">{product.name ?? "Sản phẩm không có tên"}</h1>
-                  {userRole !== "ADMIN" && userRole !== "SELLER" && (
-                    <button
-                      className={`product-detail-favorite-btn ${product.isFavorite ? 'active' : ''}`}
-                      onClick={onToggleWishlist}
-                      disabled={togglingWishlist}
-                      aria-label={product.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontVariationSettings: product.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                    </button>
-                  )}
+                  <button 
+                    className={`product-detail-favorite-btn ${product.isFavorite ? 'active' : ''}`}
+                    onClick={onToggleWishlist}
+                    disabled={togglingWishlist}
+                    aria-label={product.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: product.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                  </button>
                 </div>
 
                 <div className="product-detail-tags">
@@ -190,49 +186,47 @@ export default function ProductDetailView({
                   </div>
                 </div>
 
-                {userRole !== "ADMIN" && userRole !== "SELLER" && (
-                  <div className="product-detail-actions-wrap">
-                    <div className="product-detail-stock">
-                      Còn {currentStock} sản phẩm
-                    </div>
+                <div className="product-detail-actions-wrap">
+                  <div className="product-detail-stock">
+                    Còn {currentStock} sản phẩm
+                  </div>
 
-                    <div className="product-detail-actions">
-                      <div className="quantity-selector">
-                        <button
-                          className="qty-btn"
-                          onClick={handleDecrease}
-                          disabled={quantity <= 1 || addingToCart}
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          value={quantity.toString()}
-                          onChange={handleManualQtyChange}
-                          className="qty-input"
-                          min="1"
-                          max={currentStock}
-                          disabled={addingToCart}
-                        />
-                        <button
-                          className="qty-btn"
-                          onClick={handleIncrease}
-                          disabled={quantity >= currentStock || addingToCart}
-                        >
-                          +
-                        </button>
-                      </div>
-
+                  <div className="product-detail-actions">
+                    <div className="quantity-selector">
                       <button
-                        className="add-to-cart-btn-large"
-                        onClick={onAddToCart}
-                        disabled={addingToCart || currentStock === 0}
+                        className="qty-btn"
+                        onClick={handleDecrease}
+                        disabled={quantity <= 1 || addingToCart}
                       >
-                        {addingToCart ? "Đang thêm..." : "🛒 Thêm vào giỏ hàng"}
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        value={quantity.toString()}
+                        onChange={handleManualQtyChange}
+                        className="qty-input"
+                        min="1"
+                        max={currentStock}
+                        disabled={addingToCart}
+                      />
+                      <button
+                        className="qty-btn"
+                        onClick={handleIncrease}
+                        disabled={quantity >= currentStock || addingToCart}
+                      >
+                        +
                       </button>
                     </div>
+
+                    <button
+                      className="add-to-cart-btn-large"
+                      onClick={onAddToCart}
+                      disabled={addingToCart || currentStock === 0}
+                    >
+                      {addingToCart ? "Đang thêm..." : "🛒 Thêm vào giỏ hàng"}
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
             </div>
 

@@ -70,14 +70,14 @@ export default function AdminProfile() {
         try {
             const res = await updateUserProfile(userStored.userId, { fullName, phoneNumber, address })
             if (res.resultCd === 0 && res.data) {
-                const updated: ProfileUserDto = {
-                    ...userStored,
-                    fullName: res.data.fullName,
-                    phoneNumber: res.data.phoneNumber,
+                const updated: ProfileUserDto = { 
+                    ...userStored, 
+                    fullName: res.data.fullName, 
+                    phoneNumber: res.data.phoneNumber, 
                     address: res.data.address,
                     image: res.data.image,
                     role: res.data.role
-                } as any;
+                } as any; 
                 localStorage.setItem('user', JSON.stringify(updated))
                 window.dispatchEvent(new Event('userUpdated'))
                 setIsEditing(false)

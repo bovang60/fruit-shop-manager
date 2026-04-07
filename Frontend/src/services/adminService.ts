@@ -24,7 +24,6 @@ export interface DailyOrderDto {
 }
 
 export interface TopSellerDto {
-    shopId: number;
     shopName: string;
     totalUnitsSold: number;
     totalRevenue: number;

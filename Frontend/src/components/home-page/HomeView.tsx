@@ -42,7 +42,6 @@ export type Props = {
   onOrganicChange: (organic: boolean | undefined) => void;
   onSortChange: (sortBy: string, sortOrder: string) => void;
   onSearchSubmit: () => void;
-  userRole?: string;
 };
 
 export default function HomeView({
@@ -72,7 +71,6 @@ export default function HomeView({
   onPriceChange,
   onSortChange,
   onSearchSubmit,
-  userRole = ""
 }: Props) {
   const navigate = useNavigate();
 
@@ -316,15 +314,13 @@ export default function HomeView({
                       <div className="product-image-placeholder">🍊</div>
                     )}
                     {p.tag && <div className="product-tag">{p.tag}</div>}
-                    {userRole !== "ADMIN" && userRole !== "SELLER" && (
-                      <button
-                        className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
-                        onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
-                        aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                      </button>
-                    )}
+                    <button
+                      className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
+                      aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                    </button>
                   </div>
                   <div className="product-info">
                     <div className="product-details">
@@ -338,20 +334,18 @@ export default function HomeView({
                       </div>
                       <p className="product-price-modern">{p.price}</p>
                     </div>
-                    {userRole !== "ADMIN" && userRole !== "SELLER" && (
-                      <button
-                        className="add-to-cart-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddToCart(p.id);
-                        }}
-                        disabled={addingToCartId === p.id}
-                      >
-                        {addingToCartId === p.id
-                          ? "✉️ Đang thêm..."
-                          : "🛒 Thêm vào giỏ"}
-                      </button>
-                    )}
+                    <button
+                      className="add-to-cart-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToCart(p.id);
+                      }}
+                      disabled={addingToCartId === p.id}
+                    >
+                      {addingToCartId === p.id
+                        ? "✉️ Đang thêm..."
+                        : "🛒 Thêm vào giỏ"}
+                    </button>
                   </div>
                 </div>
               ))}
