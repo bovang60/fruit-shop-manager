@@ -26,6 +26,8 @@ export interface ProductDto {
   discount: number;
   tags: string[];
   isFavorite: boolean;
+  shopId: number;
+  shopName: string;
 }
 
 export interface ProductSummaryDto {
@@ -33,6 +35,7 @@ export interface ProductSummaryDto {
   name: string;
   price: number;
   imageUrl: string;
+  shopName: string;
   tags: string[];
   rating: number;
   soldCount?: number;
@@ -106,14 +109,24 @@ export interface ProductDetailDto {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
   imageUrl: string;
+  origin: string;
+  isOrganic: boolean;
   stock: number;
+  unit: string;
   rating: number;
   reviewCount: number;
+  discount: number;
+  soldCount: number;
+  viewCount: number;
+  isActive: boolean;
+  tags: string[];
+  isFavorite: boolean;
+  categoryId: number;
   categoryName: string;
+  shopId: number;
   shopName: string;
-  shopId?: number;
-  soldCount?: number;
 }
 
 // ============= API Functions =============
@@ -273,12 +286,16 @@ export async function addToCart(
  * Endpoint: GET /api/products/{id}
  */
 export async function getProductDetail(
-  id: number
+  id: number,
+  userId?: number
 ): Promise<ApiResponse<ProductDetailDto>> {
   try {
+    const url = userId 
+      ? `/api/products/${id}?userId=${userId}` 
+      : `/api/products/${id}`;
     return await callApiWithMethod<never, ApiResponse<ProductDetailDto>>(
       "GET",
-      `/api/products/${id}`
+      url
     );
   } catch (error) {
     console.error(`Error fetching product details for ID ${id}:`, error);

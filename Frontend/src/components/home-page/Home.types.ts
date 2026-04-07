@@ -21,12 +21,14 @@ export interface Product {
   id: number
   name: string
   price: string        // Formatted price (e.g., "₫45,000")
+  shopName?: string
   img?: string
   desc?: string
   tag?: string
   rating?: number
   discount?: number
   originalPrice?: string
+  isFavorite?: boolean
 }
 
 /**
@@ -67,6 +69,7 @@ export function mapProductToUI(dto: ProductDto): Product {
   return {
     id: dto.productId,
     name: dto.name,
+    shopName: dto.shopName,
     price: `₫${dto.price.toLocaleString('vi-VN')}`,
     img: dto.imageUrl || undefined,
     desc: dto.description || undefined,
@@ -86,6 +89,7 @@ export function mapProductSummaryToUI(dto: ProductSummaryDto): Product {
   return {
     id: dto.productId,
     name: dto.name,
+    shopName: dto.shopName,
     price: `₫${dto.price.toLocaleString('vi-VN')}`,
     img: dto.imageUrl || undefined,
     tag: dto.tags.length > 0 ? dto.tags[0] : undefined,

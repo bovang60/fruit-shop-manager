@@ -4,19 +4,11 @@ import Header from "../common/header/Header";
 import Footer from "../common/footer/Footer";
 import Pagination from "../common/pagination/Pagination";
 import LoadingModal from "../common/loading/LoadingModal";
-import type { HomeCategory } from "./Home.types";
+import type { HomeCategory, Product } from "./Home.types";
 import type { SliderDto } from "../../services/sliderService";
 import "./Home.css";
 
-type Product = {
-  id: number;
-  name: string;
-  price: string;
-  img?: string;
-  desc?: string;
-  tag?: string;
-  isFavorite?: boolean;
-};
+
 
 export type Props = {
   query: string;
@@ -174,12 +166,12 @@ export default function HomeView({
                       key={idx}
                       className={`slider-dot ${idx === currentSlide ? "active" : ""}`}
                       onClick={() => setCurrentSlide(idx)}
-                      style={{ 
-                        width: idx === currentSlide ? '32px' : '10px', 
-                        height: '10px', 
-                        borderRadius: '5px', 
-                        border: 'none', 
-                        background: idx === currentSlide ? '#33f20d' : 'rgba(255, 255, 255, 0.7)', 
+                      style={{
+                        width: idx === currentSlide ? '32px' : '10px',
+                        height: '10px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        background: idx === currentSlide ? '#33f20d' : 'rgba(255, 255, 255, 0.7)',
                         cursor: 'pointer',
                         transition: 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
@@ -322,19 +314,23 @@ export default function HomeView({
                       <div className="product-image-placeholder">🍊</div>
                     )}
                     {p.tag && <div className="product-tag">{p.tag}</div>}
-                    <button 
-                       className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
-                       onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
-                       aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                    <button
+                      className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
+                      aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
                     >
-                       <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                      <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
                     </button>
                   </div>
                   <div className="product-info">
                     <div className="product-details">
                       <div>
                         <p className="product-name-modern">{p.name}</p>
-                        {p.desc && <p className="product-desc">{p.desc}</p>}
+                        <div className="product-shop-name" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#64748b', marginBottom: '4px' }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>storefront</span>
+                          {p.shopName || "Cửa hàng trái cây"}
+                        </div>
+                        {/* {p.desc && <p className="product-desc">{p.desc}</p>} */}
                       </div>
                       <p className="product-price-modern">{p.price}</p>
                     </div>
@@ -394,6 +390,10 @@ export default function HomeView({
                       }}
                     ></div>
                     <p className="mini-card-name">{p.name}</p>
+                    <div className="mini-card-shop" style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '0.8rem' }}>storefront</span>
+                      {p.shopName || "Shop"}
+                    </div>
                     <p className="mini-card-price">{p.price}</p>
                   </div>
                 ))}
@@ -430,6 +430,10 @@ export default function HomeView({
                       }}
                     ></div>
                     <p className="mini-card-name">{p.name}</p>
+                    <div className="mini-card-shop" style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '0.8rem' }}>storefront</span>
+                      {p.shopName || "Shop"}
+                    </div>
                     <p className="mini-card-price">{p.price}</p>
                   </div>
                 ))}
