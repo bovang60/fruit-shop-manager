@@ -11,7 +11,7 @@ public interface ProductDetailService {
     /**
      * Get product detail by ID
      */
-    ApiResponse<ProductDetailDto> getProductDetail(Integer id);
+    ApiResponse<ProductDetailDto> getProductDetail(Integer id, Integer userId);
 
     /**
      * Get related products (same category)

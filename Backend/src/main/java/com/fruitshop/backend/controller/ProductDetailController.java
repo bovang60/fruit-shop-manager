@@ -26,15 +26,17 @@ public class ProductDetailController {
      * @return ApiResponse with ProductDetailDto
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductDetailDto>> getProductDetail(@PathVariable Integer id) {
-        log.info("GET /api/products/{} - fetching product detail", id);
+    public ResponseEntity<ApiResponse<ProductDetailDto>> getProductDetail(
+            @PathVariable Integer id,
+            @RequestParam(name = "userId", required = false) Integer userId) {
+        log.info("GET /api/products/{} - fetching product detail (userId: {})", id, userId);
 
         if (id == null || id <= 0) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(400, "Product ID must be a positive integer"));
         }
 
-        ApiResponse<ProductDetailDto> response = productDetailService.getProductDetail(id);
+        ApiResponse<ProductDetailDto> response = productDetailService.getProductDetail(id, userId);
         return ResponseEntity.ok(response);
     }
 

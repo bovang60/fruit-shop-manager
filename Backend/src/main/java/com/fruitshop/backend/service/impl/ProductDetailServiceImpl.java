@@ -6,6 +6,7 @@ import com.fruitshop.backend.dto.ProductSummaryDto;
 import com.fruitshop.backend.exception.ProductNotFoundException;
 import com.fruitshop.backend.model.Product;
 import com.fruitshop.backend.repository.ProductDetailRepository;
+import com.fruitshop.backend.repository.WishlistRepository;
 import com.fruitshop.backend.service.ProductDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,12 @@ import java.util.stream.Collectors;
 public class ProductDetailServiceImpl implements ProductDetailService {
 
     private final ProductDetailRepository productDetailRepository;
+    private final WishlistRepository wishlistRepository;
 
     @Override
     @Transactional
-    public ApiResponse<ProductDetailDto> getProductDetail(Integer id) {
-        log.info("Fetching product detail for id: {}", id);
+    public ApiResponse<ProductDetailDto> getProductDetail(Integer id, Integer userId) {
+        log.info("Fetching product detail for id: {}, userId: {}", id, userId);
 
         Product product = productDetailRepository.findActiveProductById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
@@ -36,7 +38,12 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         // Increment view count
         productDetailRepository.incrementViewCount(id);
 
-        ProductDetailDto dto = convertToDetailDto(product);
+        boolean isFavorite = false;
+        if (userId != null) {
+            isFavorite = wishlistRepository.existsByUser_UserIdAndProduct_ProductId(userId, id);
+        }
+
+        ProductDetailDto dto = convertToDetailDto(product, isFavorite);
         return ApiResponse.success("Success", dto);
     }
 
@@ -68,7 +75,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
 
     // ==================== Private Helper Methods ====================
 
-    private ProductDetailDto convertToDetailDto(Product product) {
+    private ProductDetailDto convertToDetailDto(Product product, boolean isFavorite) {
         ProductDetailDto dto = new ProductDetailDto();
         dto.setProductId(product.getProductId());
         dto.setName(product.getName());
@@ -89,7 +96,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         dto.setCreatedAt(product.getCreatedAt());
         dto.setUpdatedAt(product.getUpdatedAt());
         dto.setTags(generateTags(product));
-        dto.setIsFavorite(false); // TODO: Implement when user authentication is ready
+        dto.setIsFavorite(isFavorite);
 
         // Category info
         if (product.getCategory() != null) {
@@ -112,6 +119,7 @@ public class ProductDetailServiceImpl implements ProductDetailService {
         dto.setName(product.getName());
         dto.setPrice(product.getPrice());
         dto.setImageUrl(product.getImageUrl());
+        dto.setShopName(product.getShop() != null ? product.getShop().getShopName() : null);
         dto.setTags(generateTags(product));
         dto.setRating(product.getRating());
         dto.setSoldCount(product.getSoldCount());

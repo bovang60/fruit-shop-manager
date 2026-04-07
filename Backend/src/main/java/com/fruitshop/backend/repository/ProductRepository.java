@@ -32,7 +32,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findByIdsForUpdate(@Param("ids") List<Integer> ids);
 
     // Search and filter products
-    @Query("SELECT p FROM Product p LEFT JOIN p.category c WHERE " +
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.shop LEFT JOIN p.category c WHERE " +
             "(:shopId IS NULL OR p.shop.shopId = :shopId) AND " +
             "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
             "(:categoryId IS NULL OR c.categoryId = :categoryId) AND " +
@@ -54,11 +54,11 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             Pageable pageable);
 
     // Get new arrivals (newest products)
-    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.shop WHERE p.isActive = true ORDER BY p.createdAt DESC")
     List<Product> findNewArrivals(Pageable pageable);
 
     // Get trending products (by soldCount and viewCount)
-    @Query("SELECT p FROM Product p WHERE p.isActive = true " +
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.shop WHERE p.isActive = true " +
             "ORDER BY (p.soldCount * 0.7 + p.viewCount * 0.3) DESC")
     List<Product> findTrendingProducts(Pageable pageable);
 
@@ -79,6 +79,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     void activateAllByShopId(@Param("shopId") Integer shopId);
 
     // Get active products by category ID with pagination
-    @Query("SELECT p FROM Product p WHERE p.category.categoryId = :categoryId AND p.isActive = true")
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.shop WHERE p.category.categoryId = :categoryId AND p.isActive = true")
     Page<Product> findByCategoryId(@Param("categoryId") Integer categoryId, Pageable pageable);
 }
