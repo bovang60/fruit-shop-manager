@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import CategoryManagementView from "./CategoryManagementView";
 import type { Category } from "./CategoryManagementView";
-import { getCategories, createCategory, getCategoryById, updateCategory, deleteCategory, toggleCategoryStatus, type CategoryDto } from "../../services/categoryService";
+import { getCategories, createCategory, getCategoryById, updateCategory, deleteCategory, toggleCategoryStatus, getProductsByCategoryId, type CategoryDto, type ProductCategoryListResponse } from "../../services/categoryService";
 import { LoadingModal } from "../common/loading";
+import { CategoryProductsModal } from "./CategoryProductsModal";
 
 import { usePopup } from "../common/popup";
 
@@ -34,6 +35,12 @@ const CategoryManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
   const { showNotice, showError, showConfirm } = usePopup();
+
+  // Products Modal State
+  const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
+  const [productsData, setProductsData] = useState<ProductCategoryListResponse | null>(null);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [selectedCategoryName, setSelectedCategoryName] = useState("");
 
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed((prev) => {
@@ -256,6 +263,25 @@ const CategoryManagement: React.FC = () => {
     }
   };
 
+  const handleViewProducts = async (id: number, name: string) => {
+    setSelectedCategoryName(name);
+    setIsProductsModalOpen(true);
+    setProductsLoading(true);
+    setProductsData(null);
+    try {
+      const response = await getProductsByCategoryId(id);
+      if (response.resultCd === 0 && response.data) {
+        setProductsData(response.data);
+      } else {
+        showError(response.message || "Không thể tải danh sách sản phẩm");
+      }
+    } catch (err) {
+      showError("Lỗi kết nối khi tải danh sách sản phẩm");
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
   return (
     <>
       <CategoryManagementView
@@ -275,12 +301,20 @@ const CategoryManagement: React.FC = () => {
         onEdit={handleEditCategory}
         onDelete={handleDeleteCategory}
         onToggleStatus={handleToggleStatus}
+        onViewProducts={handleViewProducts}
         currentCategory={currentCategory}
         page={page}
         totalPages={totalPages}
         totalElements={totalElements}
         onPageChange={setPage}
         loading={loading}
+      />
+      <CategoryProductsModal
+        isOpen={isProductsModalOpen}
+        onClose={() => setIsProductsModalOpen(false)}
+        categoryName={selectedCategoryName}
+        data={productsData}
+        loading={productsLoading}
       />
       <LoadingModal
         isOpen={loading}

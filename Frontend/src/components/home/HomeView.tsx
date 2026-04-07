@@ -24,6 +24,7 @@ export interface Props {
   addingToCartId?: number | null;
   onNavigateToProducts: () => void;
   onNavigateToHome: () => void;
+  userRole?: string;
 }
 
 export default function HomeView({
@@ -39,7 +40,8 @@ export default function HomeView({
   onToggleWishlist,
   addingToCartId,
   onNavigateToProducts,
-  sliders
+  sliders,
+  userRole = ""
 }: Props) {
   const navigate = useNavigate();
 
@@ -213,13 +215,15 @@ export default function HomeView({
                 >
                   <div className="product-image-wrap">
                     <div className="product-image" style={{ backgroundImage: `url(${p.img})` }}></div>
-                    <button
-                      className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
-                      aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                    </button>
+                    {userRole !== "ADMIN" && userRole !== "SELLER" && (
+                      <button
+                        className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
+                        aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                      </button>
+                    )}
                     {p.tag && <div className={p.tag === 'SALE' ? "product-tag tag-sale" : "product-tag"}>{p.tag}</div>}
                   </div>
                   <div className="product-info">
@@ -234,18 +238,20 @@ export default function HomeView({
                       </div>
                       <p className="product-price-modern">{p.price}</p>
                     </div>
-                    <button
-                      className="add-to-cart-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddToCart(p.id);
-                      }}
-                      disabled={addingToCartId === p.id}
-                    >
-                      {addingToCartId === p.id
-                        ? "✉️ Đang thêm..."
-                        : "🛒 Thêm vào giỏ"}
-                    </button>
+                    {userRole !== "ADMIN" && userRole !== "SELLER" && (
+                      <button
+                        className="add-to-cart-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToCart(p.id);
+                        }}
+                        disabled={addingToCartId === p.id}
+                      >
+                        {addingToCartId === p.id
+                          ? "✉️ Đang thêm..."
+                          : "🛒 Thêm vào giỏ"}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -292,13 +298,15 @@ export default function HomeView({
                 >
                   <div className="product-image-wrap">
                     <div className="product-image" style={{ backgroundImage: `url(${p.img})` }}></div>
-                    <button
-                      className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
-                      aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                    </button>
+                    {userRole !== "ADMIN" && userRole !== "SELLER" && (
+                      <button
+                        className={`product-favorite ${p.isFavorite ? 'active' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); onToggleWishlist(p.id, !!p.isFavorite); }}
+                        aria-label={p.isFavorite ? "Bỏ yêu thích" : "Yêu thích"}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontVariationSettings: p.isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                      </button>
+                    )}
                     <div className="product-tag">
                       <span className="material-symbols-outlined" style={{ fontSize: '0.7rem' }}>local_fire_department</span>
                       Đang Hot
@@ -316,18 +324,20 @@ export default function HomeView({
                       </div>
                       <p className="product-price-modern">{p.price}</p>
                     </div>
-                    <button
-                      className="add-to-cart-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddToCart(p.id);
-                      }}
-                      disabled={addingToCartId === p.id}
-                    >
-                      {addingToCartId === p.id
-                        ? "✉️ Đang thêm..."
-                        : "🛒 Thêm vào giỏ"}
-                    </button>
+                    {userRole !== "ADMIN" && userRole !== "SELLER" && (
+                      <button
+                        className="add-to-cart-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToCart(p.id);
+                        }}
+                        disabled={addingToCartId === p.id}
+                      >
+                        {addingToCartId === p.id
+                          ? "✉️ Đang thêm..."
+                          : "🛒 Thêm vào giỏ"}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

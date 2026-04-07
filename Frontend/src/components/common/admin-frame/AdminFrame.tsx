@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./AdminFrame.css";
-import Header from "../header/Header";
 export interface NavItem {
   to: string;
   label: string;
@@ -40,6 +39,12 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     label: "Quản lý Slider",
     icon: "view_carousel",
     title: "Quản lý Slider & Banner",
+  },
+  {
+    to: "/admin-profile",
+    label: "Hồ sơ của tôi",
+    icon: "person",
+    title: "Hồ sơ cá nhân",
   },
 ];
 
@@ -153,8 +158,22 @@ const AdminFrame: React.FC<AdminFrameProps> = ({
                 </span>
               </button>
             </div>
-            <div className="login-header">
-              <Header hideProfile={false} />
+            <div className="header-right-part" style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                className="back-to-site-btn"
+                onClick={() => navigate("/home")}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#1a2e1a',
+                  cursor: 'pointer',
+                  padding: '0.5rem 1rem'
+                }}
+              >
+                Về trang chủ
+              </button>
             </div>
           </header>
 

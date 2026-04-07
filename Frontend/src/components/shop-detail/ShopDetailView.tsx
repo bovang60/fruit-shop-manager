@@ -14,6 +14,7 @@ export type ShopDetailViewProps = {
   addingToCartId: number | null;
   onAddToCart: (productId: number) => void;
   onToggleWishlist: (productId: number, isFavorite: boolean) => void;
+  userRole?: string;
 };
 
 export default function ShopDetailView({ 
@@ -24,7 +25,8 @@ export default function ShopDetailView({
   wishlistIds,
   addingToCartId,
   onAddToCart,
-  onToggleWishlist
+  onToggleWishlist,
+  userRole = ""
 }: ShopDetailViewProps) {
   const navigate = useNavigate();
 
@@ -117,12 +119,14 @@ export default function ShopDetailView({
                               target.src = 'https://via.placeholder.com/180x180?text=No+Image';
                             }}
                           />
-                          <button 
-                             className={`product-favorite ${isFavorite ? 'active' : ''}`}
-                             onClick={(e) => { e.stopPropagation(); onToggleWishlist(product.productId, !!isFavorite); }}
-                          >
-                             <span className="material-symbols-outlined" style={{ fontVariationSettings: isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                          </button>
+                          {userRole !== "ADMIN" && userRole !== "SELLER" && (
+                            <button
+                              className={`product-favorite ${isFavorite ? 'active' : ''}`}
+                              onClick={(e) => { e.stopPropagation(); onToggleWishlist(product.productId, !!isFavorite); }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontVariationSettings: isFavorite ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                            </button>
+                          )}
                         </div>
                         <div className="product-info-simple">
                            <h3 className="product-name-simple">{product.name}</h3>
@@ -134,16 +138,18 @@ export default function ShopDetailView({
                                  Đã bán {product.soldCount ?? 0}
                               </span>
                            </div>
-                           <button
-                             className="add-to-cart-btn-simple"
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               onAddToCart(product.productId);
-                             }}
-                             disabled={addingToCartId === product.productId}
-                           >
-                             {addingToCartId === product.productId ? "..." : "Thêm vào giỏ"}
-                           </button>
+                           {userRole !== "ADMIN" && userRole !== "SELLER" && (
+                             <button
+                               className="add-to-cart-btn-simple"
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 onAddToCart(product.productId);
+                               }}
+                               disabled={addingToCartId === product.productId}
+                             >
+                               {addingToCartId === product.productId ? "..." : "Thêm vào giỏ"}
+                             </button>
+                           )}
                         </div>
                       </div>
                     );

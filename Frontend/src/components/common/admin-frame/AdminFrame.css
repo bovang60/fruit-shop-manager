@@ -46,39 +46,7 @@
   flex-shrink: 0 !important;
   margin-right: 1rem;
 }
-
-/* Nav-tabs expands to fill center space */
-.login-header {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-}
-
-.login-header .site-header {
-  width: 100%;
-  padding: 0;
-  height: 64px;
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  gap: 0;
-}
-
-/* Hide brand in admin header */
-.login-header .brand {
-  display: none;
-}
-
-/* Nav-tabs expands to fill available space */
-.login-header .nav-tabs {
-  flex: 1;
-  margin-left: 0;
-  gap: 0.75rem;
-}
-
-/* Profile actions stay on the right */
-.login-header .header-actions {
-  display: none;
+.back-to-site-btn:hover {
+  text-decoration: underline;
+  color: #00a76f !important;
 }

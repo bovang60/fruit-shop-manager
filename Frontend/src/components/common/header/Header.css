@@ -440,3 +440,75 @@
     }
   }
 }
+
+
+/* Auth Buttons - Clean Link Style */
+.header-auth-buttons {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  transition: all 0.3s ease;
+  margin-left: auto; /* Push to the right */
+  gap: 0;
+  align-self: center;
+  height: min-content;
+}
+
+
+.header-auth-buttons:hover {
+  transform: translateY(-1px);
+}
+
+
+.auth-btn {
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 100px;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-btn {
+  color: #475569;
+}
+
+.login-btn:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.register-btn {
+  color: #22c55e;
+  background: transparent;
+}
+
+.register-btn:hover {
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.auth-divider {
+  color: #e2e8f0;
+  font-weight: 300;
+  font-size: 0.85rem;
+  user-select: none;
+  margin: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+

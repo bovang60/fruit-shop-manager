@@ -128,6 +128,7 @@ export default function ShopDetail() {
       addingToCartId={addingToCartId}
       onAddToCart={handleAddToCart}
       onToggleWishlist={handleToggleWishlist}
+      userRole={user?.role}
     />
   );
 }
